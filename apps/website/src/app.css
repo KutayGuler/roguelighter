@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: regular;
+  src: url('/Geist-Regular.otf') format('truetype');
+}
+
+@font-face {
+  font-family: mono;
+  src: url('/GeistMono-Regular.otf') format('truetype');
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: regular;
+  height: 100%;
+}
+
+.mono {
+  font-family: mono;
+}
+
+.link {
+  @apply hover:underline hover:text-emerald-400 duration-150 ease-out;
+}
