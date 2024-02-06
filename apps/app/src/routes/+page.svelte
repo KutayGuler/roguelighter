@@ -110,10 +110,18 @@
     open_project(project.name as string);
   }
 
+  // TODO: shell stuff
   async function exec() {
-    const output = await new Command('node').execute();
+    const command = new Command('cmd', ['/C', 'echo hello']);
+    console.log(command);
+    const child = await command.execute();
+    console.log(child);
+    // await child.write('message');
+    command.stdout.on('data', (line) => console.log(`command stdout: ${line}`));
   }
 </script>
+
+<button class="btn-success" on:click={exec}>execute</button>
 
 {#await get_projects() then _}
   <main class="flex flex-col items-center bg-zinc-700 w-full h-full text-zinc-200">

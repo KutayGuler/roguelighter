@@ -16,8 +16,9 @@
         "all": true,
         "scope": [
           {
-            "name": "export",
-            "cmd": "echo cloning..."
+            "name": "cmd",
+            "cmd": "cmd",
+            "args": true
           },
           {
             "name": "node",
