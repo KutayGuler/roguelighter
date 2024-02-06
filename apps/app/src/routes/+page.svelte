@@ -110,14 +110,33 @@
     open_project(project.name as string);
   }
 
-  // TODO: shell stuff
+  const commands: Array<[string, { cwd: string }]> = [
+    // ['rd /s /q export', { cwd: '../../../' }],
+    // ['mkdir export', { cwd: '../../../' }],
+    // [
+    //   'git clone https://github.com/roguelighterengine/roguelighter.git .',
+    //   { cwd: '../../../export' }
+    // ],
+    // ['npm install', { cwd: '../../../export' }],
+    [
+      'npm run tauri build',
+      {
+        cwd: '../../../export/apps/export-app'
+      }
+    ]
+  ];
+
   async function exec() {
-    const command = new Command('cmd', ['/C', 'echo hello']);
-    console.log(command);
-    const child = await command.execute();
-    console.log(child);
-    // await child.write('message');
-    command.stdout.on('data', (line) => console.log(`command stdout: ${line}`));
+    for (let [command, opts] of commands) {
+      let c = new Command('cmd', ['/C', command], opts);
+      c.on('close', (data) => {
+        console.log(`command finished with code ${data.code} and signal ${data.signal}`);
+      });
+      c.on('error', (error) => console.error(`command error: "${error}"`));
+      c.stdout.on('data', (line) => console.log(`command stdout: "${line}"`));
+      c.stderr.on('data', (line) => console.log(`command stderr: "${line}"`));
+      await c.execute();
+    }
   }
 </script>
 
