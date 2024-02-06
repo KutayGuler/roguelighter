@@ -110,6 +110,8 @@
     open_project(project.name as string);
   }
 
+  // TODO: copy contents, create UI for exporting
+
   const commands: Array<[string, { cwd: string }]> = [
     // ['rd /s /q export', { cwd: '../../../' }],
     // ['mkdir export', { cwd: '../../../' }],
