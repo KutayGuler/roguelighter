@@ -1,4 +1,5 @@
 <script lang="ts">
+  import 'roguelighter-core/styles.css';
   import '../app.css';
   import 'svooltip/styles.css';
 </script>
@@ -9,7 +10,6 @@
   >
     <a href="/" class="hover:text-emerald-400 text-4xl ease-out duration-1000">Roguelighter</a>
     <div class="flex flex-row gap-4">
-      <a class="link opacity-10" href="/test">test</a>
       <a class="link" href="/tutorial">Tutorial</a>
       <a class="link" href="/download">Download</a>
       <a class="link" href="/docs">Docs</a>

@@ -142,7 +142,7 @@
   }
 </script>
 
-<button class="btn-success" on:click={exec}>execute</button>
+<!-- <button class="btn-success" on:click={exec}>execute</button> -->
 
 {#await get_projects() then _}
   <main class="flex flex-col items-center bg-zinc-700 w-full h-full text-zinc-200">
