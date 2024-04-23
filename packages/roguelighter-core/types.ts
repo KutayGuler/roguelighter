@@ -1,7 +1,46 @@
-// @ts-expect-error
-import * as easings from 'svelte/easing';
-// @ts-expect-error
-import * as transitions from 'svelte/transition';
+type Easing =
+  | 'back'
+  | 'backIn'
+  | 'backOut'
+  | 'backInOut'
+  | 'bounce'
+  | 'bounceIn'
+  | 'bounceOut'
+  | 'bounceInOut'
+  | 'circ'
+  | 'circIn'
+  | 'circOut'
+  | 'circInOut'
+  | 'cubic'
+  | 'cubicIn'
+  | 'cubicOut'
+  | 'cubicInOut'
+  | 'elastic'
+  | 'elasticIn'
+  | 'elasticOut'
+  | 'elasticInOut'
+  | 'expo'
+  | 'expoIn'
+  | 'expoOut'
+  | 'expoInOut'
+  | 'quad'
+  | 'quadIn'
+  | 'quadOut'
+  | 'quadInOut'
+  | 'quart'
+  | 'quartIn'
+  | 'quartOut'
+  | 'quartInOut'
+  | 'quint'
+  | 'quintIn'
+  | 'quintOut'
+  | 'quintInOut'
+  | 'sine'
+  | 'sineIn'
+  | 'sineOut'
+  | 'sineInOut';
+
+type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';
 
 declare namespace Tw {
   type Breakpoints =
@@ -375,9 +414,9 @@ export interface GUI_Element<VariableKeys, EventKeys> {
   children?: { [name: string]: GUI_Element<VariableKeys, EventKeys> };
   /** TODO: Documentation */
   transition?: {
-    type: keyof typeof transitions;
+    type: Transition;
     // on: 'intro' | 'outro' | 'both';
-    // easing: keyof typeof easings;
+    easing: Easing;
   };
   /** Variable name that will determine the visibility of the element */
   visibility_depends_on?: VariableKeys;
@@ -477,7 +516,7 @@ export interface Settings {
   /**
    * Default easing function for animations
    */
-  easing?: keyof typeof easings;
+  easing?: Easing;
   /**
    * Default duration for animations
    */
@@ -544,7 +583,7 @@ export interface Agent<Assets> {
   /**
    * Default easing function for agent animations
    */
-  easing?: keyof typeof easings;
+  easing?: Easing;
   /**
    * Default duration for agent animations
    */

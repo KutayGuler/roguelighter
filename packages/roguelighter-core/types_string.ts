@@ -1,8 +1,48 @@
 export const types_string = `
-// @ts-expect-error
-// import * as easings from 'svelte/easing';
-// @ts-expect-error
-// import * as transitions from 'svelte/transition';
+
+type Easing =
+  | 'back'
+  | 'backIn'
+  | 'backOut'
+  | 'backInOut'
+  | 'bounce'
+  | 'bounceIn'
+  | 'bounceOut'
+  | 'bounceInOut'
+  | 'circ'
+  | 'circIn'
+  | 'circOut'
+  | 'circInOut'
+  | 'cubic'
+  | 'cubicIn'
+  | 'cubicOut'
+  | 'cubicInOut'
+  | 'elastic'
+  | 'elasticIn'
+  | 'elasticOut'
+  | 'elasticInOut'
+  | 'expo'
+  | 'expoIn'
+  | 'expoOut'
+  | 'expoInOut'
+  | 'quad'
+  | 'quadIn'
+  | 'quadOut'
+  | 'quadInOut'
+  | 'quart'
+  | 'quartIn'
+  | 'quartOut'
+  | 'quartInOut'
+  | 'quint'
+  | 'quintIn'
+  | 'quintOut'
+  | 'quintInOut'
+  | 'sine'
+  | 'sineIn'
+  | 'sineOut'
+  | 'sineInOut';
+
+type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';
 
 declare namespace Tw {
   declare type Breakpoints =
@@ -363,9 +403,9 @@ declare interface GUI_Element<VariableKeys, EventKeys> {
   children?: { [name: string]: GUI_Element<VariableKeys, EventKeys> };
   /** TODO: Documentation */
   transition?: {
-    type: keyof typeof transitions;
+    type?: Transition;
     // on: 'intro' | 'outro' | 'both';
-    // easing: keyof typeof easings;
+    easing?: Easing;
   };
   /** TODO: Documentation */
   visibility_depends_on?: VariableKeys;
@@ -423,7 +463,7 @@ type DigitKeys =
 
 declare interface Settings {
   fps?: number;
-  easing?: keyof typeof easings;
+  easing?: Easing;
   duration?: number;
   filter?: 'nearest' | 'linear';
   camera?: {
@@ -461,7 +501,7 @@ declare interface Agent<Assets> {
     default: SpriteConfig<Assets>;
     [state_name: string]: SpriteConfig<Assets>;
   };
-  easing?: keyof typeof easings;
+  easing?: Easing;
   duration?: number;
 }
 

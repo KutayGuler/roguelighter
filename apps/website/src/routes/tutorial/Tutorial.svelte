@@ -1,6 +1,4 @@
 <script lang="ts">
-  // import RunCSS from 'runcss';
-  // const { processClasses } = RunCSS();
   import { page } from '$app/stores';
   import { confetti } from '@neoconfetti/svelte';
   import {
@@ -9,7 +7,8 @@
     get_tailwind_classes,
     json_to_code_string,
     parse_code,
-    processClasses
+    processClasses,
+    debounce
   } from 'roguelighter-core';
   import type { AssetUrls, GameData } from 'roguelighter-core';
   import { tutorials } from './tutorials';
@@ -17,6 +16,7 @@
   let { project, solution, header, description, solution_tuple } = tutorial;
   let solved = false;
   let code_editor: CodeEditor;
+  let update_count = 0;
 
   function check(obj: GameData) {
     let val = structuredClone(obj);
@@ -58,6 +58,11 @@
     tutorial = structuredClone(tutorials[$page.params.name]);
     ({ project } = tutorial);
     code_editor.set_code(project.code);
+  }
+
+  function update_game() {
+    update_count++;
+    console.log('updated game');
   }
 </script>
 
@@ -105,10 +110,14 @@
           class="absolute left-[50%] top-12"
         ></div>
       {/if}
-      <CodeEditor bind:code={project.code} bind:this={code_editor}></CodeEditor>
+      <CodeEditor
+        bind:code={project.code}
+        bind:this={code_editor}
+        on:change={debounce(update_game, 1000)}
+      ></CodeEditor>
     </div>
     <div class="h-1/2 w-full">
-      {#key project.code}
+      {#key update_count}
         <Game {project} {asset_urls} current_scene_id={0}></Game>
       {/key}
     </div>
