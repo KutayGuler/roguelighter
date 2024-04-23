@@ -41,8 +41,9 @@
   "devDependencies": {
     "@sveltejs/adapter-auto": "^2.0.0",
     "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^1.20.4",
+    "@sveltejs/kit": "^2.4.0",
     "@sveltejs/package": "^2.2.2",
+    "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@types/three": "^0.157.2",
     "autoprefixer": "^10.4.15",
     "postcss": "^8.4.29",
@@ -53,7 +54,7 @@
     "tslib": "^2.4.1",
     "typedoc": "^0.25.4",
     "typescript": "^5.2.2",
-    "vite": "^4.4.2"
+    "vite": "^5.0.0"
   },
   "type": "module",
   "dependencies": {

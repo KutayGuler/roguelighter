@@ -1,5 +1,5 @@
 import adapter from '@sveltejs/adapter-static';
-import { vitePreprocess } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -15,7 +15,7 @@ const config = {
     prerender: {
       // use relative URLs similar to an anchor tag <a href="/test/1"></a>
       // do not include group layout folders in the path such as /(group)/test/1
-      entries: ['/tutorial', '/tutorial/intro', '/', '/docs', '/download', '/test', '/test/project']
+      entries: ['/project', '/']
     }
   }
 };
