@@ -27,17 +27,6 @@
     return val === solution_tuple[1];
   }
 
-  // $: {
-  //   let parsed = parse_code(project.code);
-  //   console.log(parsed);
-
-  //   if (typeof parsed == 'object') {
-  //     processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-  //     project.parsed_code = parsed;
-  //     solved = check(project.parsed_code);
-  //   }
-  // }
-
   // @ts-expect-error
   const asset_urls: AssetUrls = new Map([
     [
@@ -64,7 +53,6 @@
 
   function update_game() {
     let parsed = parse_code(project.code);
-    console.log(parsed);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));

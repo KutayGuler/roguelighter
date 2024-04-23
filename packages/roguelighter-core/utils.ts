@@ -68,12 +68,10 @@ export function parse_code(code: string): string | GameData {
   t = `{
     ${t}
   }`;
-  console.log(t);
 
   try {
     return JSON5.parse(t);
   } catch (e) {
-    console.log(e);
     return code;
   }
 }
