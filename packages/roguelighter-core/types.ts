@@ -332,7 +332,8 @@ declare namespace Tw {
     | BorderSize
     | BorderColors
     | BorderRadius
-    | Display;
+    | Display
+    | FlexDirection;
 
   type PseudoClasses = 'hover' | 'focus' | 'active';
   type Tokens = VanillaTokens | `${PseudoClasses}:${VanillaTokens}`;
@@ -416,7 +417,7 @@ export interface GUI_Element<VariableKeys, EventKeys> {
   transition?: {
     type: Transition;
     // on: 'intro' | 'outro' | 'both';
-    easing: Easing;
+    easing?: Easing;
   };
   /** Variable name that will determine the visibility of the element */
   visibility_depends_on?: VariableKeys;

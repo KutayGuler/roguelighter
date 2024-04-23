@@ -4,6 +4,7 @@ import type { Agents, Backgrounds, GUI_Element, GameData } from './types';
 import { join, documentDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { DEFAULT_DIR } from './constants';
+import JSON5 from 'json5'
 
 export const { processClasses } = RunCSS();
 export const noop = () => {};
@@ -67,10 +68,12 @@ export function parse_code(code: string): string | GameData {
   t = `{
     ${t}
   }`;
+  console.log(t);
 
   try {
-    return JSON.parse(t);
+    return JSON5.parse(t);
   } catch (e) {
+    console.log(e);
     return code;
   }
 }
@@ -193,18 +196,45 @@ export const template_json_code: GameData = {
   },
   gui: {
     $pause_menu: {
-      tokens: ['absolute', 'bottom-0', 'w-full', 'h-full', 'bg-black/50'],
+      tokens: [
+        'absolute',
+        'bottom-0',
+        'w-full',
+        'h-full',
+        'bg-black/50',
+        'flex',
+        'flex-col',
+        'items-center',
+        'gap-2',
+        'pt-8'
+      ],
       transition: { type: 'fade' },
       children: {
         continue: {
           type: 'button',
-          tokens: ['bg-amber-200', 'font-bold', 'p-4', 'hover:bg-red-200'],
+          tokens: [
+            'bg-amber-200',
+            'font-bold',
+            'p-4',
+            'hover:bg-purple-200',
+            'text-amber-600',
+            'w-1/2',
+            'rounded'
+          ],
           on_click: '$close_pause_menu',
           text: 'Continue' // add variable {v.var_name}
         },
         exit: {
           type: 'button',
-          tokens: ['bg-amber-200', 'font-bold', 'p-4', 'hover:bg-red-200'],
+          tokens: [
+            'bg-amber-200',
+            'font-bold',
+            'p-4',
+            'hover:bg-purple-200',
+            'text-amber-600',
+            'w-1/2',
+            'rounded'
+          ],
           on_click: '$exit',
           text: 'Exit' // add variable {v.var_name}
         }

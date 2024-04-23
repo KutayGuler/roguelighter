@@ -15,6 +15,7 @@
     : noop;
 
   const joined_tokens = tokens.join(' ');
+  console.log(joined_tokens);
 </script>
 
 {#if visibility_depends_on}

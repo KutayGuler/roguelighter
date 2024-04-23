@@ -334,7 +334,8 @@ declare namespace Tw {
     | BorderSize
     | BorderColors
     | BorderRadius
-    | Display;
+    | Display
+    | FlexDirection;
 
   declare type PseudoClasses = 'hover' | 'focus' | 'active';
   declare type Tokens = VanillaTokens | \`\${PseudoClasses}:\${VanillaTokens}\`;
@@ -403,7 +404,7 @@ declare interface GUI_Element<VariableKeys, EventKeys> {
   children?: { [name: string]: GUI_Element<VariableKeys, EventKeys> };
   /** TODO: Documentation */
   transition?: {
-    type?: Transition;
+    type: Transition;
     // on: 'intro' | 'outro' | 'both';
     easing?: Easing;
   };
