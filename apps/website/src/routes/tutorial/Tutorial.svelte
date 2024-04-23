@@ -47,7 +47,8 @@
         walk: '/elf_run.png'
       }
     ],
-    ['floor', '/floors/floor_1.png']
+    ['floor', '/floors/floor_1.png'],
+    ['floor_2', '/floors/floor_2.png']
   ]);
 
   function show_solution() {

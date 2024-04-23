@@ -33,9 +33,14 @@ export const tutorials: { [key: string]: Tutorial } = {
             name: 'whatever',
             backgrounds: new Map<number, string>([
               [0, 'floor'],
-              [1, 'floor'],
+              [1, 'floor_2'],
+              [2, 'floor'],
               [10, 'floor'],
-              [11, 'floor']
+              [11, 'floor_2'],
+              [12, 'floor'],
+              [20, 'floor'],
+              [21, 'floor'],
+              [22, 'floor']
             ]),
             agents: new Map<number, string>([[0, 'player']]),
             portals: new Map<number, Portal>(),
