@@ -24,6 +24,7 @@
     type FileEntry
   } from '@tauri-apps/api/fs';
   import { Command } from '@tauri-apps/api/shell';
+  import JSON5 from 'json5';
 
   let projects: Array<FileEntry> = [];
   let current_project_name = '';
@@ -71,7 +72,7 @@
 
   async function open_project(project_name: string) {
     const res = await readTextFile(`${DEFAULT_DIR}\\${project_name}\\data.json`, { dir });
-    let parsed = JSON.parse(res);
+    let parsed = JSON5.parse(res);
     parsed.scenes = parsed.scenes.length ? new Map(parsed.scenes) : new Map();
 
     for (let scene of parsed.scenes.values()) {

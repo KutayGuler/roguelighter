@@ -58,6 +58,7 @@
   },
   "type": "module",
   "dependencies": {
+    "json5": "^2.2.3",
     "roguelighter-core": "0.1.2"
   }
 }
