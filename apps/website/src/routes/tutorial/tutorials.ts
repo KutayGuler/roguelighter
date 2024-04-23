@@ -19,7 +19,7 @@ export const tutorials: { [key: string]: Tutorial } = {
         easing: 'sineOut',
         duration: 400,
         camera: {
-          zoom: 10
+          zoom: 50
         }
       }
     }),
@@ -50,6 +50,6 @@ export const tutorials: { [key: string]: Tutorial } = {
         ]
       ])
     },
-    solution_tuple: ['settings.camera.zoom', 10]
+    solution_tuple: ['settings.camera.zoom', 50]
   }
 };

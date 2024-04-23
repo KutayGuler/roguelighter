@@ -7,8 +7,7 @@
     get_tailwind_classes,
     json_to_code_string,
     parse_code,
-    processClasses,
-    debounce
+    processClasses
   } from 'roguelighter-core';
   import type { AssetUrls, GameData } from 'roguelighter-core';
   import { tutorials } from './tutorials';
@@ -16,7 +15,6 @@
   let { project, solution, header, description, solution_tuple } = tutorial;
   let solved = false;
   let code_editor: CodeEditor;
-  let update_count = 0;
 
   function check(obj: GameData) {
     let val = structuredClone(obj);
@@ -51,15 +49,15 @@
     code_editor.set_code(project.code);
   }
 
-  function update_game() {
+  $: {
     let parsed = parse_code(project.code);
+    console.log(parsed);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
       project.parsed_code = parsed;
       solved = check(project.parsed_code);
     }
-    update_count++;
   }
 </script>
 
@@ -107,14 +105,10 @@
           class="absolute left-[50%] top-12"
         ></div>
       {/if}
-      <CodeEditor
-        bind:code={project.code}
-        bind:this={code_editor}
-        on:change={debounce(update_game, 1000)}
-      ></CodeEditor>
+      <CodeEditor bind:code={project.code} bind:this={code_editor}></CodeEditor>
     </div>
     <div class="h-1/2 w-full">
-      {#key update_count}
+      {#key project.code}
         <Game {project} {asset_urls} current_scene_id={0}></Game>
       {/key}
     </div>
