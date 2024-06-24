@@ -6,7 +6,7 @@
     CodeEditor,
     get_tailwind_classes,
     json_to_code_string,
-    parse_code,
+    code_string_to_json,
     processClasses
   } from 'roguelighter-core';
   import type { AssetUrls, GameData } from 'roguelighter-core';
@@ -50,7 +50,7 @@
   }
 
   $: {
-    let parsed = parse_code(project.code);
+    let parsed = code_string_to_json(project.code);
     console.log(parsed);
 
     if (typeof parsed == 'object') {

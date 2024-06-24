@@ -673,4 +673,9 @@ export interface RoguelighterProject {
   parsed_code: GameData;
 }
 
+export interface RoguelighterDataFile {
+  code: string;
+  scenes: Array<[number, Scene]>;
+}
+
 export type AssetUrls = Map<string, { default: string; [key: string]: string } | string>;

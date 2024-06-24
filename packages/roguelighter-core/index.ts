@@ -9,9 +9,6 @@ export * from './store';
 // UTILS
 export * from './utils';
 
-// TYPES STRING
-export { types_string } from './types_string';
-
 // BASE ENGINE
 export { default as Engine } from './components/Engine.svelte';
 export { default as ProjectCard } from './components/ProjectCard.svelte';

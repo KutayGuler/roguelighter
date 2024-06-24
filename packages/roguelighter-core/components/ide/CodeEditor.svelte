@@ -2,7 +2,7 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  import { types_string } from '../../types_string';
+  import { create_types, debounce, json_to_code_string, template_json_code } from '../../utils';
   const dispatch = createEventDispatcher();
 
   export let code: string;
@@ -33,7 +33,7 @@
       allowNonTsExtensions: true
     });
 
-    monaco.editor.createModel(types_string, 'typescript');
+    monaco.editor.createModel(create_types(template_json_code), 'typescript');
 
     editor = monaco.editor.create(editorElement, {
       automaticLayout: true,
@@ -41,10 +41,14 @@
       tabSize: 2
     });
 
-    editor.onDidChangeModelContent(() => {
-      code = editor.getValue();
-      dispatch('change');
-    });
+    editor.onDidChangeModelContent(
+      debounce(() => {
+        code = editor.getValue();
+        update_types();
+        dispatch('change');
+        console.log('change');
+      }, 200)
+    );
     editor.onKeyUp((e) => {
       if (e.keyCode === monaco.KeyCode.Quote) {
         editor.trigger('', 'editor.action.triggerSuggest', '');
@@ -58,6 +62,26 @@
     monaco?.editor.getModels().forEach((model) => model.dispose());
     editor?.dispose();
   });
+
+  function update_types() {
+    // TODO: assets types (could be a store)
+    const models = monaco.editor.getModels();
+    let content_id = '';
+
+    for (let model of models) {
+      const value = model.getValue();
+      if (!value) continue;
+      if (value.includes('type Easing =')) {
+        model.setValue(create_types(editor.getValue()));
+      } else {
+        content_id = model.id;
+      }
+    }
+
+    // model?.setValue(model.getValue());
+    // editor.focus();
+    console.log('focus');
+  }
 </script>
 
 <div class="h-full" bind:this={editorElement} />

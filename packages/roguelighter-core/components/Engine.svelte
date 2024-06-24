@@ -11,10 +11,10 @@
     debounce,
     get_asset_asset_urls,
     get_tailwind_classes,
-    parse_code,
+    code_string_to_json,
     processClasses
   } from '../utils';
-  import type { RoguelighterProject } from '../types';
+  import type { RoguelighterDataFile, RoguelighterProject } from '../types';
   import { writeTextFile } from '@tauri-apps/api/fs';
   import { DEFAULT_DIR, MAPS, dir } from '../constants';
 
@@ -52,7 +52,7 @@
       };
 
   $: {
-    let parsed = parse_code(project.code);
+    let parsed = code_string_to_json(project.code);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
@@ -81,7 +81,7 @@
       }
     }
 
-    let obj = { code: project.code, scenes: Array.from(scenes) };
+    let obj: RoguelighterDataFile = { code: project.code, scenes: Array.from(scenes) };
     let file_contents = JSON.stringify(obj);
 
     writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, { dir });
@@ -141,7 +141,7 @@
       <Game bind:asset_urls bind:current_scene_id bind:project />
     {/if}
     <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
-      <CodeEditor bind:code={project.code} on:change={debounce(save_file, 200)}></CodeEditor>
+      <CodeEditor bind:code={project.code} on:change={save_file}></CodeEditor>
     </div>
     <Toast />
   </main>
