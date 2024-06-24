@@ -2,7 +2,7 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  import { create_types, debounce, json_to_code_string, template_json_code } from '../../utils';
+  import { create_types, debounce, template_json_code } from '../../utils';
   const dispatch = createEventDispatcher();
 
   export let code: string;
@@ -33,6 +33,7 @@
       allowNonTsExtensions: true
     });
 
+    // TODO: generate types from the save file
     monaco.editor.createModel(create_types(template_json_code), 'typescript');
 
     editor = monaco.editor.create(editorElement, {
@@ -46,7 +47,6 @@
         code = editor.getValue();
         update_types();
         dispatch('change');
-        console.log('change');
       }, 200)
     );
     editor.onKeyUp((e) => {
@@ -77,10 +77,6 @@
         content_id = model.id;
       }
     }
-
-    // model?.setValue(model.getValue());
-    // editor.focus();
-    console.log('focus');
   }
 </script>
 
