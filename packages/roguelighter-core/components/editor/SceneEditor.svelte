@@ -272,6 +272,7 @@
     <div
       class="relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
     >
+      <!-- TODO: warn player for renamed stuff assets -->
       {#if current_scene_id != undefined}
         <button
           on:click={() => dispatch('switch_view')}

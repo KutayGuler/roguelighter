@@ -64,11 +64,15 @@
   let asset_urls = new Map<string, string>();
 
   async function calc_asset_urls() {
-    asset_urls = await get_asset_asset_urls(
-      $current_project_name,
-      project.parsed_code.agents,
-      project.parsed_code.backgrounds
-    );
+    try {
+      asset_urls = await get_asset_asset_urls(
+        $current_project_name,
+        project.parsed_code.agents,
+        project.parsed_code.backgrounds
+      );
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   function save_file() {

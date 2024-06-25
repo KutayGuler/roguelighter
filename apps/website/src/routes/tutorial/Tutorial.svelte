@@ -51,7 +51,6 @@
 
   $: {
     let parsed = code_string_to_json(project.code);
-    console.log(parsed);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));

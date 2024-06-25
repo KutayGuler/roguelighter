@@ -2,25 +2,50 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  import { create_types, debounce, template_json_code } from '../../utils';
+  import { create_types, debounce } from '../../utils';
   const dispatch = createEventDispatcher();
+
+  import { watch } from 'tauri-plugin-fs-watch-api';
+  import { join, documentDir } from '@tauri-apps/api/path';
+  import { type FileEntry, readDir } from '@tauri-apps/api/fs';
+  import { DEFAULT_DIR } from '../../constants';
+  import { current_project_name } from '../../store';
 
   export let code: string;
   let editorElement: HTMLDivElement;
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
+  let cached_entries: Array<FileEntry> = [];
+  let filePath = '';
 
   export function set_code(new_code: string) {
     code = new_code;
     editor.setValue(code);
   }
 
-  function loadCode(code: string) {
+  async function loadCode(code: string) {
     model = monaco.editor.createModel(code, 'typescript');
     editor.setModel(model);
+
+    const entries = await readDir(filePath, { recursive: true });
+    cached_entries = entries;
+    model.setValue(code);
+
+    await watch(
+      filePath,
+      async () => {
+        const entries = await readDir(filePath, { recursive: true });
+        cached_entries = entries;
+        model.setValue(create_types(editor.getValue(), entries));
+      },
+      { recursive: true }
+    );
   }
 
   onMount(async () => {
+    const documentDirPath = await documentDir();
+    filePath = await join(documentDirPath, `${DEFAULT_DIR}/${$current_project_name}/assets`);
+
     self.MonacoEnvironment = {
       getWorker: () => new tsWorker()
     };
@@ -33,8 +58,7 @@
       allowNonTsExtensions: true
     });
 
-    // TODO: generate types from the save file
-    monaco.editor.createModel(create_types(template_json_code), 'typescript');
+    monaco.editor.createModel(create_types(code), 'typescript');
 
     editor = monaco.editor.create(editorElement, {
       automaticLayout: true,
@@ -55,7 +79,9 @@
       }
     });
 
-    loadCode(code);
+    // TODO: Built-in widget to replace key names
+
+    await loadCode(code);
   });
 
   onDestroy(() => {
@@ -64,7 +90,6 @@
   });
 
   function update_types() {
-    // TODO: assets types (could be a store)
     const models = monaco.editor.getModels();
     let content_id = '';
 
@@ -72,7 +97,7 @@
       const value = model.getValue();
       if (!value) continue;
       if (value.includes('type Easing =')) {
-        model.setValue(create_types(editor.getValue()));
+        model.setValue(create_types(editor.getValue(), cached_entries));
       } else {
         content_id = model.id;
       }

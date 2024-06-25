@@ -1,10 +1,11 @@
 import RunCSS from 'runcss';
-import { transpile } from 'typescript';
+import * as ts from 'typescript';
 import type { Agents, Backgrounds, GUI_Element, GameData } from './types';
 import { join, documentDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { DEFAULT_DIR } from './constants';
 import JSON5 from 'json5';
+import { FileEntry } from '@tauri-apps/api/fs';
 
 // TODO: update packages
 
@@ -46,27 +47,23 @@ export function debounce(fn: Function, ms: number) {
 }
 
 export function code_string_to_json(code: string): string | GameData {
-  let function_declarations = [];
-  let t = transpile(code, { removeComments: true, strict: false });
-  const function_regex = /function\s+([a-zA-Z_$][\w$]*)\s*\([^)]*\)\s*{[^}]*}/g;
-  let matches = t.matchAll(function_regex);
+  const transpiled = ts.transpile(code, { removeComments: true, strict: false });
+  const valid_declarations_regex =
+    /var\s+(settings|backgrounds|collisions|agents|variables|events|key_bindings|conditions|gui)\s*=\s*(\{[^]*?\}|\[[^]*?\])\s*;\s*/g;
+  const declarations = transpiled.match(valid_declarations_regex);
 
-  for (let m of matches) {
-    let fn_str = m[0];
-    function_declarations.push(fn_str);
+  let t = '';
 
-    t = t.replace(fn_str, '');
+  for (let d of declarations) {
+    t += d;
   }
 
   t = t.replaceAll('var ', '');
   t = t.replaceAll(' = ', ': ');
   t = t.replaceAll(';', ',');
-  t = t.replaceAll('Object.defineProperty(exports, "__esModule", { value: true }),', '');
-  t = t.replace(/\b(\w+): /g, '"$1": ');
+  t = t.replace(/([\w$]+): /g, '"$1": ');
   t = t.replaceAll("'", '"');
-  t = t.replaceAll('$"', '"$');
   t = t.replace('},\n\n', '}');
-  t = t.slice(0, -2);
   t = `{
     ${t}
   }`;
@@ -270,30 +267,72 @@ export function get_tailwind_classes(gui_element: GUI_Element<string, string>) {
   return set;
 }
 
-export function create_types(game_code: string | GameData) {
+function retrieve_children_names(entry: FileEntry, parent_name = '') {
+  let children = '';
+
+  for (let child of entry.children as FileEntry[]) {
+    if (child.children) {
+      children += retrieve_children_names(child, entry.name);
+      continue;
+    }
+
+    if (parent_name) {
+      children += `| '${parent_name}/${entry.name}/${child.name}'`;
+    } else {
+      children += `| '${entry.name}/${child.name}'`;
+    }
+  }
+
+  return children;
+}
+
+export function create_types(game_code: string | GameData, assets_array: Array<FileEntry> = []) {
   if (typeof game_code === 'string') {
     game_code = code_string_to_json(game_code) as GameData;
   }
 
-  let str_event_keys = '';
-  let str_var_keys = '';
-  let str_background_keys = '';
-  let str_agent_state_keys = '';
+  let assets = `'ERROR: no assets found'`;
+  let events = '';
+  let variables = '';
+  let backgrounds = '';
+  let agent_states = '';
 
   for (let key of Object.keys(game_code.events || {})) {
-    str_event_keys += `| '${key}'`;
+    events += `| '${key}'`;
+  }
+
+  for (let key of Object.keys(game_code.variables || {})) {
+    variables += `| '${key}'`;
   }
 
   for (let key of Object.keys(game_code.backgrounds || {})) {
-    str_background_keys += `| '${key}'`;
+    backgrounds += `| '${key}'`;
   }
 
   for (let key of Object.keys(game_code?.agents?.player?.states || {})) {
     if (key === 'default') continue;
-    str_agent_state_keys += `| '${key}'`;
+    agent_states += `| '${key}'`;
+  }
+
+  if (assets_array.length) {
+    assets = '';
+
+    for (let asset of assets_array) {
+      if (asset.children) {
+        assets += retrieve_children_names(asset);
+        continue;
+      }
+
+      assets += `| '${asset.name}'`;
+    }
   }
 
   return `
+  type Assets = ${assets};
+  type EventNames = ${events};
+  type VariableNames = ${variables};
+  type BackgroundNames = ${backgrounds};
+  type AgentStates = ${agent_states};
 
   type Easing =
     | 'back'
@@ -637,16 +676,16 @@ export function create_types(game_code: string | GameData) {
   }
   
   declare type PlayerPositions = 'x' | 'y';
-  declare type WritableProps = PlayerPositions | ${str_var_keys};
+  declare type WritableProps = PlayerPositions | VariableNames;
   type EventExpression =
     | ['wait']
     | ['wait', number]
-    | ['move', PlayerPositions, number, ${str_agent_state_keys}]
+    | ['move', PlayerPositions, number, AgentStates]
     | ['move', PlayerPositions, number]
-    | ['toggle', ${str_var_keys}]
-    | ['play', ${str_agent_state_keys}]
-    | ['set', ${str_var_keys}, any]
-    | ['add', ${str_var_keys}, any];
+    | ['toggle', VariableNames]
+    | ['play', AgentStates]
+    | ['set', VariableNames, any]
+    | ['add', VariableNames, any];
   
   declare interface Variables {
     [variable_name: string]: any;
@@ -673,7 +712,7 @@ export function create_types(game_code: string | GameData) {
   // ];
   
   declare type Conditions = {
-    [event_name: ${str_event_keys}]: BinaryExpression;
+    [event_name: EventNames]: BinaryExpression;
   };
   
   type InternalEvents = '\$open_pause_menu' | '\$close_pause_menu' | '\$toggle_pause_menu' | '\$exit';
@@ -684,7 +723,7 @@ export function create_types(game_code: string | GameData) {
     /** TODO: Documentation */
     tokens: Readonly<Array<Tw.Tokens>>;
     /** TODO: Documentation */
-    on_click?: ${str_event_keys} | InternalEvents;
+    on_click?: EventNames | InternalEvents;
   
     /** TODO: Documentation */
     text?: ('\$agent_avatar' | '\$agent_name' | '\$agent_text') | (string & {});
@@ -698,7 +737,7 @@ export function create_types(game_code: string | GameData) {
       easing?: Easing;
     };
     /** TODO: Documentation */
-    visibility_depends_on?: ${str_var_keys};
+    visibility_depends_on?: VariableNames;
   }
   
   declare interface GUI {
@@ -763,10 +802,10 @@ export function create_types(game_code: string | GameData) {
   }
   
   declare type KeyBindings = {
-    [key in KeyboardEventCode]?: ${str_event_keys} | InternalEvents;
+    [key in KeyboardEventCode]?: EventNames | InternalEvents;
   };
   
-  type SpriteConfig<Assets> = {
+  type SpriteConfig = {
     source: Assets;
     /** The total number of frames in the spritesheet. */
     frame_count?: number;
@@ -786,17 +825,17 @@ export function create_types(game_code: string | GameData) {
     filter?: 'nearest' | 'linear';
   };
   
-  declare interface Agent<Assets> {
+  declare interface Agent {
     states: {
-      default: SpriteConfig<Assets>;
-      [state_name: string]: SpriteConfig<Assets>;
+      default: SpriteConfig;
+      [state_name: string]: SpriteConfig;
     };
     easing?: Easing;
     duration?: number;
   }
   
-  declare type Agents<Assets = string> = { player: Agent<Assets>; [name: string]: Agent<Assets> };
-  declare type Backgrounds<Assets = string> = { [name: string]: Assets };
+  declare type Agents = { player: Agent; [name: string]: Agent };
+  declare type Backgrounds = { [name: string]: Assets };
   declare type XY_Tuple = [x: number, y: number];
   
   declare interface PlayableAgent extends Agent<string> {
@@ -814,7 +853,7 @@ export function create_types(game_code: string | GameData) {
     e: _Events;
   };
   
-  declare type Collisions = Array<${str_background_keys}>;
+  declare type Collisions = Array<${backgrounds}>;
   
   declare interface Portal {
     to_scene_id: number;
