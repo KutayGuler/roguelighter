@@ -15,6 +15,7 @@ export function generate_id() {
   return (Math.random() + 1).toString(36).substring(7);
 }
 
+// TODO: get rid of this function
 export function clickOutside(node: Node) {
   const handleClick = (event: Event) => {
     // @ts-expect-error

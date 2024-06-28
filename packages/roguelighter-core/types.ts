@@ -679,3 +679,9 @@ export interface RoguelighterDataFile {
 }
 
 export type AssetUrls = Map<string, { default: string; [key: string]: string } | string>;
+
+// UI
+
+import { createDialog } from 'svelte-headlessui';
+
+export type DialogController = ReturnType<typeof createDialog>;

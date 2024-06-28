@@ -1,6 +1,12 @@
 <script lang="ts">
   import Modal from './Modal.svelte';
-  import type { AssetUrls, Portal, RoguelighterProject, Scene } from '../../types';
+  import type {
+    AssetUrls,
+    DialogController,
+    Portal,
+    RoguelighterProject,
+    Scene
+  } from '../../types';
   import { tooltip } from 'svooltip';
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
   import { clickOutside } from '../../utils';
@@ -22,7 +28,7 @@
   let holding = false;
   let show_pos = false;
   let portal_btn_disabled = false;
-  let portal_modal = false;
+  let portal_modal: DialogController;
   let portal_remove_mode = false;
   let portal_from_pos = 0;
   let portal_to_id: number;
@@ -40,7 +46,7 @@
       to_position: portal_from_pos
     });
     current_scene = current_scene;
-    portal_modal = false;
+    portal_modal.close();
     dispatch('change');
   }
 
@@ -61,7 +67,7 @@
     // @ts-expect-error
     current_scene_id = undefined;
     // current_scene_name = '';
-    delete_scene_modal = false;
+    delete_scene_modal.close();
     dispatch('change');
   }
 
@@ -126,8 +132,8 @@
     }
   };
 
-  let new_scene_modal = false;
-  let delete_scene_modal = false;
+  let new_scene_modal: DialogController;
+  let delete_scene_modal: DialogController;
 
   let scene_name = '';
   let map_width = DEFAULT_MAP_WIDTH;
@@ -158,7 +164,7 @@
 
     scene_name = '';
     current_scene_id = id;
-    new_scene_modal = false;
+    new_scene_modal.close();
     project.scenes = project.scenes;
   }
 
@@ -201,7 +207,7 @@
   on:mousedown={() => (holding = true)}
   on:mouseup={() => (holding = false)}
   on:keydown={(e) => {
-    if (portal_modal || new_scene_modal || delete_scene_modal) {
+    if ($portal_modal.expanded || $new_scene_modal.expanded || $delete_scene_modal.expanded) {
       return;
     }
 
@@ -215,13 +221,13 @@
     if (e.ctrlKey) {
       switch (e.code) {
         case 'KeyN':
-          new_scene_modal = true;
+          new_scene_modal.open();
           break;
         case 'KeyT':
           dispatch('switch_scene');
           break;
         case 'KeyP':
-          portal_modal = true;
+          portal_modal.open();
           break;
         case 'KeyR':
           portal_remove_mode = !portal_remove_mode;
@@ -255,7 +261,7 @@
           content: 'Ctrl + N',
           placement: 'bottom'
         }}
-        on:click={() => (new_scene_modal = true)}
+        on:click={() => new_scene_modal.open()}
         class="btn-success btn-md w-full text-white inline-flex justify-center"
         ><svg
           xmlns="http://www.w3.org/2000/svg"
@@ -369,7 +375,7 @@
               on:click={() => {
                 if (portal_btn_disabled) return;
                 portal_remove_mode = false;
-                portal_modal = true;
+                portal_modal.open();
               }}
               class="btn-md btn-portal w-1/2">New Portal</button
             >
@@ -415,7 +421,7 @@
             class="hover:text-emerald-400 ease-out duration-150">Set as starting scene</button
           >
           <button
-            on:click={() => (delete_scene_modal = true)}
+            on:click={() => delete_scene_modal.open()}
             class="hover:text-red-400 ease-out duration-150">Delete scene</button
           >
         </div>
@@ -480,7 +486,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-<Modal bind:visible={new_scene_modal}>
+<Modal bind:dialog={new_scene_modal}>
   <h3 class="h3 pb-4">Create a new scene</h3>
   <form class="flex flex-col gap-4" on:submit={create_scene}>
     <label class="flex flex-col" for="name">
@@ -517,10 +523,10 @@
     </label>
     <button class="btn-success btn-md w-full">Create</button>
   </form>
-  <button class="absolute top-2 right-4" on:click={() => (new_scene_modal = false)}>{CROSS}</button>
+  <button class="absolute top-2 right-4" on:click={() => new_scene_modal.close()}>{CROSS}</button>
 </Modal>
 
-<Modal bind:visible={portal_modal}>
+<Modal bind:dialog={portal_modal}>
   <h3 class="h3 pb-4">Portal</h3>
   <form class="flex flex-col gap-4" on:submit={create_portal}>
     <div class="flex flex-row w-full gap-4">
@@ -577,16 +583,16 @@
     </div>
     <button class="btn-md btn-portal w-full">Create</button>
   </form>
-  <button class="absolute top-2 right-4" on:click={() => (portal_modal = false)}>{CROSS}</button>
+  <button class="absolute top-2 right-4" on:click={() => portal_modal.close()}>{CROSS}</button>
 </Modal>
 
-<Modal bind:visible={delete_scene_modal}>
+<Modal bind:dialog={delete_scene_modal}>
   <h3 class="h3">Delete scene "{current_scene.name}"?</h3>
   <form
     on:submit|preventDefault={delete_current_scene}
     class="flex flex-row gap-2 w-full justify-end pt-4"
   >
-    <button type="button" on:click={() => (delete_scene_modal = false)} class="btn-md btn-ghost">
+    <button type="button" on:click={() => delete_scene_modal.close()} class="btn-md btn-ghost">
       Cancel
     </button>
     <button type="submit" class="btn-md btn-alert">Delete</button>

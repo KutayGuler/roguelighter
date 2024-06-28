@@ -4,6 +4,7 @@
   import {
     ProjectCard,
     Modal,
+    // NewModal,
     Toast,
     CROSS,
     DEFAULT_DIR,
@@ -12,7 +13,8 @@
     notifications,
     project_store,
     current_project_name as cpn,
-    generate_template_data
+    generate_template_data,
+    type DialogController
   } from 'roguelighter-core';
   import {
     createDir,
@@ -28,12 +30,12 @@
 
   let projects: Array<FileEntry> = [];
   let current_project_name = '';
-  let delete_project_modal = false;
+  let delete_project_modal: DialogController;
   let new_project_name = '';
-  let new_project_modal = false;
+  let new_project_modal: DialogController;
   let new_project_input_element: HTMLInputElement;
-  let loading_screen = false;
-  $: loading_screen = $navigating == null ? false : true;
+  let loading_screen: DialogController;
+  $: $loading_screen && ($loading_screen.expanded = $navigating == null ? false : true);
 
   function trimEnds(str: string) {
     return str.trimEnd().trimStart();
@@ -66,7 +68,7 @@
       generate_template_data(),
       { dir }
     );
-    new_project_modal = false;
+    new_project_modal.close();
     open_project(new_project_name);
   }
 
@@ -88,7 +90,7 @@
   }
 
   async function delete_project() {
-    delete_project_modal = false;
+    delete_project_modal.close();
     await removeDir(`${DEFAULT_DIR}\\${current_project_name}`, {
       dir,
       recursive: true
@@ -143,15 +145,17 @@
   }
 </script>
 
-<!-- <button class="btn-success" on:click={exec}>execute</button> -->
-
 {#await get_projects() then _}
   <main class="flex flex-col items-center bg-zinc-700 w-full h-full text-zinc-200">
     <div class="w-full max-w-xl p-4">
       <div class="flex flex-row items-end justify-between">
         <h3 class="h3">Projects</h3>
-        <button on:click={() => (new_project_modal = true)} class="btn-success btn-md btn-md"
-          >New Project</button
+        <button
+          on:click={() => {
+            console.log('open');
+            new_project_modal.open();
+          }}
+          class="btn-success btn-md">New Project</button
         >
       </div>
       <div class="flex flex-col gap-2 pt-4">
@@ -161,24 +165,14 @@
             on:open={() => on_project_open(project)}
             on:delete={() => {
               current_project_name = project.name;
-              delete_project_modal = true;
+              delete_project_modal.open();
             }}
           ></ProjectCard>
         {/each}
       </div>
     </div>
 
-    <Modal bind:visible={delete_project_modal}>
-      <h3 class="h3">Delete project "{current_project_name}"?</h3>
-      <div class="flex flex-row gap-2 w-full justify-end pt-4">
-        <button on:click={() => (delete_project_modal = false)} class="btn-md btn-ghost"
-          >Cancel</button
-        >
-        <button on:click={delete_project} class="btn-md btn-alert">Delete</button>
-      </div>
-    </Modal>
-
-    <Modal bind:visible={new_project_modal}>
+    <Modal bind:dialog={new_project_modal}>
       <h3 class="h3 pb-4">Create a new project</h3>
       <form class="flex flex-col gap-4" on:submit|preventDefault={create_project}>
         <label class="flex flex-col" for="name">
@@ -194,11 +188,22 @@
         </label>
         <button class="btn-success btn-md w-full">Create</button>
       </form>
-      <button class="absolute top-2 right-4" on:click={() => (new_project_modal = false)}
+      <button class="absolute top-2 right-4" on:click={() => new_project_modal.close()}
         >{CROSS}</button
       >
     </Modal>
-    <Modal bind:visible={loading_screen} locked>Loading...</Modal>
+
+    <Modal bind:dialog={delete_project_modal}>
+      <h3 class="h3">Delete project "{current_project_name}"?</h3>
+      <div class="flex flex-row gap-2 w-full justify-end pt-4">
+        <button on:click={() => delete_project_modal.close()} class="btn-md btn-ghost"
+          >Cancel</button
+        >
+        <button on:click={delete_project} class="btn-md btn-alert">Delete</button>
+      </div>
+    </Modal>
+
+    <Modal bind:dialog={loading_screen} locked>Loading...</Modal>
     <Toast></Toast>
   </main>
 {/await}
