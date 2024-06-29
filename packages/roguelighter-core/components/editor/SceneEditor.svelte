@@ -9,8 +9,8 @@
   } from '../../types';
   import { tooltip } from 'svooltip';
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
-  import { clickOutside } from '../../utils';
   import { createEventDispatcher } from 'svelte';
+  import Dropdown from './Dropdown.svelte';
   const dispatch = createEventDispatcher();
 
   export let project: RoguelighterProject;
@@ -24,7 +24,6 @@
   $: current_scene = project.scenes.get(current_scene_id) as Scene;
 
   let fill_mode: 'bg' | 'agent' = 'bg';
-  let more_tab = false;
   let holding = false;
   let show_pos = false;
   let portal_btn_disabled = false;
@@ -392,28 +391,25 @@
         <input class="input" type="checkbox" bind:checked={show_pos} />
         Show Positions
       </label>
-      <button on:click={() => (more_tab = true)}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-6 h-6"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-          />
-        </svg>
-      </button>
-      {#if more_tab}
-        <div
-          use:clickOutside
-          on:click_outside={() => (more_tab = false)}
-          class="absolute bg-zinc-700 right-2 top-12 rounded p-4 flex flex-col gap-2 items-start"
-        >
+
+      <Dropdown>
+        <button slot="button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+            />
+          </svg>
+        </button>
+        <div slot="items" class="bg-zinc-700 rounded p-4 flex flex-col gap-2 items-start">
           <button
             on:click={() => {
               /** TODO **/
@@ -425,7 +421,7 @@
             class="hover:text-red-400 ease-out duration-150">Delete scene</button
           >
         </div>
-      {/if}
+      </Dropdown>
     </div>
     <section class="w-full h-full overflow-auto bg-white border">
       {#if current_scene}

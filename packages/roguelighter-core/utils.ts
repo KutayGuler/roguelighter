@@ -15,25 +15,6 @@ export function generate_id() {
   return (Math.random() + 1).toString(36).substring(7);
 }
 
-// TODO: get rid of this function
-export function clickOutside(node: Node) {
-  const handleClick = (event: Event) => {
-    // @ts-expect-error
-    if (node && !node.contains(event.target) && !event.defaultPrevented) {
-      // @ts-expect-error
-      node.dispatchEvent(new CustomEvent('click_outside', node));
-    }
-  };
-
-  document.addEventListener('click', handleClick, true);
-
-  return {
-    destroy() {
-      document.removeEventListener('click', handleClick, true);
-    }
-  };
-}
-
 export function pos_to_xy(pos: number, scene_width: number) {
   return [pos % scene_width, -Math.floor(pos / scene_width)];
 }

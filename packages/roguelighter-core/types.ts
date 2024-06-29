@@ -682,6 +682,7 @@ export type AssetUrls = Map<string, { default: string; [key: string]: string } |
 
 // UI
 
-import { createDialog } from 'svelte-headlessui';
+import { createDialog, createMenu } from 'svelte-headlessui';
 
 export type DialogController = ReturnType<typeof createDialog>;
+export type DropdownController = ReturnType<typeof createMenu>;
