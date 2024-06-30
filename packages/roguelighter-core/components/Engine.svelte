@@ -1,6 +1,4 @@
 <script lang="ts">
-  // import RunCSS from 'runcss';
-  // const { processClasses, stopWatching } = RunCSS();
   import 'svooltip/styles.css';
   import CodeEditor from './ide/CodeEditor.svelte';
   import Game from './game/Game.svelte';
@@ -16,7 +14,8 @@
   } from '../utils';
   import type { RoguelighterDataFile, RoguelighterProject } from '../types';
   import { writeTextFile } from '@tauri-apps/api/fs';
-  import { DEFAULT_DIR, MAPS, dir } from '../constants';
+  import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
+  import { Command } from '@tauri-apps/api/shell';
 
   export let project: RoguelighterProject;
   let current_scene_id = 0;
@@ -39,25 +38,13 @@
     view = 'game';
   }
 
-  const handle = false
-    ? () => {}
-    : (e: KeyboardEvent) => {
-        if (e.ctrlKey && e.code == 'KeyT') {
-          if (view == 'scene') {
-            switch_to_game();
-          } else if (view == 'game') {
-            view = 'scene';
-          }
-        }
-      };
-
-  $: {
-    let parsed = code_string_to_json(project.code);
-
-    if (typeof parsed == 'object') {
-      processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      project.parsed_code = parsed;
-      calc_asset_urls();
+  function handle(e: KeyboardEvent) {
+    if (e.ctrlKey && e.code == 'KeyT') {
+      if (view == 'scene') {
+        switch_to_game();
+      } else if (view == 'game') {
+        view = 'scene';
+      }
     }
   }
 
@@ -91,6 +78,78 @@
     writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, { dir });
   }
 
+  import { join, documentDir } from '@tauri-apps/api/path';
+
+  const commands: Array<string> = [
+    // TODO:
+    // # Create Roguelighter Exports/cache
+    // # git clone --filter=blob:none --sparse https://github.com/roguelighter
+    // # git sparse-checkout add apps/export-app
+    // # npm i
+    // # git sparse-checkout add packages/roguelighter-core
+    // # manipulate apps/export-app/src/routes/+page.svelte to match the project (reset every time)
+    // # delete everything in static, copy assets from original project to static, generate asset_urls
+    // # get to the root of export-app
+    // # npm run tauri build
+    // # wait for build
+    // # cd src-tauri/target/release
+    // # copy roguelighter-export-app.exe to Roguelighter Projects/[project]/export/[platform]
+    'export'
+    // 'export'
+  ];
+
+  async function export_game() {
+    const documents = await documentDir();
+    const project_path = await join(documents, `${DEFAULT_DIR}/${$current_project_name}`);
+
+    const bat_name = 'export';
+    const bat_content = `
+cd ../..
+
+if not exist "${DEFAULT_EXPORT_DIR}" (
+  mkdir "${DEFAULT_EXPORT_DIR}"
+  cd "${DEFAULT_EXPORT_DIR}"
+  git clone --filter=blob:none --sparse https://github.com/roguelighterengine/roguelighter cache
+  cd cache
+  git sparse-checkout add apps/export-app
+  git sparse-checkout add packages/roguelighter-core
+  npm i
+  cd apps/export-app
+
+  cd ${project_path}
+  del ${bat_name}.bat
+) else (
+  cd ${project_path}
+  del ${bat_name}.bat
+)
+
+echo "lmao"
+
+`;
+
+    await writeTextFile(project_path + '/' + bat_name + '.bat', bat_content);
+
+    for (let command of commands) {
+      let c = new Command('cmd', ['/C', command], { cwd: project_path, encoding: 'utf-8' });
+      c.on('close', (data) => {
+        console.log(`command finished with code ${data.code} and signal ${data.signal}`);
+      });
+      c.on('error', (error) => console.error(`command error: "${error}"`));
+      c.stdout.on('data', (line) => console.log(`command stdout: "${line}"`));
+      c.stderr.on('data', (line) => console.log(`command stderr: "${line}"`));
+      await c.execute();
+    }
+  }
+
+  $: {
+    let parsed = code_string_to_json(project.code);
+
+    if (typeof parsed == 'object') {
+      processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
+      project.parsed_code = parsed;
+      calc_asset_urls();
+    }
+  }
   $: view, save_file();
 </script>
 
@@ -98,7 +157,7 @@
 
 {#await calc_asset_urls() then _}
   <main class="relative flex flex-col w-full h-full overflow-hidden">
-    <div
+    <nav
       class="absolute top-0 z-50 bg-zinc-800 w-full h-12 flex flex-row items-center justify-center gap-2 p-2 px-4 text-zinc-200"
     >
       <a href="/" class="absolute top-3 left-3"
@@ -132,7 +191,9 @@
           view = 'scene';
         }}>Scene</button
       >
-    </div>
+      <!-- <div class="flex-grow"></div> -->
+      <button on:click={export_game}>Export</button>
+    </nav>
     {#if view == 'scene'}
       <SceneEditor
         bind:asset_urls

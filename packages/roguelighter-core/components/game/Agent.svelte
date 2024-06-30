@@ -35,12 +35,11 @@
     }
   }
 
+  // FIXME:
   function update_animation_state(state: string) {
     textureUrl = asset_urls.get(agent.name)[state];
     totalFrames = states[state].frame_count || DEFAULT_FRAME_COUNT;
   }
-
-  $: update_animation_state(agent.state);
 
   useTask(() => {
     agent.x = get(agent.x_tween);

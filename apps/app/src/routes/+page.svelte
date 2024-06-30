@@ -4,7 +4,6 @@
   import {
     ProjectCard,
     Modal,
-    // NewModal,
     Toast,
     CROSS,
     DEFAULT_DIR,
@@ -25,7 +24,6 @@
     readTextFile,
     type FileEntry
   } from '@tauri-apps/api/fs';
-  import { Command } from '@tauri-apps/api/shell';
   import JSON5 from 'json5';
 
   let projects: Array<FileEntry> = [];
@@ -111,50 +109,6 @@
 
   async function on_project_open(project: FileEntry) {
     open_project(project.name as string);
-  }
-
-  // TODO: copy contents, create UI for exporting
-
-  const commands: Array<[string, { cwd: string }]> = [
-    // TODO:
-    // # Create Roguelighter Exports/cache
-    // # git clone --filter=blob:none --sparse https://github.com/roguelighter
-    // # git sparse-checkout add apps/export-app
-    // # npm i
-    // # git sparse-checkout add packages/roguelighter-core
-    // # manipulate apps/export-app/src/routes/+page.svelte to match the project (reset every time)
-    // # delete everything in static, copy assets from original project to static, generate asset_urls
-    // # get to the root of export-app
-    // # npm run tauri build
-    // # wait for build
-    // # cd src-tauri/target/release
-    // # copy roguelighter-export-app.exe to Roguelighter Projects/[project]/export/[platform]
-    // ['rd /s /q export', { cwd: '../../../' }],
-    // ['mkdir export', { cwd: '../../../' }],
-    // [
-    //   'git clone https://github.com/roguelighterengine/roguelighter.git .',
-    //   { cwd: '../../../export' }
-    // ],
-    // ['npm install', { cwd: '../../../export' }],
-    [
-      'npm run tauri build',
-      {
-        cwd: '../../../export/apps/export-app'
-      }
-    ]
-  ];
-
-  async function exec() {
-    for (let [command, opts] of commands) {
-      let c = new Command('cmd', ['/C', command], opts);
-      c.on('close', (data) => {
-        console.log(`command finished with code ${data.code} and signal ${data.signal}`);
-      });
-      c.on('error', (error) => console.error(`command error: "${error}"`));
-      c.stdout.on('data', (line) => console.log(`command stdout: "${line}"`));
-      c.stderr.on('data', (line) => console.log(`command stderr: "${line}"`));
-      await c.execute();
-    }
   }
 </script>
 

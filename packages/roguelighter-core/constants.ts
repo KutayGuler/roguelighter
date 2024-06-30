@@ -7,6 +7,7 @@ export const DEFAULT_DURATION = 400;
 export const DEFAULT_MAP_WIDTH = 10;
 export const DEFAULT_CAMERA_ZOOM = 20;
 export const DEFAULT_DIR = 'Roguelighter Projects';
+export const DEFAULT_EXPORT_DIR = 'Roguelighter Exports';
 export const dir = BaseDirectory.Document;
 export const MAPS = ['backgrounds', 'agents', 'portals'];
 
