@@ -116,6 +116,19 @@
   // TODO: copy contents, create UI for exporting
 
   const commands: Array<[string, { cwd: string }]> = [
+    // TODO:
+    // # Create Roguelighter Exports/cache
+    // # git clone --filter=blob:none --sparse https://github.com/roguelighter
+    // # git sparse-checkout add apps/export-app
+    // # npm i
+    // # git sparse-checkout add packages/roguelighter-core
+    // # manipulate apps/export-app/src/routes/+page.svelte to match the project (reset every time)
+    // # delete everything in static, copy assets from original project to static, generate asset_urls
+    // # get to the root of export-app
+    // # npm run tauri build
+    // # wait for build
+    // # cd src-tauri/target/release
+    // # copy roguelighter-export-app.exe to Roguelighter Projects/[project]/export/[platform]
     // ['rd /s /q export', { cwd: '../../../' }],
     // ['mkdir export', { cwd: '../../../' }],
     // [
