@@ -423,7 +423,7 @@
         </div>
       </Dropdown>
     </div>
-    <section class="w-full h-full overflow-auto bg-white border">
+    <section class="w-full h-full overflow-auto bg-zinc-500 border">
       {#if current_scene}
         {#each { length: current_scene.height } as _, i}
           <div class="row flex flex-row w-max">
@@ -439,7 +439,7 @@
                 on:contextmenu|preventDefault={() => !show_pos && right_clicked(pos)}
                 on:mouseenter={() => mouse_entered(pos)}
                 on:click={() => cell_clicked(pos)}
-                class="relative flex items-center justify-center w-16 h-16 border border-black outline-amber-600"
+                class="relative flex items-center justify-center w-16 h-16 outline-amber-600"
               >
                 {#if portal}
                   {@const to_scene = project.scenes.get(portal.to_scene_id)}

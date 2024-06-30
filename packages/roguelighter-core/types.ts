@@ -355,6 +355,14 @@ type EventExpression<P extends Agent<string>, V extends Variables> =
   | ['set', GetVars<V>, any]
   | ['add', GetVars<V>, any];
 
+type States = 'default' | 'walk';
+type Xd =
+  | `move ${PlayerPositions} $value`
+  | `move ${PlayerPositions} ${States}`
+  | 'wait $value'
+  | `play ${States}`;
+let xd: Xd = 'wait $value';
+
 export type F<P extends Agent<string>, V extends Variables> = {
   [key in EventExpression<P, V>[0] | InternalEvents]: Function;
 };

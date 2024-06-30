@@ -309,6 +309,12 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     }
   }
 
+  // TODO: create BooleanVariables and NumberVariables
+  // TODO: update logic in Game.svelte for events ()
+  // TODO: could introduce Sequences (multiple events in a row)
+  // TODO: get rid of backgrounds
+  // assets should have two directories: agents and backgrounds
+
   return `
   type Assets = ${assets};
   type EventNames = ${events};
@@ -660,21 +666,20 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   declare type PlayerPositions = 'x' | 'y';
   declare type WritableProps = PlayerPositions | VariableNames;
   type EventExpression =
-    | ['wait']
-    | ['wait', number]
-    | ['move', PlayerPositions, number, AgentStates]
-    | ['move', PlayerPositions, number]
-    | ['toggle', VariableNames]
-    | ['play', AgentStates]
-    | ['set', VariableNames, any]
-    | ['add', VariableNames, any];
-  
+    | [\`wait\`, number]
+    | [\`play \${AgentStates}\`, any]
+    | [\`toggle \${VariableNames}\`, any]
+    | [\`set \${VariableNames}\`, any]
+    | [\`add \${VariableNames}\`, any]
+    | [\`move \${PlayerPositions}\`, number]
+    | [\`move \${PlayerPositions} \${AgentStates}\`, number]
+
   declare interface Variables {
     [variable_name: string]: any;
   }
   
   declare interface Events {
-    [function_name: string]: Array<EventExpression>;
+    [function_name: string]: Array<EventExpression> | EventExpression;
   }
   
   declare interface _Events {
