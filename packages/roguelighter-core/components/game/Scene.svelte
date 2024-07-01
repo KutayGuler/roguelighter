@@ -1,6 +1,13 @@
 <script lang="ts">
   import type { Tweened } from 'svelte/motion';
-  import type { AssetUrls, Backgrounds, PlayableScene, Portal, Settings, _ } from '../../types';
+  import type {
+    AgentAssetUrls,
+    BackgroundAssetUrls,
+    PlayableScene,
+    Portal,
+    Settings,
+    _
+  } from '../../types';
   import { T, useTask, useThrelte } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
   import { get } from 'svelte/store';
@@ -9,8 +16,8 @@
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
   const dispatch = createEventDispatcher();
 
-  export let asset_urls: AssetUrls;
-  export let backgrounds: Backgrounds;
+  export let bg_asset_urls: BackgroundAssetUrls;
+  export let agent_asset_urls: AgentAssetUrls;
   export let settings: Settings;
   export let scene: PlayableScene;
   export let scene_just_changed: boolean;
@@ -37,9 +44,9 @@
 <T.DirectionalLight position={[0, 10, 10]} />
 {#each scene.backgrounds.entries() as [pos, texture]}
   <T.Sprite position={[pos % scene.width, -Math.floor(pos / scene.width)]}>
-    <AnimatedSpriteMaterial textureUrl={asset_urls.get(texture)} totalFrames={1} />
+    <AnimatedSpriteMaterial textureUrl={bg_asset_urls.get(texture)} totalFrames={1} />
   </T.Sprite>
 {/each}
 {#each scene.agents.values() as agent}
-  <Agent {asset_urls} {agent} {settings} />
+  <Agent {agent_asset_urls} {agent} {settings} />
 {/each}

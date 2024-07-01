@@ -7,7 +7,7 @@
   import { current_project_name, notifications } from '../store';
   import {
     debounce,
-    get_asset_asset_urls,
+    get_asset_urls,
     get_tailwind_classes,
     code_string_to_json,
     processClasses
@@ -48,15 +48,15 @@
     }
   }
 
-  let asset_urls = new Map<string, string>();
+  let bg_asset_urls = new Map<string, string>();
+  let agent_asset_urls = new Map<string, any>();
 
   async function calc_asset_urls() {
     try {
-      asset_urls = await get_asset_asset_urls(
+      ({ backgrounds: bg_asset_urls, agents: agent_asset_urls } = await get_asset_urls(
         $current_project_name,
-        project.parsed_code.agents,
-        project.parsed_code.backgrounds
-      );
+        project.parsed_code.agents
+      ));
     } catch (e) {
       console.log(e);
     }
@@ -191,19 +191,19 @@ echo "lmao"
           view = 'scene';
         }}>Scene</button
       >
-      <!-- <div class="flex-grow"></div> -->
       <button on:click={export_game}>Export</button>
     </nav>
     {#if view == 'scene'}
       <SceneEditor
-        bind:asset_urls
+        bind:bg_asset_urls
+        bind:agent_asset_urls
         bind:current_scene_id
         bind:project
         on:change={debounce(save_file, 100)}
         on:switch_view={switch_to_game}
       />
     {:else if view == 'game'}
-      <Game bind:asset_urls bind:current_scene_id bind:project />
+      <Game bind:bg_asset_urls bind:agent_asset_urls bind:current_scene_id bind:project />
     {/if}
     <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
       <CodeEditor bind:code={project.code} on:change={save_file}></CodeEditor>

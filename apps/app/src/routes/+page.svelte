@@ -119,7 +119,6 @@
         <h3 class="h3">Projects</h3>
         <button
           on:click={() => {
-            console.log('open');
             new_project_modal.open();
           }}
           class="btn-success btn-md">New Project</button

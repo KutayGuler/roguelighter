@@ -9,7 +9,7 @@
     code_string_to_json,
     processClasses
   } from 'roguelighter-core';
-  import type { AssetUrls, GameData } from 'roguelighter-core';
+  import type { AgentAssetUrls, BackgroundAssetUrls, GameData } from 'roguelighter-core';
   import { tutorials } from './tutorials';
   let tutorial = structuredClone(tutorials[$page.params.name]);
   let { project, solution, header, description, solution_tuple } = tutorial;
@@ -25,15 +25,17 @@
     return val === solution_tuple[1];
   }
 
-  // @ts-expect-error
-  const asset_urls: AssetUrls = new Map([
+  const agent_asset_urls: AgentAssetUrls = new Map([
     [
       'player',
       {
         default: '/elf_idle.png',
         walk: '/elf_run.png'
       }
-    ],
+    ]
+  ]);
+
+  const bg_asset_urls: BackgroundAssetUrls = new Map([
     ['floor', '/floors/floor_1.png'],
     ['floor_2', '/floors/floor_2.png']
   ]);
@@ -108,7 +110,7 @@
     </div>
     <div class="h-1/2 w-full">
       {#key project.code}
-        <Game {project} {asset_urls} current_scene_id={0}></Game>
+        <Game {project} {agent_asset_urls} {bg_asset_urls} current_scene_id={0}></Game>
       {/key}
     </div>
   </div>

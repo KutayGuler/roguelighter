@@ -1,13 +1,11 @@
 import RunCSS from 'runcss';
 import * as ts from 'typescript';
-import type { Agents, Backgrounds, GUI_Element, GameData } from './types';
+import type { Agents, GUI_Element, GameData } from './types';
 import { join, documentDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { DEFAULT_DIR } from './constants';
 import JSON5 from 'json5';
-import { FileEntry } from '@tauri-apps/api/fs';
-
-// TODO: update packages
+import { FileEntry, readDir } from '@tauri-apps/api/fs';
 
 export const { processClasses } = RunCSS();
 export const noop = () => {};
@@ -31,7 +29,7 @@ export function debounce(fn: Function, ms: number) {
 export function code_string_to_json(code: string): string | GameData {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
   const valid_declarations_regex =
-    /var\s+(settings|backgrounds|collisions|agents|variables|events|key_bindings|conditions|gui)\s*=\s*(\{[^]*?\}|\[[^]*?\])\s*;\s*/g;
+    /var\s+(settings|collisions|agents|variables|events|key_bindings|conditions|gui)\s*=\s*(\{[^]*?\}|\[[^]*?\])\s*;\s*/g;
   const declarations = transpiled.match(valid_declarations_regex);
 
   let t = '';
@@ -59,7 +57,6 @@ export function code_string_to_json(code: string): string | GameData {
 
 const type_annotations = {
   settings: 'Settings',
-  backgrounds: 'Backgrounds',
   collisions: 'Collisions',
   agents: 'Agents',
   variables: 'Variables',
@@ -80,19 +77,27 @@ export function json_to_code_string(json: GameData) {
   return str.replace(/"([^"]+)":/g, '$1:');
 }
 
-export async function get_asset_asset_urls(
-  project_dir: string,
-  agents: Agents<string>,
-  backgrounds: Backgrounds<string>
-) {
-  let asset_urls = new Map<string, string>();
+export async function get_asset_urls(project_dir: string, agents: Agents<string>) {
+  let bg_asset_urls = new Map<string, string>();
+  let agent_asset_urls = new Map<string, any>();
 
   const documentDirPath = await documentDir();
 
-  for (let [key, path] of Object.entries(backgrounds)) {
-    const filePath = await join(documentDirPath, `${DEFAULT_DIR}/${project_dir}/assets/${path}`);
-    let source = convertFileSrc(filePath);
-    asset_urls.set(key, source);
+  const bg_file_path = await join(
+    documentDirPath,
+    `${DEFAULT_DIR}/${project_dir}/assets/backgrounds`
+  );
+  const bg_entries = await readDir(bg_file_path, { recursive: true });
+
+  let bg_children = [];
+
+  for (let entry of bg_entries) {
+    bg_children.push(...get_children_assets(entry));
+  }
+
+  for (let [key, path] of bg_children) {
+    let source = convertFileSrc(path);
+    bg_asset_urls.set(key, source);
   }
 
   for (let [key, obj] of Object.entries(agents)) {
@@ -107,10 +112,13 @@ export async function get_asset_asset_urls(
       url_obj[_key] = convertFileSrc(filePath);
     }
 
-    asset_urls.set(key, url_obj);
+    agent_asset_urls.set(key, url_obj);
   }
 
-  return asset_urls;
+  return {
+    backgrounds: bg_asset_urls,
+    agents: agent_asset_urls
+  };
 }
 
 export const template_json_code: GameData = {
@@ -121,10 +129,6 @@ export const template_json_code: GameData = {
     camera: {
       zoom: 20
     }
-  },
-  backgrounds: {
-    floor: 'floors/floor_1.png',
-    floor_2: 'floors/floor_2.png'
   },
   collisions: ['floor_2'],
   agents: {
@@ -230,7 +234,7 @@ export function generate_template_data() {
   });
 }
 
-export function get_tailwind_classes(gui_element: GUI_Element<string, string>) {
+export function get_tailwind_classes(gui_element: GUI_Element) {
   let set = new Set();
 
   for (let child of Object.values(gui_element)) {
@@ -247,6 +251,28 @@ export function get_tailwind_classes(gui_element: GUI_Element<string, string>) {
   }
 
   return set;
+}
+
+function get_children_assets(entry: FileEntry, parent_name = '') {
+  let children = [];
+
+  for (let child of entry.children as FileEntry[]) {
+    if (child.children) {
+      children.push(...get_children_assets(child, entry.name));
+      continue;
+    }
+
+    if (parent_name) {
+      children.push([
+        `${parent_name}/${entry.name}/${child.name?.replace('.png', '')}`,
+        child.path
+      ]);
+    } else {
+      children.push([`${entry.name}/${child.name?.replace('.png', '')}`, child.path]);
+    }
+  }
+
+  return children;
 }
 
 function retrieve_children_names(entry: FileEntry, parent_name = '') {
@@ -276,7 +302,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   let assets = `'ERROR: no assets found'`;
   let events = '';
   let variables = '';
-  let backgrounds = '';
   let agent_states = '';
 
   for (let key of Object.keys(game_code.events || {})) {
@@ -287,9 +312,10 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     variables += `| '${key}'`;
   }
 
-  for (let key of Object.keys(game_code.backgrounds || {})) {
-    backgrounds += `| '${key}'`;
-  }
+  // TODO: replace
+  // for (let key of Object.keys(game_code.backgrounds || {})) {
+  //   backgrounds += `| '${key}'`;
+  // }
 
   for (let key of Object.keys(game_code?.agents?.player?.states || {})) {
     if (key === 'default') continue;
@@ -310,16 +336,15 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   }
 
   // TODO: create BooleanVariables and NumberVariables
-  // TODO: update logic in Game.svelte for events ()
   // TODO: could introduce Sequences (multiple events in a row)
-  // TODO: get rid of backgrounds
-  // assets should have two directories: agents and backgrounds
+  // TODO: Agent assets should remove /agents from file name
+  // TODO: Edge case: backgrounds folder does not exist
 
   return `
   type Assets = ${assets};
   type EventNames = ${events};
   type VariableNames = ${variables};
-  type BackgroundNames = ${backgrounds};
+  type BackgroundNames = ${'lmao'};
   type AgentStates = ${agent_states};
 
   type Easing =
@@ -668,7 +693,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   type EventExpression =
     | [\`wait\`, number]
     | [\`play \${AgentStates}\`, any]
-    | [\`toggle \${VariableNames}\`, any]
+    | [\`toggle \${VariableNames}\`]
     | [\`set \${VariableNames}\`, any]
     | [\`add \${VariableNames}\`, any]
     | [\`move \${PlayerPositions}\`, number]
@@ -822,7 +847,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   }
   
   declare type Agents = { player: Agent; [name: string]: Agent };
-  declare type Backgrounds = { [name: string]: Assets };
   declare type XY_Tuple = [x: number, y: number];
   
   declare interface PlayableAgent extends Agent<string> {
@@ -840,7 +864,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     e: _Events;
   };
   
-  declare type Collisions = Array<${backgrounds}>;
+  declare type Collisions = Array<BackgroundNames>;
   
   declare interface Portal {
     to_scene_id: number;

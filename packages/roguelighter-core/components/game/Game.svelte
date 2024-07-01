@@ -4,14 +4,13 @@
   import Scene from './Scene.svelte';
   import type {
     WritableProps,
-    F,
     _,
     PlayerPositions,
     KeyboardEventCode,
     PlayableScene,
-    Scene as TScene,
     RoguelighterProject,
-    AssetUrls
+    BackgroundAssetUrls,
+    AgentAssetUrls
   } from '../../types';
   import { tweened, type Tweened } from 'svelte/motion';
   import * as easings from 'svelte/easing';
@@ -22,31 +21,14 @@
 
   export let project: RoguelighterProject;
   export let current_scene_id: number;
-  export let asset_urls: AssetUrls;
+  export let bg_asset_urls: BackgroundAssetUrls;
+  export let agent_asset_urls: AgentAssetUrls;
 
-  let {
-    variables,
-    agents,
-    settings,
-    events,
-    gui,
-    conditions,
-    key_bindings,
-    backgrounds,
-    collisions
-  } = project.parsed_code;
+  let { variables, agents, settings, events, gui, conditions, key_bindings, collisions } =
+    project.parsed_code;
 
-  $: ({
-    variables,
-    agents,
-    settings,
-    events,
-    gui,
-    conditions,
-    key_bindings,
-    backgrounds,
-    collisions
-  } = project.parsed_code);
+  $: ({ variables, agents, settings, events, gui, conditions, key_bindings, collisions } =
+    project.parsed_code);
 
   const DURATION = settings.duration || DEFAULT_DURATION;
   const EASING = settings.easing || DEFAULT_EASING;
@@ -113,8 +95,6 @@
 
   let game_paused = false;
   let event_executing = false;
-  let event_index = 0;
-  let event_length = 0;
 
   function opm() {
     window.dispatchEvent(new Event('paused'));
@@ -128,7 +108,7 @@
     game_paused = false;
   }
 
-  const f: F<typeof agents.player, typeof variables> = {
+  const f = {
     async wait(ms = DURATION) {
       return new Promise((res) => setTimeout(res, ms));
     },
@@ -201,7 +181,7 @@
     async $exit() {
       await exit();
     }
-  };
+  } as const;
 
   let special_keys: Array<KeyboardEventCode> = [];
 
@@ -224,31 +204,26 @@
     e: {}
   };
 
-  for (let [key, sequence] of Object.entries(events)) {
+  for (let [key, event_expression] of Object.entries(events)) {
     if (key[0] == '$') {
       // @ts-expect-error
       _.e[key] = events[key];
       continue;
     }
 
+    // binding keys to events
     _.e[key] = async () => {
-      event_executing = true;
-      event_index = 0;
-      event_length = sequence.length;
-      for (let i = 0; i < sequence.length; i++) {
-        const [type, ...args] = sequence[i];
-        await f[type](...args);
-
-        event_index++;
-        if (event_index == event_length) {
-          event_executing = false;
-        }
-      }
+      const [str, _args] = event_expression;
+      const split = str.split(' ');
+      const type = split[0];
+      split.shift();
+      // @ts-expect-error
+      await f[type](...split, _args);
     };
   }
 
   function handle(kbd_event: KeyboardEvent) {
-    const event_name = key_bindings[kbd_event.code as KeyboardEventCode];
+    const event_name = key_bindings[kbd_event.code as KeyboardEventCode] as string;
     if (!event_name) return;
 
     if (special_keys.includes(kbd_event.code as KeyboardEventCode)) {
@@ -267,7 +242,7 @@
     let player = scene.agents.get(player_pos);
     if (!player) return;
 
-    scene = scenes.get(to_scene_id);
+    scene = scenes.get(to_scene_id) as PlayableScene;
     player_pos = to_position;
     let [x, y] = pos_to_xy(player_pos, scene.width);
     Object.assign(player, {
@@ -302,11 +277,11 @@
           {player_pos}
           {camera_x_tween}
           {camera_y_tween}
-          {backgrounds}
           {settings}
           {scene}
           {scene_just_changed}
-          {asset_urls}
+          {bg_asset_urls}
+          {agent_asset_urls}
         />
       </Canvas>
     {/if}

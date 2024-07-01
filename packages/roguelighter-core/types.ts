@@ -1,41 +1,31 @@
 type Easing =
-  | 'back'
   | 'backIn'
   | 'backOut'
   | 'backInOut'
-  | 'bounce'
   | 'bounceIn'
   | 'bounceOut'
   | 'bounceInOut'
-  | 'circ'
   | 'circIn'
   | 'circOut'
   | 'circInOut'
-  | 'cubic'
   | 'cubicIn'
   | 'cubicOut'
   | 'cubicInOut'
-  | 'elastic'
   | 'elasticIn'
   | 'elasticOut'
   | 'elasticInOut'
-  | 'expo'
   | 'expoIn'
   | 'expoOut'
   | 'expoInOut'
-  | 'quad'
   | 'quadIn'
   | 'quadOut'
   | 'quadInOut'
-  | 'quart'
   | 'quartIn'
   | 'quartOut'
   | 'quartInOut'
-  | 'quint'
   | 'quintIn'
   | 'quintOut'
   | 'quintInOut'
-  | 'sine'
   | 'sineIn'
   | 'sineOut'
   | 'sineInOut';
@@ -339,32 +329,24 @@ declare namespace Tw {
   type Tokens = VanillaTokens | `${PseudoClasses}:${VanillaTokens}`;
 }
 
-// type GetVars<V> = $<S.Prepend<'v.'>, $<O.Keys, V>>;
 // @ts-expect-error
 type GetVars<V extends Variables> = `v.${keyof V}`;
 
 export type PlayerPositions = 'x' | 'y';
 export type WritableProps<V extends Variables> = PlayerPositions | GetVars<V>;
-type EventExpression<P extends Agent<string>, V extends Variables> =
-  | ['wait']
+type MockVariableNames = 'var';
+type MockAgentStates = 'default' | 'walk';
+type EventExpression =
   | ['wait', number]
-  | ['move', PlayerPositions, number, keyof P['states']]
-  | ['move', PlayerPositions, number]
-  | ['toggle', GetVars<V>]
-  | ['play', keyof P['states']]
-  | ['set', GetVars<V>, any]
-  | ['add', GetVars<V>, any];
+  | [`play ${MockAgentStates}`, any]
+  | [`toggle ${MockVariableNames}`, any]
+  | [`set ${MockVariableNames}`, any]
+  | [`add ${MockVariableNames}`, any]
+  | [`move ${PlayerPositions}`, number]
+  | [`move ${PlayerPositions} ${MockAgentStates}`, number];
 
-type States = 'default' | 'walk';
-type Xd =
-  | `move ${PlayerPositions} $value`
-  | `move ${PlayerPositions} ${States}`
-  | 'wait $value'
-  | `play ${States}`;
-let xd: Xd = 'wait $value';
-
-export type F<P extends Agent<string>, V extends Variables> = {
-  [key in EventExpression<P, V>[0] | InternalEvents]: Function;
+export type F = {
+  [key in EventExpression[0] | InternalEvents]: Function;
 };
 
 /**
@@ -377,8 +359,8 @@ export interface Variables {
 /**
  * TODO: docs
  */
-export interface Events<P extends Agent<string>, V extends Variables> {
-  [function_name: string]: Array<EventExpression<P, V>>;
+export interface Events {
+  [function_name: string]: EventExpression;
 }
 
 export interface _Events {
@@ -400,27 +382,27 @@ type Expression<V extends Variables> = WritableProps<V> | BinaryExpression<V>;
 /**
  * TODO: docs
  */
-export type Conditions<P extends Agent<string>, V extends Variables, E extends Events<P, V>> = {
-  [event_name: keyof Events<P, V>]: BinaryExpression<V>;
+export type Conditions<P extends Agent<string>, V extends Variables, E extends Events> = {
+  [event_name: keyof Events]: BinaryExpression<V>;
 };
 
 type InternalEvents = '$open_pause_menu' | '$close_pause_menu' | '$toggle_pause_menu' | '$exit';
 type InternalTexts = '$agent_avatar' | '$agent_name' | '$agent_text';
 
-export interface GUI_Element<VariableKeys, EventKeys> {
+export interface GUI_Element {
   /** The type of HTML element */
   type?: keyof HTMLElementTagNameMap;
   /** TODO: Tailwind tokens for styling */
   tokens: Readonly<Array<Tw.Tokens>>;
   /** TODO: Name of the function that will be triggered once the element is clicked on */
-  on_click?: EventKeys | InternalEvents;
+  on_click?: InternalEvents;
   /** TODO: The text that will be displayed inside the element */
   text?: InternalTexts | (string & {});
   /** An array of elements that will be inside this element
    *
    * @example // TODO:
    */
-  children?: { [name: string]: GUI_Element<VariableKeys, EventKeys> };
+  children?: { [name: string]: GUI_Element };
   /** TODO: Documentation */
   transition?: {
     type: Transition;
@@ -428,23 +410,18 @@ export interface GUI_Element<VariableKeys, EventKeys> {
     easing?: Easing;
   };
   /** Variable name that will determine the visibility of the element */
-  visibility_depends_on?: VariableKeys;
+  visibility_depends_on?: MockVariableNames;
 }
 
 /**
  * The object that contains all the GUI elements that will be in the game
  */
-export interface GUI<P extends Agent<string>, V extends Variables, EventsObj extends Events<P, V>> {
+export interface GUI {
   /**
    * TODO: doc
    */
-  // @ts-expect-error
-  $pause_menu?: Omit<
-    GUI_Element<GetVars<V>, keyof EventsObj>,
-    'visibility_depends_on' | 'type' | 'on_click'
-  >;
-  // $dialogue: GUI_Element<GetVars<V>, keyof EventsObj>;
-  [key: string]: GUI_Element<GetVars<V>, keyof EventsObj>;
+  $pause_menu?: Omit<GUI_Element, 'visibility_depends_on' | 'type' | 'on_click'>;
+  [key: string]: GUI_Element;
 }
 
 type ArrowKeys = 'ArrowRight' | 'ArrowLeft' | 'ArrowUp' | 'ArrowDown';
@@ -548,7 +525,7 @@ export interface Settings {
 /**
  *
  */
-export type KeyBindings<P extends Agent<string>, V extends Variables, F extends Events<P, V>> = {
+export type KeyBindings<P extends Agent<string>, V extends Variables, F extends Events> = {
   [key in KeyboardEventCode]?: keyof F | InternalEvents;
 };
 
@@ -612,10 +589,7 @@ export type Agents<Assets = string> = {
    */
   [name: string]: Agent<Assets>;
 };
-/**
- * TODO: doc
- */
-export type Backgrounds<Assets = string> = { [name: string]: Assets };
+
 export type XY_Tuple = [x: number, y: number];
 
 export interface PlayableAgent extends Agent<string> {
@@ -637,7 +611,8 @@ export type _ = {
 /**
  * TODO: doc
  */
-export type Collisions<B extends Backgrounds> = Array<keyof B>;
+type MockBackgrounds = 'floor_1' | 'floor_2'
+export type Collisions = Array<MockBackgrounds>;
 
 export interface Portal {
   to_scene_id: number;
@@ -667,12 +642,11 @@ export interface GameData {
   variables: Variables;
   agents: Agents;
   settings: Settings;
-  events: Events<any, any>;
-  gui: GUI<any, any, any>;
+  events: Events;
+  gui: GUI;
   conditions: Conditions<any, any, any>;
   key_bindings: KeyBindings<any, any, any>;
-  backgrounds: Backgrounds;
-  collisions: Collisions<any>;
+  collisions: Collisions;
 }
 
 export interface RoguelighterProject {
@@ -686,7 +660,8 @@ export interface RoguelighterDataFile {
   scenes: Array<[number, Scene]>;
 }
 
-export type AssetUrls = Map<string, { default: string; [key: string]: string } | string>;
+export type AgentAssetUrls = Map<string, { default: string; [key: string]: string }>;
+export type BackgroundAssetUrls = Map<string, string>;
 
 // UI
 

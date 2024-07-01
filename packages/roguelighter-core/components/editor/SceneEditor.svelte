@@ -1,7 +1,8 @@
 <script lang="ts">
   import Modal from './Modal.svelte';
   import type {
-    AssetUrls,
+    AgentAssetUrls,
+    BackgroundAssetUrls,
     DialogController,
     Portal,
     RoguelighterProject,
@@ -15,10 +16,13 @@
 
   export let project: RoguelighterProject;
   export let current_scene_id: number;
-  export let asset_urls: AssetUrls;
+  export let bg_asset_urls: BackgroundAssetUrls;
+  export let agent_asset_urls: AgentAssetUrls;
 
-  let { agents, backgrounds } = project.parsed_code;
-  $: ({ agents, backgrounds } = project.parsed_code);
+  const backgrounds = Object.fromEntries(bg_asset_urls);
+
+  let { agents } = project.parsed_code;
+  $: ({ agents } = project.parsed_code);
 
   let current_scene: Scene;
   $: current_scene = project.scenes.get(current_scene_id) as Scene;
@@ -318,7 +322,7 @@
                   style:height="64px"
                   style:background-size="cover"
                   style:background-repeat="no-repeat"
-                  style:background-image="url({asset_urls.get(key).default})"
+                  style:background-image="url({agent_asset_urls.get(key).default})"
                 />
                 <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
                   >{i + 1}</span
@@ -344,7 +348,7 @@
                   style:height="64px"
                   style:background-size="contain"
                   style:background-repeat="no-repeat"
-                  style:background-image="url({asset_urls.get(key)})"
+                  style:background-image="url({bg_asset_urls.get(key)})"
                 />
                 <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
                   >{i + 1}</span
@@ -432,8 +436,8 @@
               {@const agent = current_scene.agents.get(pos)}
               {@const bg = current_scene.backgrounds.get(pos)}
               {@const portal = current_scene.portals.get(pos)}
-              {@const bg_url = bg ? asset_urls.get(bg) : ''}
-              {@const agent_url = agent ? asset_urls.get(agent).default : ''}
+              {@const bg_url = bg ? bg_asset_urls.get(bg) : ''}
+              {@const agent_url = agent ? agent_asset_urls.get(agent).default : ''}
 
               <button
                 on:contextmenu|preventDefault={() => !show_pos && right_clicked(pos)}

@@ -3,11 +3,11 @@
   import { T, useTask } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS } from '../../constants';
-  import type { Settings, PlayableAgent, AssetUrls } from '../../types';
+  import type { Settings, PlayableAgent, AgentAssetUrls } from '../../types';
 
   export let agent: PlayableAgent;
   export let settings: Settings;
-  export let asset_urls: AssetUrls;
+  export let agent_asset_urls: AgentAssetUrls;
 
   // since the engine is turn based, there is no need to pause the animations lol
   let play: () => void, pause: () => void;
@@ -17,7 +17,7 @@
   const states = agent.states;
   const defaults = states.default;
 
-  let textureUrl = asset_urls.get(agent.name).default;
+  let textureUrl = agent_asset_urls.get(agent.name).default;
   let totalFrames = defaults.frame_count || DEFAULT_FRAME_COUNT;
   let fps = defaults.fps || settings?.fps || DEFAULT_FPS;
   let columns = defaults.columns;
@@ -37,7 +37,7 @@
 
   // FIXME:
   function update_animation_state(state: string) {
-    textureUrl = asset_urls.get(agent.name)[state];
+    textureUrl = agent_asset_urls.get(agent.name)[state];
     totalFrames = states[state].frame_count || DEFAULT_FRAME_COUNT;
   }
 

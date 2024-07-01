@@ -1,6 +1,6 @@
 <script lang="ts">
   import { json_to_code_string, template_json_code, Game } from 'roguelighter-core';
-  import type { GameData, AssetUrls, Portal } from 'roguelighter-core';
+  import type { AgentAssetUrls, BackgroundAssetUrls, GameData, Portal } from 'roguelighter-core';
   // FIXME: zoom settings not working
   // FIXME: $exit not working
   const project = {
@@ -12,10 +12,6 @@
         camera: {
           zoom: 20
         }
-      },
-      backgrounds: {
-        floor: 'floors/floor_1.png',
-        floor_2: 'floors/floor_2.png'
       },
       collisions: ['floor_2'],
       agents: {
@@ -107,19 +103,19 @@
     ])
   };
 
-  // @ts-expect-error
-  const asset_urls: AssetUrls = new Map([
+  const agent_asset_urls: AgentAssetUrls = new Map([
     [
       'player',
       {
         default: '/elf_idle.png',
         walk: '/elf_run.png'
       }
-    ],
-    ['floor', '/floors/floor_1.png']
+    ]
   ]);
+
+  const bg_asset_urls: BackgroundAssetUrls = new Map([['floor', '/floors/floor_1.png']]);
 </script>
 
 <main class="w-screen h-screen">
-  <Game {project} {asset_urls} current_scene_id={0}></Game>
+  <Game {project} {bg_asset_urls} {agent_asset_urls} current_scene_id={0}></Game>
 </main>
