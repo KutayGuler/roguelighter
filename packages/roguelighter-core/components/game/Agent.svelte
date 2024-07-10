@@ -16,7 +16,7 @@
   const states = agent.states;
   const defaults = states.default;
 
-  let textureUrl = agent_asset_urls.get(agent.name).default;
+  let textureUrl = agent_asset_urls.get(agent.name)?.default;
   let totalFrames = defaults.frame_count || DEFAULT_FRAME_COUNT;
   let fps = defaults.fps || settings?.fps || DEFAULT_FPS;
   let columns = defaults.columns;

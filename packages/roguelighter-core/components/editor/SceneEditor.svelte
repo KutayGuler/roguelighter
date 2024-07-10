@@ -296,7 +296,7 @@
   style:image-rendering={'pixelated'}
   class="absolute w-full flex flex-row gap-4 bg-zinc-900 px-4 pb-4 pt-16 h-screen"
 >
-  <section class="flex w-1/5 flex-col min-w-fit">
+  <section class="flex w-1/5 flex-col min-w-60">
     <div class="flex flex-row gap-2">
       <select class="select" bind:value={current_scene_id}>
         <option disabled value="">Select a scene</option>
@@ -324,7 +324,7 @@
       </button>
     </div>
     <div
-      class="max-w-80 relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
+      class="w-fit relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
     >
       {#if current_scene_id != undefined}
         <button

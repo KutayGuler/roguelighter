@@ -153,7 +153,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
 <svelte:window on:keydown={handle} />
 
 {#await calc_asset_urls() then _}
-  <main class="relative flex flex-col w-full h-full overflow-hidden">
+  <main class="relative flex flex-col w-full h-full overflow-hidden select-none">
     <nav
       class="absolute top-0 z-50 bg-zinc-800 w-full h-12 flex flex-row items-center justify-center gap-2 p-2 px-4 text-zinc-200"
     >
