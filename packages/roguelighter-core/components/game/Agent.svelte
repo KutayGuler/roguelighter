@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { get } from 'svelte/store';
   import { T, useTask } from '@threlte/core';
-  import { AnimatedSpriteMaterial } from '@threlte/extras';
+  import { AnimatedSpriteMaterial, Suspense } from '@threlte/extras';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS } from '../../constants';
   import type { Settings, PlayableAgent, AgentAssetUrls } from '../../types';
+  import { Mesh, MeshStandardMaterial } from 'three';
 
   export let agent: PlayableAgent;
   export let settings: Settings;
   export let agent_asset_urls: AgentAssetUrls;
 
-  // since the engine is turn based, there is no need to pause the animations lol
   let play: () => void, pause: () => void;
   window.addEventListener('paused', () => {});
   window.addEventListener('unpaused', () => {});
@@ -27,29 +26,57 @@
   let delay = defaults.delay;
   let filter = defaults.filter || settings.filter || 'nearest';
 
-  function loop() {
-    if (agent.revert_state_in == null) return;
-    agent.revert_state_in -= 1;
-    if (agent.revert_state_in == 0) {
-      agent.state = 'default';
+  // TODO: save function as a string in json
+  // TODO: declare a variable here
+  // TODO: change the variable with function
+  // TODO: could introduce $step function
+  const keyboard = { x: 0 };
+  const pressed = new Set<string>();
+  export const playerPosition: [number, number, number] = [-2.0, -2.75, 0.01];
+  const mesh = new Mesh();
+  mesh.position.set(...playerPosition);
+
+  const handleKey = (key: string, value: 0 | 1) => {
+    switch (key.toLowerCase()) {
+      case 'a':
+      case 'arrowleft':
+        return (keyboard.x = +value);
+      case 'd':
+      case 'arrowright':
+        return (keyboard.x = -value);
     }
-  }
+    return;
+  };
 
-  // FIXME:
-  function update_animation_state(state: string) {
-    textureUrl = agent_asset_urls.get(agent.name)[state];
-    totalFrames = states[state].frame_count || DEFAULT_FRAME_COUNT;
-  }
+  const handleKeydown = (e: KeyboardEvent) => {
+    pressed.add(e.key);
+    pressed.forEach((key) => handleKey(key, 1));
+  };
 
-  useTask(() => {
-    agent.x = get(agent.x_tween);
-    agent.y = get(agent.y_tween);
+  const handleKeyup = (e: KeyboardEvent) => {
+    pressed.delete(e.key);
+    handleKey(e.key, 0);
+    pressed.forEach((key) => handleKey(key, 1));
+    if (e.key === 'q') play();
+    if (e.key === 'e') pause();
+  };
+
+  useTask((delta) => {
+    // agent.x = get(agent.x_tween);
+    // agent.y = get(agent.y_tween);
+
+    if (keyboard.x === 0) return;
+    playerPosition[0] += -keyboard.x * (delta * 2);
+    mesh.position.set(...playerPosition);
   });
 </script>
 
-<T.Sprite position.x={agent.x} position.y={agent.y}>
-  {#key textureUrl}
+<svelte:window on:keydown={handleKeydown} on:keyup={handleKeyup} />
+
+<Suspense>
+  <T is={mesh}>
     <AnimatedSpriteMaterial
+      is={new MeshStandardMaterial()}
       {textureUrl}
       {totalFrames}
       {fps}
@@ -59,9 +86,9 @@
       {endFrame}
       {filter}
       {delay}
-      on:loop={loop}
       bind:play
       bind:pause
     />
-  {/key}
-</T.Sprite>
+    <T.PlaneGeometry args={[0.5, 0.5]} />
+  </T>
+</Suspense>

@@ -94,7 +94,6 @@
   let camera_y_tween: Tweened<number>;
 
   let game_paused = false;
-  let event_executing = false;
 
   function opm() {
     window.dispatchEvent(new Event('paused'));
@@ -231,7 +230,7 @@
       return;
     }
 
-    if (event_executing || game_paused) return;
+    if (game_paused) return;
     _.e[event_name]();
   }
 

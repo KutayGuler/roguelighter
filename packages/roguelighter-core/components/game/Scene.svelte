@@ -38,15 +38,19 @@
       dispatch('change_scene', portal_info);
     }
   });
+
+  for (let [pos, texture] of scene.backgrounds.entries()) {
+    console.log(pos, texture);
+  }
 </script>
 
 <T.PerspectiveCamera />
 <T.DirectionalLight position={[0, 10, 10]} />
-{#each scene.backgrounds.entries() as [pos, texture]}
+<!-- {#each scene.backgrounds.entries() as [pos, texture]}
   <T.Sprite position={[pos % scene.width, -Math.floor(pos / scene.width)]}>
     <AnimatedSpriteMaterial textureUrl={bg_asset_urls.get(texture)} totalFrames={1} />
   </T.Sprite>
-{/each}
+{/each} -->
 {#each scene.agents.values() as agent}
   <Agent {agent_asset_urls} {agent} {settings} />
 {/each}

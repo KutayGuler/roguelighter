@@ -36,7 +36,7 @@
       async () => {
         const entries = await readDir(filePath, { recursive: true });
         cached_entries = entries;
-        model.setValue(create_types(editor.getValue(), entries));
+        update_types();
       },
       { recursive: true }
     );
@@ -78,8 +78,6 @@
         editor.trigger('', 'editor.action.triggerSuggest', '');
       }
     });
-
-    // TODO: Built-in widget to replace key names
 
     await loadCode(code);
   });

@@ -122,9 +122,6 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
   cd ${project_path}
   del ${bat_name}.bat
 )
-
-echo "lmao"
-
 `;
 
     await writeTextFile(project_path + '/' + bat_name + '.bat', bat_content);

@@ -204,6 +204,51 @@
       dispatch('change');
     }
   }
+
+  let must_be_replaced = {
+    agent_names: new Set(),
+    background_names: new Set()
+  };
+
+  function show_must_be_replaced_elements() {
+    const agent_elements = document.getElementsByClassName('must-be-replaced-agent');
+    const background_elements = document.getElementsByClassName('must-be-replaced-background');
+
+    let agent_names = new Set();
+    let background_names = new Set();
+
+    for (let element of agent_elements) {
+      agent_names.add(element.innerHTML);
+    }
+
+    for (let element of background_elements) {
+      background_names.add(element.innerHTML);
+    }
+
+    must_be_replaced = {
+      agent_names,
+      background_names
+    };
+    console.log(must_be_replaced);
+  }
+
+  function replace_elements(e: SubmitEvent) {
+    const formData = new FormData(e.target as HTMLFormElement);
+    const type = formData.get('type') as 'backgrounds' | 'agents';
+    const from = formData.get('from') as string;
+    const to = formData.get('to') as string;
+
+    for (let [key, value] of current_scene[type]) {
+      if (value == from) {
+        current_scene[type].set(key, to);
+      }
+    }
+
+    current_scene[type] = current_scene[type];
+    must_be_replaced.agent_names.clear();
+    must_be_replaced.agent_names = must_be_replaced.agent_names;
+    dispatch('change');
+  }
 </script>
 
 <svelte:window
@@ -279,9 +324,8 @@
       </button>
     </div>
     <div
-      class="relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
+      class="max-w-80 relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
     >
-      <!-- TODO: warn player for renamed stuff assets -->
       {#if current_scene_id != undefined}
         <button
           on:click={() => dispatch('switch_view')}
@@ -305,59 +349,71 @@
           </svg>
           Test Scene</button
         >
-        <div>
-          <h4 class:text-emerald-400={fill_mode == 'agent'} class="h4 pb-2">
-            Agents <span class="text-white">{fill_mode == 'bg' ? '(F)' : ''}</span>
-          </h4>
-          <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
-            {#each Object.entries(agents) as [key, val], i}
-              <button
-                on:click={() => selects.agent(key)}
-                class="relative flex items-center justify-center w-16 h-16"
-                class:active={brushes.agent == key}
-                title={key}
+        {#if agent_asset_urls.size}
+          <div>
+            <h4 class:text-emerald-400={fill_mode == 'agent'} class="h4 pb-2">
+              Agents <span class="text-zinc-300 text-sm"
+                >{fill_mode == 'bg' ? '(F to switch) ' : ''}</span
               >
-                <span
-                  style:width="64px"
-                  style:height="64px"
-                  style:background-size="cover"
-                  style:background-repeat="no-repeat"
-                  style:background-image="url({agent_asset_urls.get(key).default})"
-                />
-                <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
-                  >{i + 1}</span
+            </h4>
+            <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
+              {#each Object.entries(agents) as [key, val], i}
+                <button
+                  on:click={() => selects.agent(key)}
+                  class="relative flex items-center justify-center w-16 h-16"
+                  class:active={brushes.agent == key}
+                  title={key}
                 >
-              </button>
-            {/each}
+                  <span
+                    style:width="64px"
+                    style:height="64px"
+                    style:background-size="cover"
+                    style:background-repeat="no-repeat"
+                    style:background-image="url({agent_asset_urls.get(key)?.default})"
+                  />
+                  <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
+                    >{i + 1}</span
+                  >
+                </button>
+              {/each}
+            </div>
           </div>
-        </div>
-        <div>
-          <h4 class:text-emerald-400={fill_mode == 'bg'} class="h4 pb-2">
-            Backgrounds <span class="text-white">{fill_mode == 'agent' ? '(F)' : ''}</span>
-          </h4>
-          <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
-            {#each Object.entries(backgrounds) as [key, val], i}
-              <button
-                on:click={() => selects.bg(key)}
-                class="relative flex items-center justify-center w-16 h-16"
-                class:active={brushes.bg == key}
-                title={key}
+        {:else}
+          <p class="text-sm text-zinc-300">Agent assets not found.</p>
+        {/if}
+        {#if bg_asset_urls.size}
+          <div>
+            <h4 class:text-emerald-400={fill_mode == 'bg'} class="h4 pb-2">
+              Backgrounds <span class="text-zinc-300 text-sm"
+                >{fill_mode == 'agent' ? '(F to switch)' : ''}</span
               >
-                <span
-                  style:width="64px"
-                  style:height="64px"
-                  style:background-size="contain"
-                  style:background-repeat="no-repeat"
-                  style:background-image="url({bg_asset_urls.get(key)})"
-                />
-                <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
-                  >{i + 1}</span
+            </h4>
+            <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
+              {#each Object.entries(backgrounds) as [key, val], i}
+                <button
+                  on:click={() => selects.bg(key)}
+                  class="relative flex items-center justify-center w-16 h-16"
+                  class:active={brushes.bg == key}
+                  title={key}
                 >
-              </button>
-            {/each}
+                  <span
+                    style:width="64px"
+                    style:height="64px"
+                    style:background-size="contain"
+                    style:background-repeat="no-repeat"
+                    style:background-image="url({bg_asset_urls.get(key)})"
+                  />
+                  <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
+                    >{i + 1}</span
+                  >
+                </button>
+              {/each}
+            </div>
           </div>
-        </div>
-        <!-- <div class="flex-grow"></div> -->
+        {:else}
+          <p class="text-sm text-zinc-300">Background assets not found.</p>
+        {/if}
+        <div class="flex-grow"></div>
         <div>
           <h4 class="h4">Portals</h4>
           <div class="flex flex-row gap-2 pt-2">
@@ -387,7 +443,7 @@
       {/if}
     </div>
   </section>
-  <section class="flex flex-col gap-2 w-4/5 h-full">
+  <section class="flex flex-col gap-2 w-4/5 h-full group">
     <div
       class="relative h-11 bg-zinc-700 w-full rounded p-2 px-4 text-white flex flex-row justify-between"
     >
@@ -427,6 +483,29 @@
         </div>
       </Dropdown>
     </div>
+    <div
+      class="text-sm bg-amber-900 text-amber-50 border border-amber-200 p-2 group-has-[.must-be-replaced-agent,.must-be-replaced-background]:block hidden"
+    >
+      Some agents/backgrounds on the map have no asset references. Change them to elements with
+      asset references.
+      <button class="btn-md btn-view py-0" on:click={show_must_be_replaced_elements}>Show</button>
+      <div class="p-2 bg-amber-950 shadow-inner has-[form]:flex flex-col gap-4 hidden">
+        {#each [...must_be_replaced.agent_names.values(), ...must_be_replaced.background_names.values()] as name}
+          {@const is_agent = must_be_replaced.agent_names.has(name)}
+          <form class="flex flex-row gap-2" on:submit={replace_elements}>
+            Replace [{name}] with
+            <input hidden type="text" name="type" value={is_agent ? 'agents' : 'backgrounds'} />
+            <input hidden type="text" name="from" value={name} />
+            <select class="text-black" name="to">
+              {#each Object.keys(is_agent ? agents : backgrounds).filter((x) => x != 'player') as value}
+                <option {value}>{value}</option>
+              {/each}
+            </select>
+            <button class="btn btn-success py-0 px-2">Replace</button>
+          </form>
+        {/each}
+      </div>
+    </div>
     <section class="w-full h-full overflow-auto bg-zinc-500 border">
       {#if current_scene}
         {#each { length: current_scene.height } as _, i}
@@ -437,7 +516,7 @@
               {@const bg = current_scene.backgrounds.get(pos)}
               {@const portal = current_scene.portals.get(pos)}
               {@const bg_url = bg ? bg_asset_urls.get(bg) : ''}
-              {@const agent_url = agent ? agent_asset_urls.get(agent).default : ''}
+              {@const agent_url = agent ? agent_asset_urls.get(agent)?.default : ''}
 
               <button
                 on:contextmenu|preventDefault={() => !show_pos && right_clicked(pos)}
@@ -467,12 +546,22 @@
                       style:background-image="url({bg_url})"
                       class="sprite absolute w-full h-full z-10"
                     />
+                  {:else if bg}
+                    <span
+                      class="must-be-replaced-background z-20 bg-zinc-200 px-2 py-0.5 rounded text-xs"
+                      >{bg}</span
+                    >
                   {/if}
                   {#if agent_url}
                     <span
                       style:background-image="url({agent_url})"
                       class="sprite absolute w-full h-full z-10"
                     />
+                  {:else if agent}
+                    <span
+                      class="must-be-replaced-agent z-20 bg-zinc-200 px-2 py-0.5 rounded text-xs"
+                      >{agent}</span
+                    >
                   {/if}
                 {/if}
               </button>
@@ -538,24 +627,26 @@
           {/each}
         </select>
       </label>
-      <label class="flex flex-col w-1/2">
-        Position
-        <input
-          class="input"
-          required
-          type="number"
-          min={0}
-          max={current_scene.width * current_scene.height - 1}
-          bind:value={portal_from_pos}
-        />
-      </label>
+      {#if current_scene}
+        <label class="flex flex-col w-1/2">
+          Position
+          <input
+            class="input"
+            required
+            type="number"
+            min={0}
+            max={current_scene.width * current_scene.height - 1}
+            bind:value={portal_from_pos}
+          />
+        </label>
+      {/if}
     </div>
     <div class="flex flex-row w-full gap-4">
       <label class="flex flex-col w-1/2" for="name">
         To
         <select class="select" required bind:value={portal_to_id}>
           {#each project.scenes.entries() as [id, { name }]}
-            {#if name != current_scene.name}
+            {#if name != current_scene?.name}
               <option value={id}>{name}</option>
             {/if}
           {/each}
@@ -587,7 +678,7 @@
 </Modal>
 
 <Modal bind:dialog={delete_scene_modal}>
-  <h3 class="h3">Delete scene "{current_scene.name}"?</h3>
+  <h3 class="h3">Delete scene "{current_scene?.name}"?</h3>
   <form
     on:submit|preventDefault={delete_current_scene}
     class="flex flex-row gap-2 w-full justify-end pt-4"

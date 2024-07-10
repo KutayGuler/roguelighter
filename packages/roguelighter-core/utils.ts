@@ -1,10 +1,10 @@
 import RunCSS from 'runcss';
-import * as ts from 'typescript';
+import JSON5 from 'json5';
+import ts from 'typescript';
 import type { Agents, GUI_Element, GameData } from './types';
+import { DEFAULT_DIR } from './constants';
 import { join, documentDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
-import { DEFAULT_DIR } from './constants';
-import JSON5 from 'json5';
 import { FileEntry, readDir } from '@tauri-apps/api/fs';
 
 export const { processClasses } = RunCSS();
@@ -106,7 +106,7 @@ export async function get_asset_urls(project_dir: string, agents: Agents<string>
     for (let [_key, val] of Object.entries(obj.states)) {
       const filePath = await join(
         documentDirPath,
-        `${DEFAULT_DIR}/${project_dir}/assets/${val.source}`
+        `${DEFAULT_DIR}/${project_dir}/assets/agents/${val.source}`
       );
       // @ts-expect-error
       url_obj[_key] = convertFileSrc(filePath);
@@ -155,28 +155,11 @@ export const template_json_code: GameData = {
   variables: {
     variable_name: 3
   },
-  events: {
-    move_up: [
-      ['move', 'y', 1, 'walk']
-      // ['move', 'x', 1, 'walk']
-      // how to do simulatenous axis movement? using arrays and promise.all
-      // how to check if all the functions are going to work?
-      // skip invalid functions?
-    ],
-    move_down: [['move', 'y', -1, 'walk']],
-    move_right: [['move', 'x', 1, 'walk']],
-    move_left: [['move', 'x', -1, 'walk']]
-  },
+  events: {},
   key_bindings: {
-    Escape: '$toggle_pause_menu',
-    ArrowUp: 'move_up',
-    ArrowRight: 'move_right',
-    ArrowDown: 'move_down',
-    ArrowLeft: 'move_left'
+    Escape: '$toggle_pause_menu'
   },
-  conditions: {
-    // something: ['x', '==', 'v.variable_name']
-  },
+  conditions: {},
   gui: {
     $pause_menu: {
       tokens: [
@@ -253,7 +236,7 @@ export function get_tailwind_classes(gui_element: GUI_Element) {
   return set;
 }
 
-function get_children_assets(entry: FileEntry, parent_name = '') {
+function get_children_assets(entry: FileEntry, parent_name = ''): Array<Array<string>> {
   let children = [];
 
   for (let child of entry.children as FileEntry[]) {
@@ -299,7 +282,11 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     game_code = code_string_to_json(game_code) as GameData;
   }
 
-  let assets = `'ERROR: no assets found'`;
+  let assets = {
+    agents: `'ERROR: no assets found'`,
+    backgrounds: `'ERROR: no assets found'`
+  };
+
   let events = '';
   let variables = '';
   let agent_states = '';
@@ -312,36 +299,33 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     variables += `| '${key}'`;
   }
 
-  // TODO: replace
-  // for (let key of Object.keys(game_code.backgrounds || {})) {
-  //   backgrounds += `| '${key}'`;
-  // }
-
   for (let key of Object.keys(game_code?.agents?.player?.states || {})) {
     if (key === 'default') continue;
     agent_states += `| '${key}'`;
   }
 
   if (assets_array.length) {
-    assets = '';
+    assets.agents = '';
+    assets.backgrounds = '';
 
     for (let asset of assets_array) {
       if (asset.children) {
-        assets += retrieve_children_names(asset);
+        assets[asset.name] += retrieve_children_names(asset);
         continue;
       }
 
-      assets += `| '${asset.name}'`;
+      assets[asset.name] += `| '${asset.name}'`;
     }
   }
 
+  assets.agents = assets.agents.replaceAll('agents/', '');
+  assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
+
   // TODO: create BooleanVariables and NumberVariables
-  // TODO: could introduce Sequences (multiple events in a row)
-  // TODO: Agent assets should remove /agents from file name
-  // TODO: Edge case: backgrounds folder does not exist
 
   return `
-  type Assets = ${assets};
+  type AgentAssets = ${assets.agents};
+  type BackgroundAssets = ${assets.backgrounds};
   type EventNames = ${events};
   type VariableNames = ${variables};
   type BackgroundNames = ${'lmao'};
@@ -810,7 +794,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     camera?: {
       zoom?: number;
     };
-    ready_for_declare?: boolean;
   }
   
   declare type KeyBindings = {
@@ -818,7 +801,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   };
   
   type SpriteConfig = {
-    source: Assets;
+    source: AgentAssets;
     /** The total number of frames in the spritesheet. */
     frame_count?: number;
     /** The desired frames per second of the animation. */
