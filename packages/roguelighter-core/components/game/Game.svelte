@@ -10,14 +10,15 @@
     PlayableScene,
     RoguelighterProject,
     BackgroundAssetUrls,
-    AgentAssetUrls
+    AgentAssetUrls,
+    GameData
   } from '../../types';
   import { tweened, type Tweened } from 'svelte/motion';
   import * as easings from 'svelte/easing';
   import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
   import { split } from 'string-ts';
   import { exit } from '@tauri-apps/api/process';
-  import { pos_to_xy } from '../../utils';
+  import { code_string_to_json, pos_to_xy } from '../../utils';
 
   export let project: RoguelighterProject;
   export let current_scene_id: number;
@@ -25,10 +26,7 @@
   export let agent_asset_urls: AgentAssetUrls;
 
   let { variables, agents, settings, events, gui, conditions, key_bindings, collisions } =
-    project.parsed_code;
-
-  $: ({ variables, agents, settings, events, gui, conditions, key_bindings, collisions } =
-    project.parsed_code);
+    code_string_to_json(project.code) as GameData;
 
   const DURATION = settings.duration || DEFAULT_DURATION;
   const EASING = settings.easing || DEFAULT_EASING;

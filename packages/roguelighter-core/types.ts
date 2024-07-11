@@ -359,12 +359,12 @@ export interface Variables {
 /**
  * TODO: docs
  */
-export interface Events {
-  [function_name: string]: EventExpression;
+declare interface Events {
+  [function_name: string]: Function;
 }
 
-export interface _Events {
-  [functionName: string]: () => void;
+declare interface _Events {
+  [functionName: string]: Function;
 }
 
 type ComparisonOperator = '==' | '<=' | '>=' | '!=';
@@ -611,7 +611,7 @@ export type _ = {
 /**
  * TODO: doc
  */
-type MockBackgrounds = 'floor_1' | 'floor_2'
+type MockBackgrounds = 'floor_1' | 'floor_2';
 export type Collisions = Array<MockBackgrounds>;
 
 export interface Portal {
@@ -652,7 +652,6 @@ export interface GameData {
 export interface RoguelighterProject {
   code: string;
   scenes: Map<number, Scene>;
-  parsed_code: GameData;
 }
 
 export interface RoguelighterDataFile {

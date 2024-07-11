@@ -51,15 +51,16 @@
     code_editor.set_code(project.code);
   }
 
-  $: {
-    let parsed = code_string_to_json(project.code);
+  // TODO: replace
+  // $: {
+  //   let parsed = code_string_to_json(project.code);
 
-    if (typeof parsed == 'object') {
-      processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      project.parsed_code = parsed;
-      solved = check(project.parsed_code);
-    }
-  }
+  //   if (typeof parsed == 'object') {
+  //     processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
+  //     project.parsed_code = parsed;
+  //     solved = check(project.parsed_code);
+  //   }
+  // }
 </script>
 
 <main class="flex flex-row gap-2 h-full overflow-hidden">

@@ -66,13 +66,12 @@
       tabSize: 2
     });
 
-    editor.onDidChangeModelContent(
-      debounce(() => {
-        code = editor.getValue();
-        update_types();
-        dispatch('change');
-      }, 200)
-    );
+    // FIXME: saving issue
+
+    editor.onDidChangeModelContent(() => {
+      code = editor.getValue();
+      dispatch('change');
+    });
     editor.onKeyUp((e) => {
       if (e.keyCode === monaco.KeyCode.Quote) {
         editor.trigger('', 'editor.action.triggerSuggest', '');

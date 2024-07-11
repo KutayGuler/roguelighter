@@ -38,10 +38,6 @@
       dispatch('change_scene', portal_info);
     }
   });
-
-  for (let [pos, texture] of scene.backgrounds.entries()) {
-    console.log(pos, texture);
-  }
 </script>
 
 <T.PerspectiveCamera />

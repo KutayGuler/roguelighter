@@ -12,14 +12,17 @@
     code_string_to_json,
     processClasses
   } from '../utils';
-  import type { RoguelighterDataFile, RoguelighterProject } from '../types';
+  import type { GameData, RoguelighterDataFile, RoguelighterProject } from '../types';
   import { writeTextFile } from '@tauri-apps/api/fs';
   import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
   import { Command } from '@tauri-apps/api/shell';
 
+  // FIXME: types are not being generated
+
   export let project: RoguelighterProject;
   let current_scene_id = 0;
   let view: 'code' | 'scene' | 'game' = 'code';
+  let code_changed = false;
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
@@ -39,11 +42,20 @@
   }
 
   function handle(e: KeyboardEvent) {
-    if (e.ctrlKey && e.code == 'KeyT') {
-      if (view == 'scene') {
-        switch_to_game();
-      } else if (view == 'game') {
-        view = 'scene';
+    if (e.ctrlKey) {
+      switch (e.code) {
+        case 'KeyT': {
+          if (view == 'scene') {
+            switch_to_game();
+          } else if (view == 'game') {
+            view = 'scene';
+          }
+          break;
+        }
+        case 'KeyS': {
+          save_file();
+          break;
+        }
       }
     }
   }
@@ -55,7 +67,7 @@
     try {
       ({ backgrounds: bg_asset_urls, agents: agent_asset_urls } = await get_asset_urls(
         $current_project_name,
-        project.parsed_code.agents
+        (code_string_to_json(project.code) as GameData).agents
       ));
     } catch (e) {
       console.log(e);
@@ -76,6 +88,8 @@
     let file_contents = JSON.stringify(obj);
 
     writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, { dir });
+
+    code_changed = false;
   }
 
   import { join, documentDir } from '@tauri-apps/api/path';
@@ -140,10 +154,10 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
 
   $: {
     let parsed = code_string_to_json(project.code);
+    console.log(parsed);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      project.parsed_code = parsed;
       calc_asset_urls();
     }
   }
@@ -175,10 +189,11 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         </svg>
       </a>
       <button
+        title={code_changed ? 'The code has unsaved changes' : ''}
         class="{view == 'code'
           ? 'btn-view-selected'
           : 'btn-view'} btn-md text-sm text-white flex items-center"
-        on:click={() => (view = 'code')}>Code</button
+        on:click={() => (view = 'code')}>Code {code_changed ? '*' : ''}</button
       >
       <button
         class="{view != 'code'
@@ -203,7 +218,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       <Game bind:bg_asset_urls bind:agent_asset_urls bind:current_scene_id bind:project />
     {/if}
     <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
-      <CodeEditor bind:code={project.code} on:change={save_file}></CodeEditor>
+      <CodeEditor bind:code={project.code} on:change={() => (code_changed = true)}></CodeEditor>
     </div>
     <Toast />
   </main>

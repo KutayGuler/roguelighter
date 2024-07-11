@@ -25,7 +25,6 @@ export const tutorials: { [key: string]: Tutorial } = {
     }),
     project: {
       code: json_to_code_string(template_json_code),
-      parsed_code: template_json_code as GameData,
       scenes: new Map([
         [
           0,

@@ -4,6 +4,7 @@
     AgentAssetUrls,
     BackgroundAssetUrls,
     DialogController,
+    GameData,
     Portal,
     RoguelighterProject,
     Scene
@@ -12,7 +13,10 @@
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
   import { createEventDispatcher } from 'svelte';
   import Dropdown from './Dropdown.svelte';
+  import { code_string_to_json } from '../../utils';
   const dispatch = createEventDispatcher();
+
+  // FIXME: rendering 3 times on start
 
   export let project: RoguelighterProject;
   export let current_scene_id: number;
@@ -21,8 +25,9 @@
 
   const backgrounds = Object.fromEntries(bg_asset_urls);
 
-  let { agents } = project.parsed_code;
-  $: ({ agents } = project.parsed_code);
+  let { agents } = code_string_to_json(project.code) as GameData;
+  console.log(project.code);
+  console.log(code_string_to_json(project.code));
 
   let current_scene: Scene;
   $: current_scene = project.scenes.get(current_scene_id) as Scene;
@@ -229,7 +234,6 @@
       agent_names,
       background_names
     };
-    console.log(must_be_replaced);
   }
 
   function replace_elements(e: SubmitEvent) {
@@ -296,7 +300,7 @@
   style:image-rendering={'pixelated'}
   class="absolute w-full flex flex-row gap-4 bg-zinc-900 px-4 pb-4 pt-16 h-screen"
 >
-  <section class="flex w-1/5 flex-col min-w-60">
+  <section class="flex flex-col min-w-60 max-w-96">
     <div class="flex flex-row gap-2">
       <select class="select" bind:value={current_scene_id}>
         <option disabled value="">Select a scene</option>

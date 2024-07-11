@@ -31,16 +31,33 @@ export function code_string_to_json(code: string): string | GameData {
   const valid_declarations_regex =
     /var\s+(settings|collisions|agents|variables|events|key_bindings|conditions|gui)\s*=\s*(\{[^]*?\}|\[[^]*?\])\s*;\s*/g;
   const declarations = transpiled.match(valid_declarations_regex);
+  const key_and_function_regex = /\b\w+\s*:\s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
+  const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
 
   let t = '';
 
+  // FIXME: parsing
+
   for (let d of declarations) {
+    if (d.includes('var events')) {
+      const matches = d.match(key_and_function_regex) || [];
+      let obj = {};
+      for (let match of matches) {
+        const [name, fn_str] = match.split(':');
+        const fn = new Function('return ' + fn_str)();
+        obj[name] = fn;
+      }
+
+      d = d.replace(function_regex, (match) => `"${match}"`.replace(';', '[semicolon]'));
+    }
+
     t += d;
   }
 
   t = t.replaceAll('var ', '');
   t = t.replaceAll(' = ', ': ');
   t = t.replaceAll(';', ',');
+  t = t.replaceAll('[semicolon]', ';');
   t = t.replace(/([\w$]+): /g, '"$1": ');
   t = t.replaceAll("'", '"');
   t = t.replace('},\n\n', '}');
@@ -49,8 +66,11 @@ export function code_string_to_json(code: string): string | GameData {
   }`;
 
   try {
+    console.log(t);
     return JSON5.parse(t);
   } catch (e) {
+    console.log(t);
+    console.log(e);
     return code;
   }
 }
@@ -321,14 +341,12 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   assets.agents = assets.agents.replaceAll('agents/', '');
   assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
 
-  // TODO: create BooleanVariables and NumberVariables
-
   return `
   type AgentAssets = ${assets.agents};
   type BackgroundAssets = ${assets.backgrounds};
   type EventNames = ${events};
   type VariableNames = ${variables};
-  type BackgroundNames = ${'lmao'};
+  type BackgroundNames = ${assets.backgrounds};
   type AgentStates = ${agent_states};
 
   type Easing =
@@ -674,25 +692,17 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   
   declare type PlayerPositions = 'x' | 'y';
   declare type WritableProps = PlayerPositions | VariableNames;
-  type EventExpression =
-    | [\`wait\`, number]
-    | [\`play \${AgentStates}\`, any]
-    | [\`toggle \${VariableNames}\`]
-    | [\`set \${VariableNames}\`, any]
-    | [\`add \${VariableNames}\`, any]
-    | [\`move \${PlayerPositions}\`, number]
-    | [\`move \${PlayerPositions} \${AgentStates}\`, number]
 
   declare interface Variables {
     [variable_name: string]: any;
   }
   
   declare interface Events {
-    [function_name: string]: Array<EventExpression> | EventExpression;
+    [function_name: string]: Function;
   }
   
   declare interface _Events {
-    [functionName: string]: () => void;
+    [functionName: string]: Function;
   }
   
   type ComparisonOperator = '==' | '<=' | '>=' | '!=';
