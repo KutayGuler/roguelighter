@@ -188,7 +188,7 @@
   let name_input_element: HTMLInputElement;
 
   const digit_selects = {
-    agent: Object.keys(agents),
+    agent: Object.keys(agents), // FIXME: cannot convert undefined or null to object
     bg: Object.keys(backgrounds)
   };
 
@@ -323,32 +323,32 @@
         </svg>&nbsp; New scene
       </button>
     </div>
+    <button
+      on:click={() => dispatch('switch_view')}
+      use:tooltip={{
+        content: 'Ctrl + T',
+        placement: 'bottom'
+      }}
+      class="btn-success btn-md inline-flex justify-center items-center gap-1 mt-2 text-white"
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-5 h-5 pb-1 fill-white"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
+        />
+      </svg>
+      Test Scene</button
+    >
     <div
       class="w-fit relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
     >
       {#if current_scene_id != undefined}
-        <button
-          on:click={() => dispatch('switch_view')}
-          use:tooltip={{
-            content: 'Ctrl + T',
-            placement: 'bottom'
-          }}
-          class="btn-success btn-md inline-flex justify-center items-center gap-1"
-          ><svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-5 h-5 pb-1 fill-white"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
-            />
-          </svg>
-          Test Scene</button
-        >
         {#if agent_asset_urls.size}
           <div>
             <h4 class:text-emerald-400={fill_mode == 'agent'} class="h4 pb-2">

@@ -2,6 +2,7 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+  import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { create_types } from '../../utils';
   const dispatch = createEventDispatcher();
 
@@ -25,6 +26,36 @@
 
   async function loadCode(code: string) {
     model = monaco.editor.createModel(code, 'typescript');
+    monaco.editor.tokenize('yarrak', model.getLanguageId());
+
+    // monaco.languages.setMonarchTokensProvider(model.getLanguageId(), )
+    // monaco.languages.setTokensProvider()
+    // monaco.languages.setLanguageConfiguration()
+    // monaco.languages.set
+
+    monaco.editor.defineTheme('default', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        {
+          token: 'identifier',
+          foreground: 'D1FAE5'
+        },
+        { token: 'constant', foreground: '2E1065' },
+        { token: 'type', foreground: 'a78bfa' },
+        { token: 'keyword', foreground: '34d399' },
+        { token: 'variable', foreground: '1AEBFF' },
+        { token: 'variable.parameter', foreground: '9CDCFE' },
+        { token: 'comment', foreground: '608B4E' },
+        { token: 'number', foreground: '7dd3fc' },
+        { token: 'string', foreground: 'fde68a' }
+      ],
+      colors: {
+        [editorBackground]: '#18181b'
+      }
+    });
+    monaco.editor.setTheme('default');
+
     editor.setModel(model);
 
     const entries = await readDir(filePath, { recursive: true });
