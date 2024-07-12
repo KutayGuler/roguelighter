@@ -2,7 +2,7 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  import { create_types, debounce } from '../../utils';
+  import { create_types } from '../../utils';
   const dispatch = createEventDispatcher();
 
   import { watch } from 'tauri-plugin-fs-watch-api';
@@ -30,6 +30,7 @@
     const entries = await readDir(filePath, { recursive: true });
     cached_entries = entries;
     model.setValue(code);
+    update_types();
 
     await watch(
       filePath,
@@ -66,11 +67,17 @@
       tabSize: 2
     });
 
-    // FIXME: saving issue
+    let initialized = false;
 
     editor.onDidChangeModelContent(() => {
       code = editor.getValue();
+      if (!initialized) {
+        initialized = true;
+        return;
+      }
+
       dispatch('change');
+      console.log('change');
     });
     editor.onKeyUp((e) => {
       if (e.keyCode === monaco.KeyCode.Quote) {

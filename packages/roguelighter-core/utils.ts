@@ -29,14 +29,13 @@ export function debounce(fn: Function, ms: number) {
 export function code_string_to_json(code: string): string | GameData {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
   const valid_declarations_regex =
-    /var\s+(settings|collisions|agents|variables|events|key_bindings|conditions|gui)\s*=\s*(\{[^]*?\}|\[[^]*?\])\s*;\s*/g;
+    /var\s+(settings|collisions|agents|variables|events|key_bindings|gui)\s*=\s*(\{[^]*?\}|\[[^]*?\])\s*;\s*/g;
   const declarations = transpiled.match(valid_declarations_regex);
   const key_and_function_regex = /\b\w+\s*:\s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
   const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
+  const semicolon = '!semicolon!';
 
   let t = '';
-
-  // FIXME: parsing
 
   for (let d of declarations) {
     if (d.includes('var events')) {
@@ -48,7 +47,7 @@ export function code_string_to_json(code: string): string | GameData {
         obj[name] = fn;
       }
 
-      d = d.replace(function_regex, (match) => `"${match}"`.replace(';', '[semicolon]'));
+      d = d.replace(function_regex, (match) => `"${match}"`.replace(';', semicolon));
     }
 
     t += d;
@@ -57,7 +56,7 @@ export function code_string_to_json(code: string): string | GameData {
   t = t.replaceAll('var ', '');
   t = t.replaceAll(' = ', ': ');
   t = t.replaceAll(';', ',');
-  t = t.replaceAll('[semicolon]', ';');
+  t = t.replaceAll(semicolon, ';');
   t = t.replace(/([\w$]+): /g, '"$1": ');
   t = t.replaceAll("'", '"');
   t = t.replace('},\n\n', '}');
@@ -66,11 +65,8 @@ export function code_string_to_json(code: string): string | GameData {
   }`;
 
   try {
-    console.log(t);
     return JSON5.parse(t);
   } catch (e) {
-    console.log(t);
-    console.log(e);
     return code;
   }
 }
@@ -82,7 +78,6 @@ const type_annotations = {
   variables: 'Variables',
   events: 'Events',
   key_bindings: 'KeyBindings',
-  conditions: 'Conditions',
   gui: 'GUI'
 };
 
@@ -179,7 +174,6 @@ export const template_json_code: GameData = {
   key_bindings: {
     Escape: '$toggle_pause_menu'
   },
-  conditions: {},
   gui: {
     $pause_menu: {
       tokens: [
@@ -704,22 +698,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   declare interface _Events {
     [functionName: string]: Function;
   }
-  
-  type ComparisonOperator = '==' | '<=' | '>=' | '!=';
-  type LogicalOperator = '&&' | '||';
-  type BinaryOperator = ComparisonOperator | LogicalOperator;
-  type BinaryExpression = [Expression, BinaryOperator, Expression];
-  type Expression = WritableProps | BinaryExpression;
-  
-  // let xd: BinaryExpression = [
-  //   [[['bar', '==', 'foo'], '&&', 'baz'], '||', ['foo', '&&', 'zoo']],
-  //   '||',
-  //   ['bar', '&&', 'foo'],
-  // ];
-  
-  declare type Conditions = {
-    [event_name: EventNames]: BinaryExpression;
-  };
   
   type InternalEvents = '\$open_pause_menu' | '\$close_pause_menu' | '\$toggle_pause_menu' | '\$exit';
 

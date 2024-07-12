@@ -25,8 +25,9 @@
   export let bg_asset_urls: BackgroundAssetUrls;
   export let agent_asset_urls: AgentAssetUrls;
 
-  let { variables, agents, settings, events, gui, conditions, key_bindings, collisions } =
-    code_string_to_json(project.code) as GameData;
+  let { variables, agents, settings, events, gui, key_bindings, collisions } = code_string_to_json(
+    project.code
+  ) as GameData;
 
   const DURATION = settings.duration || DEFAULT_DURATION;
   const EASING = settings.easing || DEFAULT_EASING;

@@ -16,8 +16,6 @@
   import { code_string_to_json } from '../../utils';
   const dispatch = createEventDispatcher();
 
-  // FIXME: rendering 3 times on start
-
   export let project: RoguelighterProject;
   export let current_scene_id: number;
   export let bg_asset_urls: BackgroundAssetUrls;
@@ -26,8 +24,6 @@
   const backgrounds = Object.fromEntries(bg_asset_urls);
 
   let { agents } = code_string_to_json(project.code) as GameData;
-  console.log(project.code);
-  console.log(code_string_to_json(project.code));
 
   let current_scene: Scene;
   $: current_scene = project.scenes.get(current_scene_id) as Scene;

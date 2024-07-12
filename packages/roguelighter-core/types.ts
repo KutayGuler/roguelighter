@@ -334,19 +334,10 @@ type GetVars<V extends Variables> = `v.${keyof V}`;
 
 export type PlayerPositions = 'x' | 'y';
 export type WritableProps<V extends Variables> = PlayerPositions | GetVars<V>;
-type MockVariableNames = 'var';
-type MockAgentStates = 'default' | 'walk';
-type EventExpression =
-  | ['wait', number]
-  | [`play ${MockAgentStates}`, any]
-  | [`toggle ${MockVariableNames}`, any]
-  | [`set ${MockVariableNames}`, any]
-  | [`add ${MockVariableNames}`, any]
-  | [`move ${PlayerPositions}`, number]
-  | [`move ${PlayerPositions} ${MockAgentStates}`, number];
+type MockVariableNames = string;
 
 export type F = {
-  [key in EventExpression[0] | InternalEvents]: Function;
+  [key in InternalEvents]: Function;
 };
 
 /**
@@ -366,25 +357,6 @@ declare interface Events {
 declare interface _Events {
   [functionName: string]: Function;
 }
-
-type ComparisonOperator = '==' | '<=' | '>=' | '!=';
-type LogicalOperator = '&&' | '||';
-type BinaryOperator = ComparisonOperator | LogicalOperator;
-type BinaryExpression<V extends Variables> = [Expression<V>, BinaryOperator, Expression<V>];
-type Expression<V extends Variables> = WritableProps<V> | BinaryExpression<V>;
-
-// let xd: BinaryExpression = [
-//   [[['bar', '==', 'foo'], '&&', 'baz'], '||', ['foo', '&&', 'zoo']],
-//   '||',
-//   ['bar', '&&', 'foo'],
-// ];
-
-/**
- * TODO: docs
- */
-export type Conditions<P extends Agent<string>, V extends Variables, E extends Events> = {
-  [event_name: keyof Events]: BinaryExpression<V>;
-};
 
 type InternalEvents = '$open_pause_menu' | '$close_pause_menu' | '$toggle_pause_menu' | '$exit';
 type InternalTexts = '$agent_avatar' | '$agent_name' | '$agent_text';
@@ -611,7 +583,7 @@ export type _ = {
 /**
  * TODO: doc
  */
-type MockBackgrounds = 'floor_1' | 'floor_2';
+type MockBackgrounds = string;
 export type Collisions = Array<MockBackgrounds>;
 
 export interface Portal {
@@ -644,7 +616,6 @@ export interface GameData {
   settings: Settings;
   events: Events;
   gui: GUI;
-  conditions: Conditions<any, any, any>;
   key_bindings: KeyBindings<any, any, any>;
   collisions: Collisions;
 }

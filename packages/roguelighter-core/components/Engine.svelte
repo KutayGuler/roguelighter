@@ -17,8 +17,6 @@
   import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
   import { Command } from '@tauri-apps/api/shell';
 
-  // FIXME: types are not being generated
-
   export let project: RoguelighterProject;
   let current_scene_id = 0;
   let view: 'code' | 'scene' | 'game' = 'code';
@@ -53,6 +51,7 @@
           break;
         }
         case 'KeyS': {
+          recalculate();
           save_file();
           break;
         }
@@ -152,16 +151,16 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     }
   }
 
-  $: {
+  function recalculate() {
     let parsed = code_string_to_json(project.code);
-    console.log(parsed);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
       calc_asset_urls();
     }
   }
-  $: view, save_file();
+
+  $: view, save_file(), recalculate();
 </script>
 
 <svelte:window on:keydown={handle} />
