@@ -47,7 +47,9 @@ export function code_string_to_json(code: string): string | GameData {
         obj[name] = fn;
       }
 
-      d = d.replace(function_regex, (match) => `"${match}"`.replace(';', semicolon));
+      d = d.replace(function_regex, (match) =>
+        `"${match}"`.replaceAll('\n', ' ').replaceAll(';', semicolon)
+      );
     }
 
     t += d;
@@ -67,6 +69,8 @@ export function code_string_to_json(code: string): string | GameData {
   try {
     return JSON5.parse(t);
   } catch (e) {
+    console.log(t);
+    console.log(e);
     return code;
   }
 }

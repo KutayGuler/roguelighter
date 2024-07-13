@@ -92,6 +92,7 @@
   }
 
   import { join, documentDir } from '@tauri-apps/api/path';
+  import Agent from './game/Agent.svelte';
 
   const commands: Array<string> = [
     // TODO:
@@ -202,7 +203,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           view = 'scene';
         }}>Scene</button
       >
-      <button on:click={export_game}>Export</button>
+      <!-- <button on:click={export_game}>Export</button> -->
     </nav>
     {#if view == 'scene'}
       <SceneEditor

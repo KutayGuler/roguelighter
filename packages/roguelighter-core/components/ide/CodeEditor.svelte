@@ -108,7 +108,6 @@
       }
 
       dispatch('change');
-      console.log('change');
     });
     editor.onKeyUp((e) => {
       if (e.keyCode === monaco.KeyCode.Quote) {
