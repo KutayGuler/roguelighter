@@ -26,17 +26,22 @@
 
   async function loadCode(code: string) {
     model = monaco.editor.createModel(code, 'typescript');
-    monaco.editor.tokenize('yarrak', model.getLanguageId());
-
-    // monaco.languages.setMonarchTokensProvider(model.getLanguageId(), )
-    // monaco.languages.setTokensProvider()
-    // monaco.languages.setLanguageConfiguration()
-    // monaco.languages.set
-
     monaco.editor.defineTheme('default', {
       base: 'vs-dark',
       inherit: true,
       rules: [
+        {
+          token: 'redClass',
+          foreground: 'ff0000'
+        },
+        {
+          token: 'kwClass',
+          foreground: 'a78bfa'
+        },
+        {
+          token: 'kwProps',
+          foreground: 'D1FAE5'
+        },
         {
           token: 'identifier',
           foreground: 'D1FAE5'
@@ -74,7 +79,51 @@
     );
   }
 
+  async function create_custom_tokenizer() {
+    const customTokenizer = {
+      tokenizer: {
+        root: [{ include: 'custom' }],
+        custom: [
+          ['continue:', 'kwProps'],
+          ['default:', 'kwProps'],
+          ['type:', 'kwProps'],
+          ['Array', 'redClass'],
+          ['if', 'kwClass'],
+          ['for', 'kwClass'],
+          ['return', 'kwClass']
+        ]
+      }
+    };
+
+    const allLangs = monaco.languages.getLanguages();
+    const { language: tsLang } = await allLangs.find(({ id }) => id === 'typescript').loader();
+    console.log(tsLang);
+
+    for (let key in customTokenizer) {
+      const value = customTokenizer[key];
+      console.log(key, value);
+      if (key === 'tokenizer') {
+        for (let category in value) {
+          const tokenDefs = value[category];
+          if (!tsLang.tokenizer.hasOwnProperty(category)) {
+            tsLang.tokenizer[category] = [];
+          }
+          if (Array.isArray(tokenDefs)) {
+            tsLang.tokenizer[category].unshift.apply(tsLang.tokenizer[category], tokenDefs);
+          }
+        }
+      } else if (Array.isArray(value)) {
+        if (!tsLang.hasOwnProperty(key)) {
+          tsLang[key] = [];
+        }
+        tsLang[key].unshift.apply(tsLang[key], value);
+      }
+    }
+  }
+
   onMount(async () => {
+    create_custom_tokenizer();
+
     const documentDirPath = await documentDir();
     filePath = await join(documentDirPath, `${DEFAULT_DIR}/${$current_project_name}/assets`);
 
@@ -90,6 +139,11 @@
       allowNonTsExtensions: true
     });
 
+    // monaco.editor.createModel(
+    //   `export {}\nconst xd = "lmao";`,
+    //   'typescript',
+    //   monaco.Uri.parse('ts:globals.ts')
+    // );
     monaco.editor.createModel(create_types(code), 'typescript');
 
     editor = monaco.editor.create(editorElement, {

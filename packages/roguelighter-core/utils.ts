@@ -28,38 +28,70 @@ export function debounce(fn: Function, ms: number) {
 
 export function code_string_to_json(code: string): string | GameData {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
-  const valid_declarations_regex =
-    /var\s+(settings|collisions|agents|variables|events|key_bindings|gui)\s*=\s*(\{[^]*?\}|\[[^]*?\])\s*;\s*/g;
-  const declarations = transpiled.match(valid_declarations_regex);
   const key_and_function_regex = /\b\w+\s*:\s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
   const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
-  const semicolon = '!semicolon!';
 
   let t = '';
 
+  function findDeclarations(code: string) {
+    const declarationNames = [
+      'settings',
+      'collisions',
+      'agents',
+      'variables',
+      'events',
+      'key_bindings',
+      'gui'
+    ];
+    const regex = new RegExp(`\\s+(${declarationNames.join('|')})\\s*=\\s*([\\[{])`, 'g');
+    const matches = [];
+    let match;
+
+    while ((match = regex.exec(code)) !== null) {
+      const start = match.index + match[0].length - 1;
+      const startChar = match[2];
+      const endChar = startChar === '{' ? '}' : ']';
+      let depth = 1;
+      let end = start;
+
+      while (depth > 0 && end < code.length) {
+        end++;
+        if (code[end] === startChar) depth++;
+        else if (code[end] === endChar) depth--;
+      }
+
+      if (depth === 0) {
+        matches.push(`${match[1]}: ${code.substring(start, end + 1).trim()},\n`);
+      }
+    }
+
+    return matches;
+  }
+
+  const declarations = findDeclarations(transpiled);
+
   for (let d of declarations) {
-    if (d.includes('var events')) {
+    if (d.includes('events')) {
       const matches = d.match(key_and_function_regex) || [];
       let obj = {};
       for (let match of matches) {
         const [name, fn_str] = match.split(':');
-        const fn = new Function('return ' + fn_str)();
+        const fn = new Function('return ' + fn_str.replaceAll('\\"', '"'))();
         obj[name] = fn;
       }
 
       d = d.replace(function_regex, (match) =>
-        `"${match}"`.replaceAll('\n', ' ').replaceAll(';', semicolon)
+        `"${match}"`.replaceAll('\n', ' ').replaceAll('"', '\\"')
       );
     }
 
     t += d;
   }
 
-  t = t.replaceAll('var ', '');
-  t = t.replaceAll(' = ', ': ');
-  t = t.replaceAll(';', ',');
-  t = t.replaceAll(semicolon, ';');
   t = t.replace(/([\w$]+): /g, '"$1": ');
+  // TODO: special colors for global variables
+  // TODO: linter for
+  // TODO: escape " in functions
   t = t.replaceAll("'", '"');
   t = t.replace('},\n\n', '}');
   t = `{
@@ -75,22 +107,11 @@ export function code_string_to_json(code: string): string | GameData {
   }
 }
 
-const type_annotations = {
-  settings: 'Settings',
-  collisions: 'Collisions',
-  agents: 'Agents',
-  variables: 'Variables',
-  events: 'Events',
-  key_bindings: 'KeyBindings',
-  gui: 'GUI'
-};
-
 export function json_to_code_string(json: GameData) {
   let str = ``;
 
   for (let [key, val] of Object.entries(json)) {
-    // @ts-expect-error
-    str += `const ${key}: ${type_annotations[key]} = ${JSON.stringify(val, null, '\t')};\n\n`;
+    str += `${key} = ${JSON.stringify(val, null, '\t')};\n\n`;
   }
 
   return str.replace(/"([^"]+)":/g, '$1:');
@@ -339,7 +360,110 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   assets.agents = assets.agents.replaceAll('agents/', '');
   assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
 
-  return `
+  const variable_declarations = `
+  
+  let settings: Settings = {
+    fps: 8,
+    easing: "sineOut",
+    duration: 400,
+    camera: {
+      zoom: 20
+    }
+  }; 
+  
+  let collisions: Collisions = [
+    "floors/floor_1.png"
+  ]; 
+  
+  let agents: Agents = {
+    player: {
+      states: {
+        default: {
+          source: "elf_idle.png", 
+          frame_count: 4
+        },
+        walk: {
+          source: "elf_run.png",
+          frame_count: 4
+        }
+      }
+    },
+    orc: {
+      states: {
+        default: {
+          source: "orc.png"
+        }
+      }
+    }
+  };
+  
+  let variables: Variables = {
+    variable_name: 3
+  };
+  
+  let events: Events = {
+    add: (x, y) => { 
+      return x + y; 
+    }
+  };
+  
+  let key_bindings: KeyBindings = {
+    Escape: "$toggle_pause_menu"
+  };
+  
+  let gui: GUI = {
+    $pause_menu: {
+      tokens: [
+        "absolute",
+        "bottom-0",
+        "w-full",
+        "h-full",
+        "bg-black/50",
+        "flex",
+        "flex-col",
+        "items-center",
+        "gap-2",
+        "pt-8"
+      ],
+      transition: {
+        type: "fade"
+      },
+      children: {
+        continue: {
+          type: "button",
+          tokens: [
+            "bg-amber-200",
+            "font-bold",
+            "p-4",
+            "hover:bg-purple-200",
+            "text-amber-600",
+            "w-1/2",
+            "rounded"
+          ],
+          on_click: "$close_pause_menu",
+          text: "Continue"
+        },
+        exit: {
+          type: "button",
+          tokens: [
+            "bg-amber-200",
+            "font-bold",
+            "p-4",
+            "hover:bg-purple-200",
+            "text-amber-600",
+            "w-1/2",
+            "rounded"
+          ],
+          on_click: "$exit",
+          text: "Exit"
+        }
+      }
+    }
+  };
+  `;
+
+  return (
+    `
   type AgentAssets = ${assets.agents};
   type BackgroundAssets = ${assets.backgrounds};
   type EventNames = ${events};
@@ -859,5 +983,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   declare interface PlayableScene extends Omit<Scene, 'agents'> {
     agents: Map<number, PlayableAgent>;
   }
-  `;
+  ` + variable_declarations
+  );
 }
