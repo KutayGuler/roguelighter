@@ -188,7 +188,7 @@
   let name_input_element: HTMLInputElement;
 
   const digit_selects = {
-    agent: Object.keys(agents), // FIXME: cannot convert undefined or null to object
+    agent: Object.keys(agents),
     bg: Object.keys(backgrounds)
   };
 

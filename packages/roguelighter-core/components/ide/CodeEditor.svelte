@@ -32,11 +32,15 @@
       rules: [
         {
           token: 'globals',
-          foreground: '#fda4af'
+          foreground: 'fda4af'
+        },
+        {
+          token: 'vardec',
+          foreground: '10b981'
         },
         {
           token: 'kwClass',
-          foreground: '#c084fc'
+          foreground: 'c084fc'
         },
         {
           token: 'kwProps',
@@ -48,7 +52,7 @@
         },
         { token: 'constant', foreground: '2E1065' },
         { token: 'type', foreground: '38bdf8' },
-        { token: 'keyword', foreground: '34d399' },
+        { token: 'keyword', foreground: '60a5fa' },
         { token: 'comment', foreground: '608B4E' },
         { token: 'number', foreground: 'a3e635' },
         { token: 'string', foreground: 'fde68a' }
@@ -58,11 +62,7 @@
       }
     });
     monaco.editor.setTheme('default');
-
     editor.setModel(model);
-
-    let x = 5;
-    let y = 5;
 
     const entries = await readDir(filePath, { recursive: true });
     cached_entries = entries;
@@ -81,21 +81,7 @@
   }
 
   async function create_custom_tokenizer() {
-    let globals = [];
     let keys = [];
-    let keywords = [];
-
-    for (let global of [
-      'settings',
-      'collisions',
-      'agents',
-      'variables',
-      'events',
-      'keybindings',
-      'gui'
-    ]) {
-      globals.push([global, 'globals']);
-    }
 
     for (let k of [
       'KeyA',
@@ -159,29 +145,6 @@
       keys.push([k, 'kwProps']);
     }
 
-    for (let key of [
-      'if',
-      'for',
-      'switch',
-      'case',
-      'return',
-      'continue',
-      'break',
-      'try',
-      'catch',
-      'else',
-      'do',
-      'while',
-      'finally',
-      'with',
-      'yield',
-      'of',
-      'throw'
-    ]) {
-      keywords.push([key, 'kwClass']);
-    }
-
-    // TODO: could use regex for type annotations and continue: stuff
     const customTokenizer = {
       tokenizer: {
         root: [{ include: 'custom' }],
@@ -189,9 +152,16 @@
           ['continue:', 'kwProps'],
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
-          ...globals,
-          ...keys,
-          ...keywords
+          // [
+          //   /(?<![\t ])\b(settings|collisions|agents|variables|events|keybindings|gui)\b/g,
+          //   'globals'
+          // ],
+          [/\b(let|var|const)\b/g, 'vardec'],
+          [
+            /\b(if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)\b/g,
+            'kwClass'
+          ],
+          ...keys
         ]
       }
     };
@@ -240,11 +210,6 @@
       allowNonTsExtensions: true
     });
 
-    // monaco.editor.createModel(
-    //   `export {}\nconst xd = "lmao";`,
-    //   'typescript',
-    //   monaco.Uri.parse('ts:globals.ts')
-    // );
     monaco.editor.createModel(create_types(code), 'typescript');
 
     editor = monaco.editor.create(editorElement, {

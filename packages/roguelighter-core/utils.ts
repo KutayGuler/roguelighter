@@ -90,7 +90,6 @@ export function code_string_to_json(code: string): string | GameData {
   }
 
   t = t.replace(/([\w$]+): /g, '"$1": ');
-  // TODO: special colors for global variables
   // TODO: linter for $props
   t = t.replaceAll("'", '"');
   t = t.replace('},\n\n', '}');
@@ -362,7 +361,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
 
   const variable_declarations = `
   
-  let settings: Settings = {
+  let settings: Prettify<Settings> = {
     fps: 8,
     easing: "sineOut",
     duration: 400,
@@ -371,11 +370,11 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     }
   }; 
   
-  let collisions: Collisions = [
+  let collisions: Prettify<Collisions> = [
     "floors/floor_1.png"
   ]; 
   
-  let agents: Agents = {
+  let agents: Prettify<Agents> = {
     player: {
       states: {
         default: {
@@ -397,21 +396,21 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     }
   };
   
-  let variables: Variables = {
+  let variables: Prettify<Variables> = {
     variable_name: 3
   };
   
-  let events: Events = {
+  let events: Prettify<Events> = {
     add: (x, y) => { 
       return x + y; 
     }
   };
   
-  let keybindings: KeyBindings = {
+  let keybindings: Prettify<KeyBindings> = {
     Escape: "$toggle_pause_menu"
   };
   
-  let gui: GUI = {
+  let gui: Prettify<GUI> = {
     $pause_menu: {
       tokens: [
         "absolute",
@@ -464,6 +463,9 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
 
   return (
     `
+  type Prettify<T> = {
+    [K in keyof T]: T[K];
+  } & {};
   type AgentAssets = ${assets.agents};
   type BackgroundAssets = ${assets.backgrounds};
   type EventNames = ${events};
