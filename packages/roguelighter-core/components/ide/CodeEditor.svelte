@@ -31,28 +31,26 @@
       inherit: true,
       rules: [
         {
-          token: 'redClass',
-          foreground: 'ff0000'
+          token: 'globals',
+          foreground: '#fda4af'
         },
         {
           token: 'kwClass',
-          foreground: 'a78bfa'
+          foreground: '#c084fc'
         },
         {
           token: 'kwProps',
-          foreground: 'D1FAE5'
+          foreground: 'bae6fd'
         },
         {
           token: 'identifier',
-          foreground: 'D1FAE5'
+          foreground: 'bae6fd'
         },
         { token: 'constant', foreground: '2E1065' },
-        { token: 'type', foreground: 'a78bfa' },
+        { token: 'type', foreground: '38bdf8' },
         { token: 'keyword', foreground: '34d399' },
-        { token: 'variable', foreground: '1AEBFF' },
-        { token: 'variable.parameter', foreground: '9CDCFE' },
         { token: 'comment', foreground: '608B4E' },
-        { token: 'number', foreground: '7dd3fc' },
+        { token: 'number', foreground: 'a3e635' },
         { token: 'string', foreground: 'fde68a' }
       ],
       colors: {
@@ -62,6 +60,9 @@
     monaco.editor.setTheme('default');
 
     editor.setModel(model);
+
+    let x = 5;
+    let y = 5;
 
     const entries = await readDir(filePath, { recursive: true });
     cached_entries = entries;
@@ -80,6 +81,107 @@
   }
 
   async function create_custom_tokenizer() {
+    let globals = [];
+    let keys = [];
+    let keywords = [];
+
+    for (let global of [
+      'settings',
+      'collisions',
+      'agents',
+      'variables',
+      'events',
+      'keybindings',
+      'gui'
+    ]) {
+      globals.push([global, 'globals']);
+    }
+
+    for (let k of [
+      'KeyA',
+      'KeyB',
+      'KeyC',
+      'KeyD',
+      'KeyE',
+      'KeyF',
+      'KeyG',
+      'KeyH',
+      'KeyI',
+      'KeyJ',
+      'KeyK',
+      'KeyL',
+      'KeyM',
+      'KeyN',
+      'KeyO',
+      'KeyP',
+      'KeyQ',
+      'KeyR',
+      'KeyS',
+      'KeyT',
+      'KeyU',
+      'KeyV',
+      'KeyW',
+      'KeyX',
+      'KeyY',
+      'KeyZ',
+      'F1',
+      'F2',
+      'F3',
+      'F4',
+      'F5',
+      'F6',
+      'F7',
+      'F8',
+      'F9',
+      'F10',
+      'F11',
+      'F12',
+      'DigitKeys',
+      'ArrowKeys',
+      'Space',
+      'Enter',
+      'ControlLeft',
+      'ControlRight',
+      'ShiftLeft',
+      'ShiftRight',
+      'Tab',
+      'CapsLock',
+      'BracketRight',
+      'BracketLeft',
+      'Backslash',
+      'Quote',
+      'Semicolon',
+      'Period',
+      'Comma',
+      'Slash',
+      'Escape'
+    ]) {
+      keys.push([k, 'kwProps']);
+    }
+
+    for (let key of [
+      'if',
+      'for',
+      'switch',
+      'case',
+      'return',
+      'continue',
+      'break',
+      'try',
+      'catch',
+      'else',
+      'do',
+      'while',
+      'finally',
+      'with',
+      'yield',
+      'of',
+      'throw'
+    ]) {
+      keywords.push([key, 'kwClass']);
+    }
+
+    // TODO: could use regex for type annotations and continue: stuff
     const customTokenizer = {
       tokenizer: {
         root: [{ include: 'custom' }],
@@ -87,10 +189,9 @@
           ['continue:', 'kwProps'],
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
-          ['Array', 'redClass'],
-          ['if', 'kwClass'],
-          ['for', 'kwClass'],
-          ['return', 'kwClass']
+          ...globals,
+          ...keys,
+          ...keywords
         ]
       }
     };

@@ -616,7 +616,7 @@ export interface GameData {
   settings: Settings;
   events: Events;
   gui: GUI;
-  key_bindings: KeyBindings<any, any, any>;
+  keybindings: KeyBindings<any, any, any>;
   collisions: Collisions;
 }
 

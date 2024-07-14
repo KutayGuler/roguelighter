@@ -40,7 +40,7 @@ export function code_string_to_json(code: string): string | GameData {
       'agents',
       'variables',
       'events',
-      'key_bindings',
+      'keybindings',
       'gui'
     ];
     const regex = new RegExp(`\\s+(${declarationNames.join('|')})\\s*=\\s*([\\[{])`, 'g');
@@ -76,13 +76,14 @@ export function code_string_to_json(code: string): string | GameData {
       let obj = {};
       for (let match of matches) {
         const [name, fn_str] = match.split(':');
-        const fn = new Function('return ' + fn_str.replaceAll('\\"', '"'))();
+        const fn = new Function('return ' + fn_str)();
         obj[name] = fn;
       }
 
-      d = d.replace(function_regex, (match) =>
-        `"${match}"`.replaceAll('\n', ' ').replaceAll('"', '\\"')
-      );
+      d = d.replace(function_regex, (match) => {
+        let modified = match.replaceAll('\n', ' ').replaceAll('"', '\\"');
+        return `"${modified}"`;
+      });
     }
 
     t += d;
@@ -90,8 +91,7 @@ export function code_string_to_json(code: string): string | GameData {
 
   t = t.replace(/([\w$]+): /g, '"$1": ');
   // TODO: special colors for global variables
-  // TODO: linter for
-  // TODO: escape " in functions
+  // TODO: linter for $props
   t = t.replaceAll("'", '"');
   t = t.replace('},\n\n', '}');
   t = `{
@@ -196,7 +196,7 @@ export const template_json_code: GameData = {
     variable_name: 3
   },
   events: {},
-  key_bindings: {
+  keybindings: {
     Escape: '$toggle_pause_menu'
   },
   gui: {
@@ -407,7 +407,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     }
   };
   
-  let key_bindings: KeyBindings = {
+  let keybindings: KeyBindings = {
     Escape: "$toggle_pause_menu"
   };
   

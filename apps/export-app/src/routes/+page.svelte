@@ -50,7 +50,7 @@
         move_right: [['move', 'x', 1, 'walk']],
         move_left: [['move', 'x', -1, 'walk']]
       },
-      key_bindings: {
+      keybindings: {
         Escape: '$toggle_pause_menu',
         ArrowUp: 'move_up',
         ArrowRight: 'move_right',

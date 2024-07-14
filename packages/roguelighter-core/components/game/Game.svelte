@@ -25,7 +25,7 @@
   export let bg_asset_urls: BackgroundAssetUrls;
   export let agent_asset_urls: AgentAssetUrls;
 
-  let { variables, agents, settings, events, gui, key_bindings, collisions } = code_string_to_json(
+  let { variables, agents, settings, events, gui, keybindings, collisions } = code_string_to_json(
     project.code
   ) as GameData;
 
@@ -183,7 +183,7 @@
 
   let special_keys: Array<KeyboardEventCode> = [];
 
-  for (let [key, event_name] of Object.entries(key_bindings)) {
+  for (let [key, event_name] of Object.entries(keybindings)) {
     if ((event_name as string)[0] == '$') {
       special_keys.push(key as KeyboardEventCode);
     }
@@ -221,7 +221,7 @@
   }
 
   function handle(kbd_event: KeyboardEvent) {
-    const event_name = key_bindings[kbd_event.code as KeyboardEventCode] as string;
+    const event_name = keybindings[kbd_event.code as KeyboardEventCode] as string;
     if (!event_name) return;
 
     if (special_keys.includes(kbd_event.code as KeyboardEventCode)) {
