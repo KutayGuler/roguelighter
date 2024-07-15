@@ -38,7 +38,7 @@ export function code_string_to_json(code: string): string | GameData {
   let t = '';
 
   function findDeclarations(code: string) {
-    const declarationNames = [
+    const declarationNames: Array<keyof GameData> = [
       'settings',
       'collisions',
       'agents',
@@ -47,7 +47,7 @@ export function code_string_to_json(code: string): string | GameData {
       'keybindings',
       'gui'
     ];
-    const regex = new RegExp(`\\s+(${declarationNames.join('|')})\\s*=\\s*([\\[{])`, 'g');
+    const regex = new RegExp(`\\b(${declarationNames.join('|')})\\b\\s*=\\s*([\\[{])`, 'g');
     const matches = [];
     let match;
 
@@ -76,14 +76,6 @@ export function code_string_to_json(code: string): string | GameData {
 
   for (let d of declarations) {
     if (d.includes('events')) {
-      const matches = d.match(key_and_function_regex) || [];
-      let obj = {};
-      for (let match of matches) {
-        const [name, fn_str] = match.split(':');
-        const fn = new Function('return ' + fn_str)();
-        obj[name] = fn;
-      }
-
       d = d.replace(function_regex, (match) => {
         let modified = match.replaceAll('\n', ' ').replaceAll('"', '\\"');
         return `"${modified}"`;
@@ -744,11 +736,11 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   }
   
   declare interface Events {
-    [function_name: string]: Function;
+    [function_name: string]: (_: _) => void;
   }
   
   declare interface _Events {
-    [functionName: string]: Function;
+    [functionName: string]: (_: _) => void;
   }
   
   type InternalEvents = '\$open_pause_menu' | '\$close_pause_menu' | '\$toggle_pause_menu' | '\$exit';
@@ -882,11 +874,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   
   declare type PlayableAgents = Map<number, PlayableAgent>;
   
-  declare type _ = {
-    v: Variables;
-    e: _Events;
-  };
-  
   declare type Collisions = Array<BackgroundNames>;
   
   declare interface Portal {
@@ -906,6 +893,20 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   
   declare interface PlayableScene extends Omit<Scene, 'agents'> {
     agents: Map<number, PlayableAgent>;
+  }
+
+  declare interface GameData {
+    variables: Variables;
+    agents: Agents;
+    settings: Settings;
+    events: Events;
+    gui: GUI;
+    keybindings: KeyBindings;
+    collisions: Collisions;
+  }
+
+  declare interface _ extends GameData {
+
   }
   ` + variable_declarations
   );

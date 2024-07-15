@@ -1,14 +1,15 @@
 <script lang="ts">
   import { noop } from '../../utils';
-  import type { GUI_Element, Variables, _Events } from '../../types';
+  import type { GUI_Element, Variables, Events } from '../../types';
   import * as transitions from 'svelte/transition';
+  import GuiText from './GuiText.svelte';
 
   export let variables: Variables;
-  export let events: _Events;
+  export let events: Events;
   export let name: keyof typeof events;
-  export let guiElement: GUI_Element<typeof variables, keyof typeof events>;
+  export let guiElement: GUI_Element;
 
-  const { on_click: on_click_name, text, type, visibility_depends_on, tokens } = guiElement;
+  let { on_click: on_click_name, text, type, visibility_depends_on, tokens } = guiElement;
   const on_click = on_click_name ? events[on_click_name] : noop;
   const element_transition = guiElement.transition
     ? transitions[guiElement.transition?.type]
@@ -54,16 +55,12 @@
     transition:element_transition
     on:click={on_click}
   >
-    {#if text}{text}{/if}
+    {#if text}
+      <!-- {@const modified_text = text.replaceAll()} -->
+      <GuiText {text} {variables}></GuiText>
+    {/if}
     {#each Object.entries(guiElement?.children || []) as [name, child]}
       <svelte:self guiElement={child} {variables} {events} {name} />
     {/each}
   </svelte:element>
 {/if}
-
-<!-- <div class="absolute bottom-0 w-full h-1/4 flex flex-row gap-4 bg-slate-50 p-4">
-  <div class="bg-red-200 rounded w-1/4">image</div>
-  
-  <div>char name</div>
-  <div class="w-3/4 bg-purple-200 p-4">text</div>
-</div> -->

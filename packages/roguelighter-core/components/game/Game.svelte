@@ -1,10 +1,11 @@
 <script lang="ts">
   import { Canvas } from '@threlte/core';
+  // @ts-expect-error
   import GuiElement from './GuiElement.svelte';
+  // @ts-expect-error
   import Scene from './Scene.svelte';
   import type {
     WritableProps,
-    _,
     PlayerPositions,
     KeyboardEventCode,
     PlayableScene,
@@ -16,7 +17,6 @@
   import { tweened, type Tweened } from 'svelte/motion';
   import * as easings from 'svelte/easing';
   import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
-  import { split } from 'string-ts';
   import { exit } from '@tauri-apps/api/process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
 
@@ -25,9 +25,16 @@
   export let bg_asset_urls: BackgroundAssetUrls;
   export let agent_asset_urls: AgentAssetUrls;
 
-  let { variables, agents, settings, events, gui, keybindings, collisions } = code_string_to_json(
-    project.code
-  ) as GameData;
+  let _ = code_string_to_json(project.code) as GameData;
+  let { variables, agents, settings, events, gui, keybindings, collisions } = _;
+
+  for (let [key, val] of Object.entries(events)) {
+    if (typeof val === 'string') {
+      const fn_str = val;
+      const fn = new Function('return ' + fn_str)();
+      events[key] = fn;
+    }
+  }
 
   const DURATION = settings.duration || DEFAULT_DURATION;
   const EASING = settings.easing || DEFAULT_EASING;
@@ -94,87 +101,23 @@
 
   let game_paused = false;
 
-  function opm() {
-    window.dispatchEvent(new Event('paused'));
-    _.v.$pause_menu = true;
-    game_paused = true;
-  }
-
-  function cpm() {
-    window.dispatchEvent(new Event('unpaused'));
-    _.v.$pause_menu = false;
-    game_paused = false;
-  }
-
   const f = {
-    async wait(ms = DURATION) {
-      return new Promise((res) => setTimeout(res, ms));
+    $open_pause_menu() {
+      window.dispatchEvent(new Event('paused'));
+      variables.$pause_menu = true;
+      game_paused = true;
     },
-    $open_pause_menu: opm,
-    $close_pause_menu: cpm,
+    $close_pause_menu() {
+      window.dispatchEvent(new Event('unpaused'));
+      variables.$pause_menu = false;
+      game_paused = false;
+    },
     $toggle_pause_menu() {
       if (game_paused) {
-        cpm();
+        f.$close_pause_menu();
       } else {
-        opm();
+        f.$open_pause_menu();
       }
-    },
-    toggle(str: WritableProps<typeof variables>) {
-      _.v[str] = !_.v[str];
-    },
-    set(str: WritableProps<typeof variables>, val: any) {
-      const [type, prop] = split(str, '.');
-      // @ts-expect-error
-      _[type][prop] = val;
-    },
-    async move(axis: PlayerPositions, val: any, animation: string) {
-      let player = scene.agents.get(player_pos);
-      if (!player) return;
-
-      let x = axis == 'x' ? val : 0;
-      let y = axis == 'y' ? val : 0;
-      let next_pos = player.x + x + (player.y + y) * scene.height * -1;
-      let bg = scene.backgrounds.get(next_pos);
-      let x_out_of_bounds =
-        (next_pos % scene.width == scene.width - 1 && x == -1) ||
-        (next_pos % scene.width == 0 && x == 1);
-
-      if (x_out_of_bounds || !bg || collisions.includes(bg) || scene.agents.has(next_pos)) {
-        return;
-      }
-
-      if (animation) {
-        this.play(animation);
-      }
-
-      if (axis == 'x') {
-        camera_x_tween.set(player[axis] + val);
-      } else {
-        camera_y_tween.set(player[axis] + val);
-      }
-
-      // @ts-expect-error
-      await scene.agents.get(player_pos)[
-        `${axis}_tween`
-        // @ts-expect-error
-      ].set(scene.agents.get(player_pos)[axis] + val);
-      // @ts-expect-error
-      scene.agents.set(next_pos, scene.agents.get(player_pos));
-      scene.agents.delete(player_pos);
-      player_pos = next_pos;
-      scene_just_changed = false;
-    },
-    play(str: string, val: any) {
-      // @ts-expect-error
-      scene.agents.get(player_pos).state = str;
-      // @ts-expect-error
-      scene.agents.get(player_pos).revert_state_in = val || 1;
-    },
-    add(str: WritableProps<typeof variables>, val: any) {
-      let [type, prop] = split(str, '.');
-
-      // @ts-expect-error
-      _[type][prop] += val;
     },
     async $exit() {
       await exit();
@@ -197,40 +140,38 @@
     $close_pause_menu: f.$close_pause_menu
   });
 
-  let _: _ = {
-    v: variables,
-    e: {}
-  };
+  console.log(events);
 
-  for (let [key, event_expression] of Object.entries(events)) {
-    if (key[0] == '$') {
-      // @ts-expect-error
-      _.e[key] = events[key];
-      continue;
-    }
+  // for (let [key, fn] of Object.entries(events)) {
+  //   if (key[0] == '$') {
+  //     _.e[key] = events[key];
+  //     continue;
+  //   }
 
-    // binding keys to events
-    _.e[key] = async () => {
-      const [str, _args] = event_expression;
-      const split = str.split(' ');
-      const type = split[0];
-      split.shift();
-      // @ts-expect-error
-      await f[type](...split, _args);
-    };
-  }
+  //   // binding keys to events
+  //   _.e[key] = async () => {
+  //     const [str, _args] = fn;
+  //     const split = str.split(' ');
+  //     const type = split[0];
+  //     split.shift();
+  //     // @ts-expect-error
+  //     await f[type](...split, _args);
+  //   };
+  // }
 
   function handle(kbd_event: KeyboardEvent) {
     const event_name = keybindings[kbd_event.code as KeyboardEventCode] as string;
     if (!event_name) return;
 
     if (special_keys.includes(kbd_event.code as KeyboardEventCode)) {
-      _.e[event_name]();
+      events[event_name](_);
+      variables = variables;
       return;
     }
 
     if (game_paused) return;
-    _.e[event_name]();
+    events[event_name](_);
+    variables = variables;
   }
 
   let scene_just_changed = false;
@@ -284,7 +225,7 @@
       </Canvas>
     {/if}
     {#each Object.entries(gui) as [name, guiElement]}
-      <GuiElement events={_.e} {name} variables={_.v} {guiElement} />
+      <GuiElement {events} {name} {variables} {guiElement} />
     {/each}
   </section>
 </main>

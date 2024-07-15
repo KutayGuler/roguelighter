@@ -26,10 +26,6 @@
   let delay = defaults.delay;
   let filter = defaults.filter || settings.filter || 'nearest';
 
-  // TODO: save function as a string in json
-  // TODO: declare a variable here
-  // TODO: change the variable with function
-  // TODO: could introduce $step function
   const keyboard = { x: 0 };
   const pressed = new Set<string>();
   export const playerPosition: [number, number, number] = [-2.0, -2.75, 0.01];

@@ -337,7 +337,7 @@ export type WritableProps<V extends Variables> = PlayerPositions | GetVars<V>;
 type MockVariableNames = string;
 
 export type F = {
-  [key in InternalEvents]: Function;
+  [key in InternalEvents]: (_: _) => void;
 };
 
 /**
@@ -350,12 +350,13 @@ export interface Variables {
 /**
  * TODO: docs
  */
+// TODO: update Function types
 declare interface Events {
-  [function_name: string]: Function;
+  [function_name: string]: (_: _) => void;
 }
 
 declare interface _Events {
-  [functionName: string]: Function;
+  [functionName: string]: (_: _) => void;
 }
 
 type InternalEvents = '$open_pause_menu' | '$close_pause_menu' | '$toggle_pause_menu' | '$exit';
@@ -575,11 +576,6 @@ export interface PlayableAgent extends Agent<string> {
 
 export type PlayableAgents = Map<number, PlayableAgent>;
 
-export type _ = {
-  v: Variables;
-  e: _Events;
-};
-
 /**
  * TODO: doc
  */
@@ -619,6 +615,8 @@ export interface GameData {
   keybindings: KeyBindings<any, any, any>;
   collisions: Collisions;
 }
+
+export interface _ extends GameData {}
 
 export interface RoguelighterProject {
   code: string;
