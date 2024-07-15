@@ -354,6 +354,9 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   assets.agents = assets.agents.replaceAll('agents/', '');
   assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
 
+  // TODO: linter for $variables()
+  // TODO: variables type generation
+
   const variable_declarations = `
   
   let settings: Prettify<Settings> = {}; 
@@ -736,11 +739,11 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   }
   
   declare interface Events {
-    [function_name: string]: (_: _) => void;
+    [function_name: string]: (_: GameData) => void;
   }
   
   declare interface _Events {
-    [functionName: string]: (_: _) => void;
+    [functionName: string]: (_: GameData) => void;
   }
   
   type InternalEvents = '\$open_pause_menu' | '\$close_pause_menu' | '\$toggle_pause_menu' | '\$exit';
@@ -903,10 +906,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
     gui: GUI;
     keybindings: KeyBindings;
     collisions: Collisions;
-  }
-
-  declare interface _ extends GameData {
-
   }
   ` + variable_declarations
   );
