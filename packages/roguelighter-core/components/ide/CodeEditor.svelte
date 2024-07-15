@@ -3,16 +3,17 @@
   import * as monaco from 'monaco-editor';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
-  import { create_types } from '../../utils';
+  import { create_types, includes_any } from '../../utils';
   const dispatch = createEventDispatcher();
 
   import { watch } from 'tauri-plugin-fs-watch-api';
   import { join, documentDir } from '@tauri-apps/api/path';
   import { type FileEntry, readDir } from '@tauri-apps/api/fs';
-  import { DEFAULT_DIR } from '../../constants';
+  import { DEFAULT_DIR, INTERNAL_EVENTS, INTERNAL_GUI, INTERNAL_TEXTS } from '../../constants';
   import { current_project_name } from '../../store';
 
   export let code: string;
+  export let error_count = 0;
   let editorElement: HTMLDivElement;
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
@@ -78,6 +79,35 @@
       },
       { recursive: true }
     );
+  }
+
+  function validate(model: monaco.editor.ITextModel) {
+    const markers = [];
+    // lines start at 1
+    for (let i = 1; i < model.getLineCount() + 1; i++) {
+      const range = {
+        startLineNumber: i,
+        startColumn: 1,
+        endLineNumber: i,
+        endColumn: model.getLineLength(i) + 1
+      };
+      const content = model.getValueInRange(range).trim();
+
+      if (
+        content[0] == '$' &&
+        !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
+      ) {
+        markers.push({
+          message: '$ prefix is reserved and cannot be used for property names.',
+          severity: monaco.MarkerSeverity.Error,
+          startLineNumber: range.startLineNumber,
+          startColumn: range.startColumn,
+          endLineNumber: range.endLineNumber,
+          endColumn: range.endColumn
+        });
+      }
+    }
+    monaco.editor.setModelMarkers(model, 'owner', markers);
   }
 
   async function create_custom_tokenizer() {
@@ -168,11 +198,9 @@
 
     const allLangs = monaco.languages.getLanguages();
     const { language: tsLang } = await allLangs.find(({ id }) => id === 'typescript').loader();
-    console.log(tsLang);
 
     for (let key in customTokenizer) {
       const value = customTokenizer[key];
-      console.log(key, value);
       if (key === 'tokenizer') {
         for (let category in value) {
           const tokenDefs = value[category];
@@ -220,7 +248,20 @@
 
     let initialized = false;
 
+    // FIXME: desync of errors
     editor.onDidChangeModelContent(() => {
+      validate(model);
+      const markers = monaco.editor.getModelMarkers({});
+      console.log(markers);
+
+      error_count = 0;
+
+      for (let marker of markers) {
+        if (marker.severity >= 8) {
+          error_count++;
+        }
+      }
+
       code = editor.getValue();
       if (!initialized) {
         initialized = true;

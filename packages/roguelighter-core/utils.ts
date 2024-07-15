@@ -13,6 +13,10 @@ export function generate_id() {
   return (Math.random() + 1).toString(36).substring(7);
 }
 
+export function includes_any(str: string, array_of_str: Array<string>) {
+  return array_of_str.some((substring) => str.includes(substring));
+}
+
 export function pos_to_xy(pos: number, scene_width: number) {
   return [pos % scene_width, -Math.floor(pos / scene_width)];
 }
@@ -90,7 +94,6 @@ export function code_string_to_json(code: string): string | GameData {
   }
 
   t = t.replace(/([\w$]+): /g, '"$1": ');
-  // TODO: linter for $props
   t = t.replaceAll("'", '"');
   t = t.replace('},\n\n', '}');
   t = `{
@@ -361,104 +364,23 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
 
   const variable_declarations = `
   
-  let settings: Prettify<Settings> = {
-    fps: 8,
-    easing: "sineOut",
-    duration: 400,
-    camera: {
-      zoom: 20
-    }
-  }; 
-  
-  let collisions: Prettify<Collisions> = [
-    "floors/floor_1.png"
-  ]; 
-  
+  let settings: Prettify<Settings> = {}; 
+  let collisions: Prettify<Collisions> = []; 
   let agents: Prettify<Agents> = {
     player: {
       states: {
         default: {
-          source: "elf_idle.png", 
+          // @ts-expect-error
+          source: "idle.png", 
           frame_count: 4
         },
-        walk: {
-          source: "elf_run.png",
-          frame_count: 4
-        }
       }
     },
-    orc: {
-      states: {
-        default: {
-          source: "orc.png"
-        }
-      }
-    }
   };
-  
-  let variables: Prettify<Variables> = {
-    variable_name: 3
-  };
-  
-  let events: Prettify<Events> = {
-    add: (x, y) => { 
-      return x + y; 
-    }
-  };
-  
-  let keybindings: Prettify<KeyBindings> = {
-    Escape: "$toggle_pause_menu"
-  };
-  
-  let gui: Prettify<GUI> = {
-    $pause_menu: {
-      tokens: [
-        "absolute",
-        "bottom-0",
-        "w-full",
-        "h-full",
-        "bg-black/50",
-        "flex",
-        "flex-col",
-        "items-center",
-        "gap-2",
-        "pt-8"
-      ],
-      transition: {
-        type: "fade"
-      },
-      children: {
-        continue: {
-          type: "button",
-          tokens: [
-            "bg-amber-200",
-            "font-bold",
-            "p-4",
-            "hover:bg-purple-200",
-            "text-amber-600",
-            "w-1/2",
-            "rounded"
-          ],
-          on_click: "$close_pause_menu",
-          text: "Continue"
-        },
-        exit: {
-          type: "button",
-          tokens: [
-            "bg-amber-200",
-            "font-bold",
-            "p-4",
-            "hover:bg-purple-200",
-            "text-amber-600",
-            "w-1/2",
-            "rounded"
-          ],
-          on_click: "$exit",
-          text: "Exit"
-        }
-      }
-    }
-  };
+  let variables: Prettify<Variables> = {};
+  let events: Prettify<Events> = {};
+  let keybindings: Prettify<KeyBindings> = {};
+  let gui: Prettify<GUI> = {};
   `;
 
   return (
@@ -518,7 +440,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';
   
   declare namespace Tw {
-    declare type Breakpoints =
+     type Breakpoints =
       | 'xs'
       | 'sm'
       | 'md'
@@ -532,7 +454,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | '7xl'
       | '8xl'
       | '9xl';
-    declare type Units =
+     type Units =
       | '0'
       | 'px'
       | '1'
@@ -598,7 +520,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | '9/12'
       | '10/12'
       | '11/12';
-    declare type Colors =
+     type Colors =
       | 'slate'
       | 'gray'
       | 'zinc'
@@ -621,8 +543,8 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | 'fuchsia'
       | 'pink'
       | 'rose';
-    declare type ShadelessColors = 'white' | 'black' | 'transparent';
-    declare type Shades =
+     type ShadelessColors = 'white' | 'black' | 'transparent';
+     type Shades =
       | '50'
       | '100'
       | '200'
@@ -634,7 +556,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | '800'
       | '900'
       | '950';
-    declare type Opacities = '10' | '20' | '30' | '40' | '50' | '60' | '70' | '80' | '90';
+     type Opacities = '10' | '20' | '30' | '40' | '50' | '60' | '70' | '80' | '90';
   
     /**
      *
@@ -642,26 +564,26 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
      * TW CLASSES
      *
      */
-    declare type BackgroundColors =
+     type BackgroundColors =
       | \`bg-\${Colors}-\${Shades}\`
       | \`bg-\${Colors}-\${Shades}/\${Opacities}\`
       | \`bg-\${ShadelessColors}\`
       | \`bg-white/\${Opacities}\`
       | \`bg-black/\${Opacities}\`;
-    declare type TextColors =
+     type TextColors =
       | \`text-\${Colors}-\${Shades}\`
       | \`text-\${Colors}-\${Shades}/\${Opacities}\`
       | \`text-\${ShadelessColors}\`
       | \`text-white/\${Opacities}\`
       | \`text-black/\${Opacities}\`;
-    declare type BorderSize = 'border' | \`border-\${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8}\`;
-    declare type BorderColors =
+     type BorderSize = 'border' | \`border-\${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8}\`;
+     type BorderColors =
       | \`border-\${Colors}-\${Shades}\`
       | \`border-\${Colors}-\${Shades}/\${Opacities}\`
       | \`border-\${ShadelessColors}\`
       | \`border-white/\${Opacities}\`
       | \`border-black/\${Opacities}\`;
-    declare type BorderRadiusSuffix =
+     type BorderRadiusSuffix =
       | ''
       | '-none'
       | '-sm'
@@ -671,7 +593,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | '-2xl'
       | '-3xl'
       | '-full';
-    declare type BorderRadiusTypes =
+     type BorderRadiusTypes =
       | 'rounded'
       | 'rounded-s'
       | 'rounded-e'
@@ -687,8 +609,8 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | 'rounded-tr'
       | 'rounded-br'
       | 'rounded-bl';
-    declare type BorderRadius = \`\${BorderRadiusTypes}\${BorderRadiusSuffix}\`;
-    declare type Display =
+     type BorderRadius = \`\${BorderRadiusTypes}\${BorderRadiusSuffix}\`;
+     type Display =
       | 'block'
       | 'inline-block'
       | 'inline'
@@ -710,10 +632,10 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | 'contents'
       | 'list-item'
       | 'hidden';
-    declare type FlexDirection = 'flex-row' | 'flex-row-reverse' | 'flex-col' | 'flex-col-reverse';
-    declare type Position = 'static' | 'fixed' | 'absolute' | 'relative' | 'sticky';
-    declare type FontSize = \`text-\${Breakpoints}\`;
-    declare type FontWeight =
+     type FlexDirection = 'flex-row' | 'flex-row-reverse' | 'flex-col' | 'flex-col-reverse';
+     type Position = 'static' | 'fixed' | 'absolute' | 'relative' | 'sticky';
+     type FontSize = \`text-\${Breakpoints}\`;
+     type FontWeight =
       | 'font-thin'
       | 'font-extralight'
       | 'font-light'
@@ -723,37 +645,37 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | 'font-bold'
       | 'font-extrabold'
       | 'font-black';
-    declare type TranslateX = \`translate-x-\${Units}\`;
-    declare type TranslateY = \`translate-y-\${Units}\`;
-    declare type Width = \`w-\${Units}\`;
-    declare type Height = \`h-\${Units}\`;
-    declare type Margin = \`m-\${Units}\`;
-    declare type MarginTop = \`mt-\${Units}\`;
-    declare type MarginRight = \`mr-\${Units}\`;
-    declare type MarginLeft = \`ml-\${Units}\`;
-    declare type MarginBottom = \`mb-\${Units}\`;
-    declare type MarginX = \`mx-\${Units}\`;
-    declare type MarginY = \`my-\${Units}\`;
-    declare type Padding = \`p-\${Units}\`;
-    declare type PaddingTop = \`pt-\${Units}\`;
-    declare type PaddingRight = \`pr-\${Units}\`;
-    declare type PaddingLeft = \`pl-\${Units}\`;
-    declare type PaddingBottom = \`pb-\${Units}\`;
-    declare type PaddingX = \`px-\${Units}\`;
-    declare type PaddingY = \`py-\${Units}\`;
-    declare type Top = \`top-\${Units}\`;
-    declare type Right = \`right-\${Units}\`;
-    declare type Bottom = \`bottom-\${Units}\`;
-    declare type Left = \`left-\${Units}\`;
-    declare type Gap = \`gap-\${Units}\`;
-    declare type Visibility = 'visible' | 'invisible' | 'collapse';
-    declare type AlignItems =
+     type TranslateX = \`translate-x-\${Units}\`;
+     type TranslateY = \`translate-y-\${Units}\`;
+     type Width = \`w-\${Units}\`;
+     type Height = \`h-\${Units}\`;
+     type Margin = \`m-\${Units}\`;
+     type MarginTop = \`mt-\${Units}\`;
+     type MarginRight = \`mr-\${Units}\`;
+     type MarginLeft = \`ml-\${Units}\`;
+     type MarginBottom = \`mb-\${Units}\`;
+     type MarginX = \`mx-\${Units}\`;
+     type MarginY = \`my-\${Units}\`;
+     type Padding = \`p-\${Units}\`;
+     type PaddingTop = \`pt-\${Units}\`;
+     type PaddingRight = \`pr-\${Units}\`;
+     type PaddingLeft = \`pl-\${Units}\`;
+     type PaddingBottom = \`pb-\${Units}\`;
+     type PaddingX = \`px-\${Units}\`;
+     type PaddingY = \`py-\${Units}\`;
+     type Top = \`top-\${Units}\`;
+     type Right = \`right-\${Units}\`;
+     type Bottom = \`bottom-\${Units}\`;
+     type Left = \`left-\${Units}\`;
+     type Gap = \`gap-\${Units}\`;
+     type Visibility = 'visible' | 'invisible' | 'collapse';
+     type AlignItems =
       | 'items-start'
       | 'items-end'
       | 'items-center'
       | 'items-baseline'
       | 'items-stretch';
-    declare type JustifyContent =
+     type JustifyContent =
       | 'justify-normal'
       | 'justify-start'
       | 'justify-end'
@@ -762,7 +684,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | 'justify-around'
       | 'justify-evenly'
       | 'justify-stretch';
-    declare type ZIndex = 'z-0' | 'z-10' | 'z-20' | 'z-30' | 'z-40' | 'z-50' | 'z-auto';
+     type ZIndex = 'z-0' | 'z-10' | 'z-20' | 'z-30' | 'z-40' | 'z-50' | 'z-auto';
   
     /**
      *
@@ -771,7 +693,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
      *
      */
   
-    declare type VanillaTokens =
+     type VanillaTokens =
       | Position
       | AlignItems
       | JustifyContent
@@ -810,8 +732,8 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
       | Display
       | FlexDirection;
   
-    declare type PseudoClasses = 'hover' | 'focus' | 'active';
-    declare type Tokens = VanillaTokens | \`\${PseudoClasses}:\${VanillaTokens}\`;
+     type PseudoClasses = 'hover' | 'focus' | 'active';
+     type Tokens = VanillaTokens | \`\${PseudoClasses}:\${VanillaTokens}\`;
   }
   
   declare type PlayerPositions = 'x' | 'y';
@@ -950,7 +872,7 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
   declare type Agents = { player: Agent; [name: string]: Agent };
   declare type XY_Tuple = [x: number, y: number];
   
-  declare interface PlayableAgent extends Agent<string> {
+  declare interface PlayableAgent extends Agent {
     x: number;
     y: number;
     x_tween: any;

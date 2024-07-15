@@ -21,6 +21,7 @@
   let current_scene_id = 0;
   let view: 'code' | 'scene' | 'game' = 'code';
   let code_changed = false;
+  let error_count = 0;
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
@@ -190,11 +191,16 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       </a>
       <button
         title={code_changed ? 'The code has unsaved changes' : ''}
+        class:text-red-600={error_count}
         class="{view == 'code'
           ? 'btn-view-selected'
-          : 'btn-view'} btn-md text-sm text-white flex items-center"
-        on:click={() => (view = 'code')}>Code {code_changed ? '*' : ''}</button
-      >
+          : 'btn-view'} btn-md text-sm text-white flex items-center justify-center"
+        on:click={() => (view = 'code')}
+        >Code {error_count ? `(${error_count})` : ''}
+        {#if code_changed}
+          <span class="scale-75 ml-1 text-white">{code_changed ? '●' : ''}</span>
+        {/if}
+      </button>
       <button
         class="{view != 'code'
           ? 'btn-view-selected'
@@ -218,7 +224,8 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       <Game bind:bg_asset_urls bind:agent_asset_urls bind:current_scene_id bind:project />
     {/if}
     <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
-      <CodeEditor bind:code={project.code} on:change={() => (code_changed = true)}></CodeEditor>
+      <CodeEditor bind:code={project.code} bind:error_count on:change={() => (code_changed = true)}
+      ></CodeEditor>
     </div>
     <Toast />
   </main>
