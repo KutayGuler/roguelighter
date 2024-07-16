@@ -1,15 +1,25 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
+  // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+  // import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
-  import { create_types, includes_any } from '../../utils';
+  import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
+
+  import { generate_types, includes_any } from '../../utils';
   const dispatch = createEventDispatcher();
 
   import { watch } from 'tauri-plugin-fs-watch-api';
   import { join, documentDir } from '@tauri-apps/api/path';
   import { type FileEntry, readDir } from '@tauri-apps/api/fs';
-  import { DEFAULT_DIR, INTERNAL_EVENTS, INTERNAL_GUI, INTERNAL_TEXTS } from '../../constants';
+  import {
+    DEFAULT_DIR,
+    INTERNAL_EVENTS,
+    INTERNAL_GUI,
+    INTERNAL_TEXTS,
+    variables_regex
+  } from '../../constants';
   import { current_project_name } from '../../store';
 
   export let code: string;
@@ -82,8 +92,8 @@
   }
 
   function validate(model: monaco.editor.ITextModel) {
+    //  TODO: Tailwind parsing???
     const markers = [];
-    // lines start at 1
     for (let i = 1; i < model.getLineCount() + 1; i++) {
       const range = {
         startLineNumber: i,
@@ -105,6 +115,40 @@
           endLineNumber: range.endLineNumber,
           endColumn: range.endColumn
         });
+      }
+
+      const variables_matches = content.match(variables_regex);
+
+      if (variables_matches) {
+        const regex = /variables\s*=\s*{([^}]*)}/;
+        const match = code.match(regex);
+        let variable_keys = [];
+
+        if (match) {
+          const variablesContent = match[1];
+          const keysRegex = /\b(\w+)\s*:/g;
+          let keysMatch;
+
+          while ((keysMatch = keysRegex.exec(variablesContent)) !== null) {
+            variable_keys.push(keysMatch[1]);
+          }
+        }
+
+        for (let match of variables_matches) {
+          const startColumn = content.indexOf(match);
+          const variable_name = match.replace('$var(', '').replace(')', '');
+
+          if (!variable_keys.includes(variable_name)) {
+            markers.push({
+              message: `Variable ${variable_name} does not exist.`,
+              severity: monaco.MarkerSeverity.Error,
+              startLineNumber: range.startLineNumber,
+              startColumn: startColumn + 2,
+              endLineNumber: range.endLineNumber,
+              endColumn: content.length + 2
+            });
+          }
+        }
       }
     }
     monaco.editor.setModelMarkers(model, 'owner', markers);
@@ -227,10 +271,36 @@
     filePath = await join(documentDirPath, `${DEFAULT_DIR}/${$current_project_name}/assets`);
 
     self.MonacoEnvironment = {
-      getWorker: () => new tsWorker()
+      getWorker(moduleID, label) {
+        // if (label == 'tailwindcss') {
+        //   return new twWorker();
+        // }
+
+        return new tsWorker();
+        // console.log(moduleID, label);
+        // switch (label) {
+        //   case 'typescript':
+        //     console.log('typescript');
+        //     return new tsWorker();
+        //   case 'tailwindcss':
+        //     console.log('tailwindcss');
+        //     return new twWorker();
+        //   default:
+        //     return new editorWorker();
+        // }
+      }
     };
 
     monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+    // monaco.languages.css.cssDefaults.setOptions({
+    //   data: {
+    //     dataProviders: {
+    //       tailwindcssData
+    //     }
+    //   }
+    // });
+
+    // configureMonacoTailwindcss(monaco);
 
     // compiler options
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
@@ -238,7 +308,7 @@
       allowNonTsExtensions: true
     });
 
-    monaco.editor.createModel(create_types(code), 'typescript');
+    monaco.editor.createModel(generate_types(code), 'typescript');
 
     editor = monaco.editor.create(editorElement, {
       automaticLayout: true,
@@ -252,7 +322,6 @@
     editor.onDidChangeModelContent(() => {
       validate(model);
       const markers = monaco.editor.getModelMarkers({});
-      console.log(markers);
 
       error_count = 0;
 
@@ -292,7 +361,7 @@
       const value = model.getValue();
       if (!value) continue;
       if (value.includes('type Easing =')) {
-        model.setValue(create_types(editor.getValue(), cached_entries));
+        model.setValue(generate_types(editor.getValue(), cached_entries));
       } else {
         content_id = model.id;
       }

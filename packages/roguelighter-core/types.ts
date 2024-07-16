@@ -350,7 +350,6 @@ export interface Variables {
 /**
  * TODO: docs
  */
-// TODO: update Function types
 declare interface Events {
   [function_name: string]: (_: GameData) => void;
 }
@@ -369,7 +368,7 @@ export interface GUI_Element {
   text?: InternalTexts | (string & {});
   /** An array of elements that will be inside this element
    *
-   * @example // TODO:
+   * @example TODO
    */
   children?: { [name: string]: GUI_Element };
   /** TODO: Documentation */

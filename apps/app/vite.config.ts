@@ -14,11 +14,21 @@ const viteServerConfig: Plugin = {
   }
 };
 
+const prefix = 'monaco-editor/esm/vs';
 export default defineConfig({
   plugins: [sveltekit(), viteServerConfig],
   build: {
     commonjsOptions: {
       include: [/roguelighter-core/, /node_modules/]
     }
+    // rollupOptions: {
+    //   output: {
+    //     manualChunks: {
+    //       tsWorker: [`${prefix}/language/typescript/ts.worker`],
+    //       editorWorker: [`${prefix}/editor/editor.worker`],
+    //       twWorker: [`monaco-tailwindcss/tailwindcss.worker`]
+    //     }
+    //   }
+    // }
   }
 });

@@ -32,7 +32,6 @@ export function debounce(fn: Function, ms: number) {
 
 export function code_string_to_json(code: string): string | GameData {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
-  const key_and_function_regex = /\b\w+\s*:\s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
   const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
 
   let t = '';
@@ -310,7 +309,7 @@ function retrieve_children_names(entry: FileEntry, parent_name = '') {
   return children;
 }
 
-export function create_types(game_code: string | GameData, assets_array: Array<FileEntry> = []) {
+export function generate_types(game_code: string | GameData, assets_array: Array<FileEntry> = []) {
   if (typeof game_code === 'string') {
     game_code = code_string_to_json(game_code) as GameData;
   }
@@ -353,9 +352,6 @@ export function create_types(game_code: string | GameData, assets_array: Array<F
 
   assets.agents = assets.agents.replaceAll('agents/', '');
   assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
-
-  // TODO: linter for $variables()
-  // TODO: variables type generation
 
   const variable_declarations = `
   

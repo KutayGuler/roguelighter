@@ -21,3 +21,5 @@ export const INTERNAL_EVENTS = [
 ];
 export const INTERNAL_TEXTS = ['$agent_avatar', '$agent_name', '$agent_text'];
 export const INTERNAL_GUI = ['$pause_menu'];
+
+export const variables_regex = /\$var\(([^)]+)\)/g;
