@@ -92,7 +92,6 @@
   }
 
   function validate(model: monaco.editor.ITextModel) {
-    //  TODO: Tailwind parsing???
     const markers = [];
     for (let i = 1; i < model.getLineCount() + 1; i++) {
       const range = {
@@ -140,7 +139,7 @@
 
           if (!variable_keys.includes(variable_name)) {
             markers.push({
-              message: `Variable ${variable_name} does not exist.`,
+              message: `Variable "${variable_name}" does not exist.`,
               severity: monaco.MarkerSeverity.Error,
               startLineNumber: range.startLineNumber,
               startColumn: startColumn + 2,

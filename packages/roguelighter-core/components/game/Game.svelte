@@ -1,8 +1,6 @@
 <script lang="ts">
   import { Canvas } from '@threlte/core';
-  // @ts-expect-error
   import GuiElement from './GuiElement.svelte';
-  // @ts-expect-error
   import Scene from './Scene.svelte';
   import type {
     WritableProps,
@@ -19,11 +17,14 @@
   import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
   import { exit } from '@tauri-apps/api/process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  const dispatch = createEventDispatcher();
 
   export let project: RoguelighterProject;
   export let current_scene_id: number;
   export let bg_asset_urls: BackgroundAssetUrls;
   export let agent_asset_urls: AgentAssetUrls;
+  export let DEV = true;
 
   let _ = code_string_to_json(project.code) as GameData;
   let { variables, agents, settings, events, gui, keybindings, collisions } = _;
@@ -119,8 +120,12 @@
         f.$open_pause_menu();
       }
     },
-    async $exit() {
-      await exit();
+    $exit: async () => {
+      if (DEV) {
+        dispatch('exit');
+      } else {
+        await exit();
+      }
     }
   } as const;
 
@@ -137,10 +142,9 @@
   Object.assign(events, {
     $toggle_pause_menu: f.$toggle_pause_menu,
     $open_pause_menu: f.$open_pause_menu,
-    $close_pause_menu: f.$close_pause_menu
+    $close_pause_menu: f.$close_pause_menu,
+    $exit: f.$exit
   });
-
-  console.log(events);
 
   // for (let [key, fn] of Object.entries(events)) {
   //   if (key[0] == '$') {

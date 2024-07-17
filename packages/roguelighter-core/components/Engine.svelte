@@ -17,9 +17,15 @@
   import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
   import { Command } from '@tauri-apps/api/shell';
 
+  type View = 'code' | 'scene' | 'game';
+  // TODO: hotkey to switch views (Ctrl + Q)
+  // TODO: prevent modifying CodeEditor while <Game> is open
+  // TODO: hotkey to close game Ctrl + X
+
   export let project: RoguelighterProject;
   let current_scene_id = 0;
-  let view: 'code' | 'scene' | 'game' = 'code';
+  let view: View = 'code';
+  let previousView: View = 'scene';
   let code_changed = false;
   let error_count = 0;
 
@@ -93,7 +99,6 @@
   }
 
   import { join, documentDir } from '@tauri-apps/api/path';
-  import Agent from './game/Agent.svelte';
 
   const commands: Array<string> = [
     // TODO:
@@ -195,7 +200,10 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         class="{view == 'code'
           ? 'btn-view-selected'
           : 'btn-view'} btn-md text-sm text-white flex items-center justify-center"
-        on:click={() => (view = 'code')}
+        on:click={() => {
+          previousView = view;
+          view = 'code';
+        }}
         >Code {error_count ? `(${error_count})` : ''}
         {#if code_changed}
           <span class="scale-75 ml-1 text-white">{code_changed ? '●' : ''}</span>
@@ -206,7 +214,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           ? 'btn-view-selected'
           : 'btn-view'} btn-md text-sm text-white flex items-center"
         on:click={() => {
-          view = 'scene';
+          view = previousView;
         }}>Scene</button
       >
       <!-- <button on:click={export_game}>Export</button> -->
@@ -221,7 +229,13 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         on:switch_view={switch_to_game}
       />
     {:else if view == 'game'}
-      <Game bind:bg_asset_urls bind:agent_asset_urls bind:current_scene_id bind:project />
+      <Game
+        bind:bg_asset_urls
+        bind:agent_asset_urls
+        bind:current_scene_id
+        bind:project
+        on:exit={() => (view = 'scene')}
+      />
     {/if}
     <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
       <CodeEditor bind:code={project.code} bind:error_count on:change={() => (code_changed = true)}
