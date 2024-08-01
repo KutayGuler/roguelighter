@@ -459,6 +459,10 @@ export type KeyboardEventCode =
   | 'Slash'
   | 'Escape';
 
+export type KeyboardCombinations =
+  | `Ctrl_${Exclude<KeyboardEventCode, 'ControlLeft' | 'ControlRight'>}`
+  | `Ctrl_${Exclude<KeyboardEventCode, 'ShiftLeft' | 'ShiftRight'>}`;
+
 /**
  * Default settings for your game
  */
@@ -493,8 +497,8 @@ export interface Settings {
 /**
  *
  */
-export type KeyBindings<P extends Agent<string>, V extends Variables, F extends Events> = {
-  [key in KeyboardEventCode]?: keyof F | InternalEvents;
+export type KeyBindings = {
+  [key in KeyboardEventCode | KeyboardCombinations]?: string | InternalEvents;
 };
 
 type SpriteConfig<Assets> = {
@@ -607,8 +611,17 @@ export interface GameData {
   settings: Settings;
   events: Events;
   gui: GUI;
-  keybindings: KeyBindings<any, any, any>;
+  keybindings: KeyBindings;
   collisions: Collisions;
+  __dev_only?: {
+    variables?: Variables;
+    agents?: Agents;
+    settings?: Settings;
+    events?: Events;
+    gui?: GUI;
+    keybindings?: KeyBindings;
+    collisions?: Collisions;
+  };
 }
 
 export interface RoguelighterProject {

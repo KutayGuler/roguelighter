@@ -1,7 +1,7 @@
 import RunCSS from 'runcss';
 import JSON5 from 'json5';
 import ts from 'typescript';
-import type { Agents, GUI_Element, GameData } from './types';
+import type { Agents, GUI, GUI_Element, GameData } from './types';
 import { DEFAULT_DIR } from './constants';
 import { join, documentDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
@@ -34,20 +34,9 @@ export function code_string_to_json(code: string): string | GameData {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
   const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
 
-  let t = '';
-
-  function findDeclarations(code: string) {
-    const declarationNames: Array<keyof GameData> = [
-      'settings',
-      'collisions',
-      'agents',
-      'variables',
-      'events',
-      'keybindings',
-      'gui'
-    ];
-    const regex = new RegExp(`\\b(${declarationNames.join('|')})\\b\\s*=\\s*([\\[{])`, 'g');
-    const matches = [];
+  function find_game_data_declaration(code: string) {
+    const regex = new RegExp(`\\b(game_data)\\b\\s*=\\s*([\\[{])`, 'g');
+    let game_data_declaration;
     let match;
 
     while ((match = regex.exec(code)) !== null) {
@@ -64,38 +53,33 @@ export function code_string_to_json(code: string): string | GameData {
       }
 
       if (depth === 0) {
-        matches.push(`${match[1]}: ${code.substring(start, end + 1).trim()},\n`);
+        game_data_declaration = `${match[1]}: ${code.substring(start, end + 1).trim()},\n`;
       }
     }
 
-    return matches;
+    return game_data_declaration;
   }
 
-  const declarations = findDeclarations(transpiled);
+  let game_data_declaration = find_game_data_declaration(transpiled);
 
-  for (let d of declarations) {
-    if (d.includes('events')) {
-      d = d.replace(function_regex, (match) => {
-        let modified = match.replaceAll('\n', ' ').replaceAll('"', '\\"');
-        return `"${modified}"`;
-      });
-    }
+  game_data_declaration = game_data_declaration?.replace(function_regex, (match) => {
+    let modified = match.replaceAll('\n', ' ').replaceAll('"', '\\"');
+    return `"${modified}"`;
+  });
 
-    t += d;
-  }
-
-  t = t.replace(/([\w$]+): /g, '"$1": ');
-  t = t.replaceAll("'", '"');
-  t = t.replace('},\n\n', '}');
-  t = `{
-    ${t}
-  }`;
+  let t = game_data_declaration as string;
 
   try {
-    return JSON5.parse(t);
+    t = t.replace(/([\w$]+): /g, '"$1": ');
+    t = t.replaceAll("'", '"');
+    t = t.replace('},\n\n', '}');
+    t = `{
+      ${t}
+    }`;
+
+    return JSON5.parse(t).game_data;
   } catch (e) {
-    console.log(t);
-    console.log(e);
+    console.log(t, e);
     return code;
   }
 }
@@ -249,10 +233,10 @@ export function generate_template_data() {
   });
 }
 
-export function get_tailwind_classes(gui_element: GUI_Element) {
+export function get_tailwind_classes(gui: GUI) {
   let set = new Set();
 
-  for (let child of Object.values(gui_element)) {
+  for (let child of Object.values(gui)) {
     for (let token of child.tokens) {
       set.add(token);
     }
@@ -309,10 +293,8 @@ function retrieve_children_names(entry: FileEntry, parent_name = '') {
   return children;
 }
 
-export function generate_types(game_code: string | GameData, assets_array: Array<FileEntry> = []) {
-  if (typeof game_code === 'string') {
-    game_code = code_string_to_json(game_code) as GameData;
-  }
+export function generate_types(game_code: string, assets_array: Array<FileEntry> = []) {
+  let game_data = code_string_to_json(game_code) as GameData;
 
   let assets = {
     agents: `'ERROR: no assets found'`,
@@ -323,15 +305,15 @@ export function generate_types(game_code: string | GameData, assets_array: Array
   let variables = '';
   let agent_states = '';
 
-  for (let key of Object.keys(game_code.events || {})) {
+  for (let key of Object.keys(game_data.events || {})) {
     events += `| '${key}'`;
   }
 
-  for (let key of Object.keys(game_code.variables || {})) {
+  for (let key of Object.keys(game_data.variables || {})) {
     variables += `| '${key}'`;
   }
 
-  for (let key of Object.keys(game_code?.agents?.player?.states || {})) {
+  for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
     if (key === 'default') continue;
     agent_states += `| '${key}'`;
   }
@@ -342,11 +324,11 @@ export function generate_types(game_code: string | GameData, assets_array: Array
 
     for (let asset of assets_array) {
       if (asset.children) {
-        assets[asset.name] += retrieve_children_names(asset);
+        assets[asset.name as keyof typeof assets] += retrieve_children_names(asset);
         continue;
       }
 
-      assets[asset.name] += `| '${asset.name}'`;
+      assets[asset.name as keyof typeof assets] += `| '${asset.name}'`;
     }
   }
 
@@ -354,24 +336,7 @@ export function generate_types(game_code: string | GameData, assets_array: Array
   assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
 
   const variable_declarations = `
-  
-  let settings: Prettify<Settings> = {}; 
-  let collisions: Prettify<Collisions> = []; 
-  let agents: Prettify<Agents> = {
-    player: {
-      states: {
-        default: {
-          // @ts-expect-error
-          source: "idle.png", 
-          frame_count: 4
-        },
-      }
-    },
-  };
-  let variables: Prettify<Variables> = {};
-  let events: Prettify<Events> = {};
-  let keybindings: Prettify<KeyBindings> = {};
-  let gui: Prettify<GUI> = {};
+  let game_data: GameData = {} 
   `;
 
   return (
@@ -816,6 +781,10 @@ export function generate_types(game_code: string | GameData, assets_array: Array
       | 'Comma'
       | 'Slash'
       | 'Escape';
+
+  type KeyboardCombinations =
+  | \`Ctrl_\${Exclude<KeyboardEventCode, 'ControlLeft' | 'ControlRight'>}\`
+  | \`Ctrl_\${Exclude<KeyboardEventCode, 'ShiftLeft' | 'ShiftRight'>}\`;
   
   declare interface Settings {
     fps?: number;
@@ -828,7 +797,7 @@ export function generate_types(game_code: string | GameData, assets_array: Array
   }
   
   declare type KeyBindings = {
-    [key in KeyboardEventCode]?: EventNames | InternalEvents;
+    [key in KeyboardEventCode | KeyboardCombinations]?: EventNames | InternalEvents;
   };
   
   type SpriteConfig = {
@@ -902,6 +871,15 @@ export function generate_types(game_code: string | GameData, assets_array: Array
     gui: GUI;
     keybindings: KeyBindings;
     collisions: Collisions;
+    __dev_only?: {
+      variables?: Variables;
+      agents?: Agents;
+      settings?: Settings;
+      events?: Events;
+      gui?: GUI;
+      keybindings?: KeyBindings;
+      collisions?: Collisions;
+    };
   }
   ` + variable_declarations
   );

@@ -1,8 +1,8 @@
 <script lang="ts">
   import 'svooltip/styles.css';
   import CodeEditor from './ide/CodeEditor.svelte';
-  import Game from './game/Game.svelte';
   import SceneEditor from './editor/SceneEditor.svelte';
+  import Game from './game/Game.svelte';
   import Toast from './editor/Toast.svelte';
   import { current_project_name, notifications } from '../store';
   import {
@@ -26,8 +26,6 @@
   let current_scene_id = 0;
   let view: View = 'code';
   let previousView: View = 'scene';
-  let code_changed = false;
-  let error_count = 0;
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
@@ -94,8 +92,6 @@
     let file_contents = JSON.stringify(obj);
 
     writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, { dir });
-
-    code_changed = false;
   }
 
   import { join, documentDir } from '@tauri-apps/api/path';
@@ -195,8 +191,6 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         </svg>
       </a>
       <button
-        title={code_changed ? 'The code has unsaved changes' : ''}
-        class:text-red-600={error_count}
         class="{view == 'code'
           ? 'btn-view-selected'
           : 'btn-view'} btn-md text-sm text-white flex items-center justify-center"
@@ -204,10 +198,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           previousView = view;
           view = 'code';
         }}
-        >Code {error_count ? `(${error_count})` : ''}
-        {#if code_changed}
-          <span class="scale-75 ml-1 text-white">{code_changed ? '●' : ''}</span>
-        {/if}
+        >Code
       </button>
       <button
         class="{view != 'code'
@@ -230,16 +221,16 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       />
     {:else if view == 'game'}
       <Game
-        bind:bg_asset_urls
-        bind:agent_asset_urls
-        bind:current_scene_id
-        bind:project
+        DEV
+        {bg_asset_urls}
+        {agent_asset_urls}
+        {current_scene_id}
+        {project}
         on:exit={() => (view = 'scene')}
       />
     {/if}
     <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
-      <CodeEditor bind:code={project.code} bind:error_count on:change={() => (code_changed = true)}
-      ></CodeEditor>
+      <CodeEditor bind:code={project.code}></CodeEditor>
     </div>
     <Toast />
   </main>

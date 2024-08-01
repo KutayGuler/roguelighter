@@ -9,7 +9,9 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "incremental": true
+    "incremental": true,
+    "lib": ["ES2023"],
+    "target": "ES2023"
   },
   "exclude": ["node_modules"]
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

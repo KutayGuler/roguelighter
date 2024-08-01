@@ -5,8 +5,7 @@
     BackgroundAssetUrls,
     PlayableScene,
     Portal,
-    Settings,
-    _
+    Settings
   } from '../../types';
   import { T, useTask, useThrelte } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';

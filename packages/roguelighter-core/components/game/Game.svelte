@@ -24,10 +24,10 @@
   export let current_scene_id: number;
   export let bg_asset_urls: BackgroundAssetUrls;
   export let agent_asset_urls: AgentAssetUrls;
-  export let DEV = true;
+  export let DEV = false;
 
   let _ = code_string_to_json(project.code) as GameData;
-  let { variables, agents, settings, events, gui, keybindings, collisions } = _;
+  let { variables, agents, settings, events, gui, keybindings, collisions, __dev_only } = _;
 
   for (let [key, val] of Object.entries(events)) {
     if (typeof val === 'string') {
@@ -139,12 +139,7 @@
 
   let internal_variables = { $pause_menu: false };
   Object.assign(variables, internal_variables);
-  Object.assign(events, {
-    $toggle_pause_menu: f.$toggle_pause_menu,
-    $open_pause_menu: f.$open_pause_menu,
-    $close_pause_menu: f.$close_pause_menu,
-    $exit: f.$exit
-  });
+  Object.assign(events, { ...f });
 
   // for (let [key, fn] of Object.entries(events)) {
   //   if (key[0] == '$') {
@@ -164,16 +159,22 @@
   // }
 
   function handle(kbd_event: KeyboardEvent) {
-    const event_name = keybindings[kbd_event.code as KeyboardEventCode] as string;
-    if (!event_name) return;
+    let event_code = kbd_event.code;
 
-    if (special_keys.includes(kbd_event.code as KeyboardEventCode)) {
-      events[event_name](_);
-      variables = variables;
-      return;
+    if (kbd_event.ctrlKey) {
+      event_code = 'Ctrl_' + kbd_event.code;
+    } else if (kbd_event.shiftKey) {
+      event_code = 'Shift_' + kbd_event.code;
     }
 
-    if (game_paused) return;
+    // TODO: make the type more encompassing
+    let event_name = keybindings[event_code as KeyboardEventCode] as string;
+
+    if (DEV && __dev_only?.keybindings) {
+      event_name = __dev_only?.keybindings[event_code as KeyboardEventCode] as string;
+    }
+
+    if (!event_name || game_paused) return;
     events[event_name](_);
     variables = variables;
   }

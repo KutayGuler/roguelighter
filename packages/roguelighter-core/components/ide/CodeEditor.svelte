@@ -1,14 +1,16 @@
 <script lang="ts">
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+  // @ts-expect-error
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  // import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
+  // @ts-expect-error
+  import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
+  // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
 
-  import { generate_types, includes_any } from '../../utils';
-  const dispatch = createEventDispatcher();
+  import { code_string_to_json, generate_types, includes_any } from '../../utils';
 
   import { watch } from 'tauri-plugin-fs-watch-api';
   import { join, documentDir } from '@tauri-apps/api/path';
@@ -23,7 +25,6 @@
   import { current_project_name } from '../../store';
 
   export let code: string;
-  export let error_count = 0;
   let editorElement: HTMLDivElement;
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
@@ -35,7 +36,7 @@
     editor.setValue(code);
   }
 
-  async function loadCode(code: string) {
+  async function load_code(code: string) {
     model = monaco.editor.createModel(code, 'typescript');
     monaco.editor.defineTheme('default', {
       base: 'vs-dark',
@@ -92,7 +93,16 @@
   }
 
   function validate(model: monaco.editor.ITextModel) {
-    const markers = [];
+    const game_data = code_string_to_json(code);
+    let markers = [];
+    let variable_keys = [];
+
+    if (typeof game_data == 'object') {
+      for (let key of Object.keys(game_data.variables)) {
+        variable_keys.push(key);
+      }
+    }
+
     for (let i = 1; i < model.getLineCount() + 1; i++) {
       const range = {
         startLineNumber: i,
@@ -107,7 +117,7 @@
         !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
       ) {
         markers.push({
-          message: '$ prefix is reserved and cannot be used for property names.',
+          message: '$ prefix is reserved and cannot be used for custom property names.',
           severity: monaco.MarkerSeverity.Error,
           startLineNumber: range.startLineNumber,
           startColumn: range.startColumn,
@@ -119,20 +129,6 @@
       const variables_matches = content.match(variables_regex);
 
       if (variables_matches) {
-        const regex = /variables\s*=\s*{([^}]*)}/;
-        const match = code.match(regex);
-        let variable_keys = [];
-
-        if (match) {
-          const variablesContent = match[1];
-          const keysRegex = /\b(\w+)\s*:/g;
-          let keysMatch;
-
-          while ((keysMatch = keysRegex.exec(variablesContent)) !== null) {
-            variable_keys.push(keysMatch[1]);
-          }
-        }
-
         for (let match of variables_matches) {
           const startColumn = content.indexOf(match);
           const variable_name = match.replace('$var(', '').replace(')', '');
@@ -140,7 +136,7 @@
           if (!variable_keys.includes(variable_name)) {
             markers.push({
               message: `Variable "${variable_name}" does not exist.`,
-              severity: monaco.MarkerSeverity.Error,
+              severity: monaco.MarkerSeverity.Warning,
               startLineNumber: range.startLineNumber,
               startColumn: startColumn + 2,
               endLineNumber: range.endLineNumber,
@@ -225,10 +221,10 @@
           ['continue:', 'kwProps'],
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
-          // [
-          //   /(?<![\t ])\b(settings|collisions|agents|variables|events|keybindings|gui)\b/g,
-          //   'globals'
-          // ],
+          [
+            /^(?:game_data|\tsettings|\tcollisions|\tagents|\tvariables|\tevents|\tkeybindings|\tgui)\b.*/gm,
+            'globals'
+          ],
           [/\b(let|var|const)\b/g, 'vardec'],
           [
             /\b(if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)\b/g,
@@ -240,9 +236,11 @@
     };
 
     const allLangs = monaco.languages.getLanguages();
+    // @ts-expect-error
     const { language: tsLang } = await allLangs.find(({ id }) => id === 'typescript').loader();
 
     for (let key in customTokenizer) {
+      // @ts-expect-error
       const value = customTokenizer[key];
       if (key === 'tokenizer') {
         for (let category in value) {
@@ -315,28 +313,10 @@
       tabSize: 2
     });
 
-    let initialized = false;
-
-    // FIXME: desync of errors
     editor.onDidChangeModelContent(() => {
+      update_types();
       validate(model);
-      const markers = monaco.editor.getModelMarkers({});
-
-      error_count = 0;
-
-      for (let marker of markers) {
-        if (marker.severity >= 8) {
-          error_count++;
-        }
-      }
-
       code = editor.getValue();
-      if (!initialized) {
-        initialized = true;
-        return;
-      }
-
-      dispatch('change');
     });
     editor.onKeyUp((e) => {
       if (e.keyCode === monaco.KeyCode.Quote) {
@@ -344,7 +324,7 @@
       }
     });
 
-    await loadCode(code);
+    await load_code(code);
   });
 
   onDestroy(() => {
