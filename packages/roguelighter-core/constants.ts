@@ -23,3 +23,4 @@ export const INTERNAL_TEXTS = ['$agent_avatar', '$agent_name', '$agent_text'];
 export const INTERNAL_GUI = ['$pause_menu'];
 
 export const variables_regex = /\$var\(([^)]+)\)/g;
+export const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;

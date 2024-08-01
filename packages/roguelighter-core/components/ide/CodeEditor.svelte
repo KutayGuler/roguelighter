@@ -93,6 +93,7 @@
   }
 
   function validate(model: monaco.editor.ITextModel) {
+    // TODO: use ast instead
     const game_data = code_string_to_json(code);
     let markers = [];
     let variable_keys = [];

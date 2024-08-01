@@ -67,11 +67,12 @@
   let bg_asset_urls = new Map<string, string>();
   let agent_asset_urls = new Map<string, any>();
 
-  async function calc_asset_urls() {
+  async function calc_asset_urls(parsed: GameData) {
+    // could use ast here instead
     try {
       ({ backgrounds: bg_asset_urls, agents: agent_asset_urls } = await get_asset_urls(
         $current_project_name,
-        (code_string_to_json(project.code) as GameData).agents
+        parsed.agents
       ));
     } catch (e) {
       console.log(e);
@@ -154,12 +155,15 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     }
   }
 
+  let initialized = false;
+
   function recalculate() {
     let parsed = code_string_to_json(project.code);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      calc_asset_urls();
+      calc_asset_urls(parsed);
+      initialized = true;
     }
   }
 
@@ -168,7 +172,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
 
 <svelte:window on:keydown={handle} />
 
-{#await calc_asset_urls() then _}
+{#if initialized}
   <main class="relative flex flex-col w-full h-full overflow-hidden select-none">
     <nav
       class="absolute top-0 z-50 bg-zinc-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-zinc-200"
@@ -265,4 +269,4 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     </div>
     <Toast />
   </main>
-{/await}
+{/if}

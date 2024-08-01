@@ -2,7 +2,7 @@ import RunCSS from 'runcss';
 import JSON5 from 'json5';
 import ts from 'typescript';
 import type { Agents, GUI, GUI_Element, GameData } from './types';
-import { DEFAULT_DIR } from './constants';
+import { DEFAULT_DIR, function_regex } from './constants';
 import { join, documentDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { FileEntry, readDir } from '@tauri-apps/api/fs';
@@ -30,9 +30,36 @@ export function debounce(fn: Function, ms: number) {
   };
 }
 
+function generate_ast(code: string) {
+  const ast = ts.createSourceFile(
+    'code.ts',
+    code,
+    {
+      languageVersion: ts.ScriptTarget.Latest
+    },
+    true,
+    ts.ScriptKind.TS
+  );
+
+  function ast_to_obj(node: ts.Node): any {
+    const result: any = {
+      kind: ts.SyntaxKind[node.kind],
+      text: node.getText(),
+      c: []
+    };
+
+    ts.forEachChild(node, (child) => {
+      result.c.push(ast_to_obj(child));
+    });
+
+    return result;
+  }
+
+  return ast_to_obj(ast);
+}
+
 export function code_string_to_json(code: string): string | GameData {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
-  const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
 
   function find_game_data_declaration(code: string) {
     const regex = new RegExp(`\\b(game_data)\\b\\s*=\\s*([\\[{])`, 'g');
@@ -62,6 +89,7 @@ export function code_string_to_json(code: string): string | GameData {
 
   let game_data_declaration = find_game_data_declaration(transpiled);
 
+  // turn function declarations into strings
   game_data_declaration = game_data_declaration?.replace(function_regex, (match) => {
     let modified = match.replaceAll('\n', ' ').replaceAll('"', '\\"');
     return `"${modified}"`;
@@ -293,30 +321,60 @@ function retrieve_children_names(entry: FileEntry, parent_name = '') {
   return children;
 }
 
-export function generate_types(game_code: string, assets_array: Array<FileEntry> = []) {
-  let game_data = code_string_to_json(game_code) as GameData;
+const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {
+  events: ({ text }) => text.startsWith('events:'),
+  variables: ({ text }) => text.startsWith('variables:')
+  // agent_states: ({ text }) => text.startsWith('variables:'),
+};
+
+export function generate_types(code: string, assets_array: Array<FileEntry> = []) {
+  const ast = generate_ast(code);
+  const prop_assignments = ast.c[0].c[0].c[2].c;
+  const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
+  const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+
+  let events = '';
+  let variables = '';
+  let agent_states = '';
+
+  // TODO: event_types
+  let event_types: { [key: string]: string } = {};
+
+  for (let assignment of event_functions) {
+    let identifier = assignment.c[0].text;
+    let parameters = [];
+    let tuple_type = '[]';
+
+    events += `| '${identifier}'`;
+
+    // TODO: also add regular function declaration
+    if (assignment.c[1].kind == 'ArrowFunction') {
+      parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
+    } else {
+      parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
+    }
+
+    if (parameters.length == 2) {
+      tuple_type = parameters[1].c[1].text;
+    }
+
+    event_types[identifier] = tuple_type;
+  }
 
   let assets = {
     agents: `'ERROR: no assets found'`,
     backgrounds: `'ERROR: no assets found'`
   };
 
-  let events = '';
-  let variables = '';
-  let agent_states = '';
-
-  for (let key of Object.keys(game_data.events || {})) {
-    events += `| '${key}'`;
+  for (let assignment of variable_assignments) {
+    variables += `| '${assignment.c[0].text}'`;
   }
 
-  for (let key of Object.keys(game_data.variables || {})) {
-    variables += `| '${key}'`;
-  }
-
-  for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
-    if (key === 'default') continue;
-    agent_states += `| '${key}'`;
-  }
+  // TODO: agent_states
+  // for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
+  //   if (key === 'default') continue;
+  //   agent_states += `| '${key}'`;
+  // }
 
   if (assets_array.length) {
     assets.agents = '';
@@ -334,8 +392,6 @@ export function generate_types(game_code: string, assets_array: Array<FileEntry>
 
   assets.agents = assets.agents.replaceAll('agents/', '');
   assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
-
-  // TODO: generate function parameter types manually
 
   const variable_declarations = `
   let game_data: GameData = {} 
@@ -704,10 +760,6 @@ export function generate_types(game_code: string, assets_array: Array<FileEntry>
   
   declare interface Events {
     [function_name: string]: UserFunction;
-  }
-  
-  declare interface _Events {
-    [functionName: string]: UserFunction;
   }
   
   type InternalEvents = '\$open_pause_menu' | '\$close_pause_menu' | '\$toggle_pause_menu' | '\$exit';
