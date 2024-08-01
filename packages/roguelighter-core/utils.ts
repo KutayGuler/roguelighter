@@ -59,6 +59,7 @@ function generate_ast(code: string) {
 }
 
 export function code_string_to_json(code: string): string | GameData {
+  console.count('code_str_to_json');
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
 
   function find_game_data_declaration(code: string) {

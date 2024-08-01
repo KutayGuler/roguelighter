@@ -167,6 +167,8 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     }
   }
 
+  // FIXME: code_string_to_json runs twice when switched to SceneEditor
+
   $: view, save_file(), recalculate();
 </script>
 
