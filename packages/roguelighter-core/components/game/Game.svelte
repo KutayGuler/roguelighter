@@ -167,10 +167,12 @@
       event_code = 'Shift_' + kbd_event.code;
     }
 
-    // TODO: make the type more encompassing
+    console.log(event_code, keybindings);
+
+    // TODO LATER: make the type more encompassing
     let event_name = keybindings[event_code as KeyboardEventCode] as string;
 
-    if (DEV && __dev_only?.keybindings) {
+    if (DEV && __dev_only?.keybindings && !event_name) {
       event_name = __dev_only?.keybindings[event_code as KeyboardEventCode] as string;
     }
 

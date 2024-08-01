@@ -1,4 +1,5 @@
 <script lang="ts">
+  // TODO LATER: save folding information on code
   import { onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
@@ -222,7 +223,7 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            /^(?:game_data|\tsettings|\tcollisions|\tagents|\tvariables|\tevents|\tkeybindings|\tgui)\b.*/gm,
+            /^(?:game_data|\tsettings|\tcollisions|\tagents|\tvariables|\tevents|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],
