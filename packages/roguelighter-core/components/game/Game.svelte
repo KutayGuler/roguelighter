@@ -1,4 +1,5 @@
 <script lang="ts">
+  // TODO LATER: introduce helpers
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
