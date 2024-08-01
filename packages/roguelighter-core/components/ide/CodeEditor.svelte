@@ -1,6 +1,6 @@
 <script lang="ts">
   // TODO LATER: save folding information on code
-  import { onDestroy, onMount } from 'svelte';
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   // @ts-expect-error
@@ -10,9 +10,7 @@
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-
   import { code_string_to_json, generate_types, includes_any } from '../../utils';
-
   import { watch } from 'tauri-plugin-fs-watch-api';
   import { join, documentDir } from '@tauri-apps/api/path';
   import { type FileEntry, readDir } from '@tauri-apps/api/fs';
@@ -24,6 +22,7 @@
     variables_regex
   } from '../../constants';
   import { current_project_name } from '../../store';
+  const dispatch = createEventDispatcher();
 
   export let code: string;
   let editorElement: HTMLDivElement;
@@ -322,6 +321,11 @@
     editor.onKeyUp((e) => {
       if (e.keyCode === monaco.KeyCode.Quote) {
         editor.trigger('', 'editor.action.triggerSuggest', '');
+      }
+    });
+    editor.onKeyDown((e) => {
+      if (e.code === 'Escape') {
+        dispatch('unfocus');
       }
     });
 

@@ -335,6 +335,8 @@ export function generate_types(game_code: string, assets_array: Array<FileEntry>
   assets.agents = assets.agents.replaceAll('agents/', '');
   assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
 
+  // TODO: generate function parameter types manually
+
   const variable_declarations = `
   let game_data: GameData = {} 
   `;
@@ -694,17 +696,18 @@ export function generate_types(game_code: string, assets_array: Array<FileEntry>
   
   declare type PlayerPositions = 'x' | 'y';
   declare type WritableProps = PlayerPositions | VariableNames;
+  declare type UserFunction = (_: GameData, args?: Array<any>) => void;
 
   declare interface Variables {
     [variable_name: string]: any;
   }
   
   declare interface Events {
-    [function_name: string]: (_: GameData) => void;
+    [function_name: string]: UserFunction;
   }
   
   declare interface _Events {
-    [functionName: string]: (_: GameData) => void;
+    [functionName: string]: UserFunction;
   }
   
   type InternalEvents = '\$open_pause_menu' | '\$close_pause_menu' | '\$toggle_pause_menu' | '\$exit';
@@ -797,7 +800,7 @@ export function generate_types(game_code: string, assets_array: Array<FileEntry>
   }
   
   declare type KeyBindings = {
-    [key in KeyboardEventCode | KeyboardCombinations]?: EventNames | InternalEvents;
+    [key in KeyboardEventCode | KeyboardCombinations]?: EventNames | InternalEvents | [EventNames | InternalEvents, Array<any>];
   };
   
   type SpriteConfig = {

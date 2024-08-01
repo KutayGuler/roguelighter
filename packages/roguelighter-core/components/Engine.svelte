@@ -24,6 +24,8 @@
   let current_scene_id = 0;
   let view: View = 'code';
   let previousView: View = 'scene';
+  let code_button: HTMLButtonElement;
+  let scene_button: HTMLButtonElement;
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
@@ -190,6 +192,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       </a>
       <div class="flex flex-row gap-2">
         <button
+          bind:this={code_button}
           class="{view == 'code'
             ? 'btn-view-selected'
             : 'btn-view'} btn-md text-sm text-white flex items-center justify-center"
@@ -200,6 +203,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           >Code
         </button>
         <button
+          bind:this={scene_button}
           class="{view != 'code'
             ? 'btn-view-selected'
             : 'btn-view'} btn-md text-sm text-white flex items-center"
@@ -244,6 +248,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         bind:project
         on:change={debounce(save_file, 100)}
         on:switch_view={switch_to_game}
+        on:unfocus={() => scene_button.focus()}
       />
     {:else if view == 'game'}
       <Game
@@ -256,7 +261,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       />
     {/if}
     <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
-      <CodeEditor bind:code={project.code}></CodeEditor>
+      <CodeEditor bind:code={project.code} on:unfocus={() => code_button.focus()}></CodeEditor>
     </div>
     <Toast />
   </main>

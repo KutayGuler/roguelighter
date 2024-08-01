@@ -168,17 +168,21 @@
       event_code = 'Shift_' + kbd_event.code;
     }
 
-    console.log(event_code, keybindings);
-
     // TODO LATER: make the type more encompassing
-    let event_name = keybindings[event_code as KeyboardEventCode] as string;
+    let event_name = keybindings[event_code as KeyboardEventCode];
 
     if (DEV && __dev_only?.keybindings && !event_name) {
-      event_name = __dev_only?.keybindings[event_code as KeyboardEventCode] as string;
+      event_name = __dev_only?.keybindings[event_code as KeyboardEventCode];
     }
 
     if (!event_name || game_paused) return;
-    events[event_name](_);
+
+    if (Array.isArray(event_name)) {
+      events[event_name[0]](_, event_name[1]);
+    } else {
+      events[event_name](_);
+    }
+
     variables = variables;
   }
 

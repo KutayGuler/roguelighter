@@ -337,7 +337,7 @@ export type WritableProps<V extends Variables> = PlayerPositions | GetVars<V>;
 type MockVariableNames = string;
 
 export type F = {
-  [key in InternalEvents]: (_: GameData) => void;
+  [key in InternalEvents]: UserFunction;
 };
 
 /**
@@ -347,11 +347,13 @@ export interface Variables {
   [variable_name: string]: any;
 }
 
+type UserFunction = (_: GameData, args?: Array<any>) => void;
+
 /**
  * TODO: docs
  */
 declare interface Events {
-  [function_name: string]: (_: GameData) => void;
+  [function_name: string]: UserFunction;
 }
 
 type InternalEvents = '$open_pause_menu' | '$close_pause_menu' | '$toggle_pause_menu' | '$exit';
@@ -498,7 +500,10 @@ export interface Settings {
  *
  */
 export type KeyBindings = {
-  [key in KeyboardEventCode | KeyboardCombinations]?: string | InternalEvents;
+  [key in KeyboardEventCode | KeyboardCombinations]?:
+    | string
+    | InternalEvents
+    | [string | InternalEvents, Array<any>];
 };
 
 type SpriteConfig<Assets> = {

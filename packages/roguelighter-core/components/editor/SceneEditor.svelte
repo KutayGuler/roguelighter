@@ -255,6 +255,11 @@
   on:mousedown={() => (holding = true)}
   on:mouseup={() => (holding = false)}
   on:keydown={(e) => {
+    if (e.code == 'Escape') {
+      dispatch('unfocus');
+      return;
+    }
+
     if ($portal_modal.expanded || $new_scene_modal.expanded || $delete_scene_modal.expanded) {
       return;
     }
