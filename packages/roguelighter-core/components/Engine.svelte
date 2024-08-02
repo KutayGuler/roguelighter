@@ -12,20 +12,22 @@
     code_string_to_json,
     processClasses
   } from '../utils';
-  import type { GameData, RoguelighterDataFile, RoguelighterProject } from '../types';
-  import { writeTextFile } from '@tauri-apps/api/fs';
+  import type { GameData, RoguelighterDataFile, RoguelighterProject, View } from '../types';
   import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
+  import { writeTextFile } from '@tauri-apps/api/fs';
+  import { join, documentDir } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/api/shell';
-
-  type View = 'code' | 'scene' | 'game';
-  // TODO LATER: hotkey to switch views (Ctrl + Q)
+  import Options from './Options.svelte';
+  import GuiEditor from './ide/GuiEditor.svelte';
 
   export let project: RoguelighterProject;
+  let options_open = false;
   let current_scene_id = 0;
   let view: View = 'code';
   let previousView: View = 'scene';
   let code_button: HTMLButtonElement;
   let scene_button: HTMLButtonElement;
+  let agents: GameData['agents'];
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
@@ -68,7 +70,6 @@
   let agent_asset_urls = new Map<string, any>();
 
   async function calc_asset_urls(parsed: GameData) {
-    // could use ast here instead
     try {
       ({ backgrounds: bg_asset_urls, agents: agent_asset_urls } = await get_asset_urls(
         $current_project_name,
@@ -94,8 +95,6 @@
 
     writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, { dir });
   }
-
-  import { join, documentDir } from '@tauri-apps/api/path';
 
   const commands: Array<string> = [
     // TODO LATER:
@@ -163,11 +162,10 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
       calc_asset_urls(parsed);
+      agents = parsed.agents;
       initialized = true;
     }
   }
-
-  // FIXME: code_string_to_json runs twice when switched to SceneEditor
 
   $: view, save_file(), recalculate();
 </script>
@@ -176,8 +174,9 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
 
 {#if initialized}
   <main class="relative flex flex-col w-full h-full overflow-hidden select-none">
+    <Options bind:open={options_open}></Options>
     <nav
-      class="absolute top-0 z-50 bg-zinc-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-zinc-200"
+      class="absolute top-0 z-40 bg-zinc-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-zinc-200"
     >
       <a href="/" class=""
         ><svg
@@ -218,12 +217,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           }}>Scene</button
         >
       </div>
-      <!-- TODO LATER: dropdown
-        options page
-        options.json should be stored globally
-        export game
-      -->
-      <button>
+      <button on:click={() => (options_open = true)}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -244,7 +238,6 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           />
         </svg>
       </button>
-      <!-- <button on:click={export_game}>Export</button> -->
     </nav>
     {#if view == 'scene'}
       <SceneEditor
@@ -252,6 +245,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         bind:agent_asset_urls
         bind:current_scene_id
         bind:project
+        bind:agents
         on:change={debounce(save_file, 100)}
         on:switch_view={switch_to_game}
         on:unfocus={() => scene_button.focus()}
@@ -266,8 +260,12 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         on:exit={() => (view = 'scene')}
       />
     {/if}
-    <div class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10'}">
-      <CodeEditor bind:code={project.code} on:unfocus={() => code_button.focus()}></CodeEditor>
+    <div
+      class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"
+    >
+      <GuiEditor code=""></GuiEditor>
+      <!-- <CodeEditor bind:view bind:code={project.code} on:unfocus={() => code_button.focus()}
+      ></CodeEditor> -->
     </div>
     <Toast />
   </main>

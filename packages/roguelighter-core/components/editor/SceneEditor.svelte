@@ -20,10 +20,9 @@
   export let current_scene_id: number;
   export let bg_asset_urls: BackgroundAssetUrls;
   export let agent_asset_urls: AgentAssetUrls;
+  export let agents: GameData['agents'];
 
   const backgrounds = Object.fromEntries(bg_asset_urls);
-
-  let { agents } = code_string_to_json(project.code) as GameData;
 
   let current_scene: Scene;
   $: current_scene = project.scenes.get(current_scene_id) as Scene;

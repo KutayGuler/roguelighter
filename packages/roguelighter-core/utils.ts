@@ -30,7 +30,7 @@ export function debounce(fn: Function, ms: number) {
   };
 }
 
-function generate_ast(code: string) {
+export function generate_ast(code: string) {
   const ast = ts.createSourceFile(
     'code.ts',
     code,
@@ -59,7 +59,6 @@ function generate_ast(code: string) {
 }
 
 export function code_string_to_json(code: string): string | GameData {
-  console.count('code_str_to_json');
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
 
   function find_game_data_declaration(code: string) {
@@ -322,78 +321,25 @@ function retrieve_children_names(entry: FileEntry, parent_name = '') {
   return children;
 }
 
-const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {
+export const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {
   events: ({ text }) => text.startsWith('events:'),
   variables: ({ text }) => text.startsWith('variables:')
   // agent_states: ({ text }) => text.startsWith('variables:'),
 };
 
-export function generate_types(code: string, assets_array: Array<FileEntry> = []) {
-  const ast = generate_ast(code);
-  const prop_assignments = ast.c[0].c[0].c[2].c;
-  const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
-  const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
-
-  let events = '';
-  let variables = '';
-  let agent_states = '';
-
-  // TODO: event_types
-  let event_types: { [key: string]: string } = {};
-
-  for (let assignment of event_functions) {
-    let identifier = assignment.c[0].text;
-    let parameters = [];
-    let tuple_type = '[]';
-
-    events += `| '${identifier}'`;
-
-    // TODO: also add regular function declaration
-    if (assignment.c[1].kind == 'ArrowFunction') {
-      parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
-    } else {
-      parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
-    }
-
-    if (parameters.length == 2) {
-      tuple_type = parameters[1].c[1].text;
-    }
-
-    event_types[identifier] = tuple_type;
-  }
-
-  let assets = {
-    agents: `'ERROR: no assets found'`,
-    backgrounds: `'ERROR: no assets found'`
-  };
-
-  for (let assignment of variable_assignments) {
-    variables += `| '${assignment.c[0].text}'`;
-  }
-
-  // TODO: agent_states
-  // for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
-  //   if (key === 'default') continue;
-  //   agent_states += `| '${key}'`;
-  // }
-
-  if (assets_array.length) {
-    assets.agents = '';
-    assets.backgrounds = '';
-
-    for (let asset of assets_array) {
-      if (asset.children) {
-        assets[asset.name as keyof typeof assets] += retrieve_children_names(asset);
-        continue;
-      }
-
-      assets[asset.name as keyof typeof assets] += `| '${asset.name}'`;
-    }
-  }
-
-  assets.agents = assets.agents.replaceAll('agents/', '');
-  assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
-
+function generate_boilerplate_types({
+  assets,
+  events,
+  variables,
+  agent_states,
+  user_functions_and_parameters
+}: {
+  assets: { agents: string; backgrounds: string };
+  events: string;
+  variables: string;
+  agent_states: string;
+  user_functions_and_parameters: string;
+}) {
   const variable_declarations = `
   let game_data: GameData = {} 
   `;
@@ -409,6 +355,7 @@ export function generate_types(code: string, assets_array: Array<FileEntry> = []
   type VariableNames = ${variables};
   type BackgroundNames = ${assets.backgrounds};
   type AgentStates = ${agent_states};
+  type UserFunctionsAndParameters = ${user_functions_and_parameters};
 
   type Easing =
     | 'back'
@@ -853,7 +800,8 @@ export function generate_types(code: string, assets_array: Array<FileEntry> = []
   }
   
   declare type KeyBindings = {
-    [key in KeyboardEventCode | KeyboardCombinations]?: EventNames | InternalEvents | [EventNames | InternalEvents, Array<any>];
+    // [EventNames | InternalEvents, Array<any>]
+    [key in KeyboardEventCode | KeyboardCombinations]?: EventNames | InternalEvents | UserFunctionsAndParameters;
   };
   
   type SpriteConfig = {
@@ -891,8 +839,6 @@ export function generate_types(code: string, assets_array: Array<FileEntry> = []
   declare interface PlayableAgent extends Agent {
     x: number;
     y: number;
-    x_tween: any;
-    y_tween: any;
     state: string;
   }
   
@@ -939,4 +885,83 @@ export function generate_types(code: string, assets_array: Array<FileEntry> = []
   }
   ` + variable_declarations
   );
+}
+
+export function generate_types(code: string, assets_array: Array<FileEntry> = []) {
+  // TODO: try catch in case ast fails
+  const ast = generate_ast(code);
+  const prop_assignments = ast.c[0].c[0].c[2].c;
+  const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
+  const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+
+  let events = '';
+  let variables = '';
+  let agent_states = '';
+  let user_functions_and_parameters = '';
+  let event_types: { [key: string]: string } = {};
+
+  for (let assignment of event_functions) {
+    let identifier = assignment.c[0].text;
+    let parameters = [];
+    let tuple_type = '[]';
+
+    events += `| '${identifier}'`;
+
+    // TODO LATER: also add regular function declaration
+    if (assignment.c[1].kind == 'ArrowFunction') {
+      parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
+    } else {
+      parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
+    }
+
+    if (parameters.length == 2) {
+      tuple_type = parameters[1].c[1].text;
+    }
+
+    event_types[identifier] = tuple_type;
+  }
+
+  for (let [key, val] of Object.entries(event_types)) {
+    user_functions_and_parameters += `| ["${key}", ${val}]`;
+  }
+
+  let assets = {
+    agents: `'ERROR: no assets found'`,
+    backgrounds: `'ERROR: no assets found'`
+  };
+
+  for (let assignment of variable_assignments) {
+    variables += `| '${assignment.c[0].text}'`;
+  }
+
+  // TODO: agent_states
+  // for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
+  //   if (key === 'default') continue;
+  //   agent_states += `| '${key}'`;
+  // }
+
+  if (assets_array.length) {
+    assets.agents = '';
+    assets.backgrounds = '';
+
+    for (let asset of assets_array) {
+      if (asset.children) {
+        assets[asset.name as keyof typeof assets] += retrieve_children_names(asset);
+        continue;
+      }
+
+      assets[asset.name as keyof typeof assets] += `| '${asset.name}'`;
+    }
+  }
+
+  assets.agents = assets.agents.replaceAll('agents/', '');
+  assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
+
+  return generate_boilerplate_types({
+    assets,
+    events,
+    variables,
+    agent_states,
+    user_functions_and_parameters
+  });
 }

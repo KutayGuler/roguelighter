@@ -25,6 +25,7 @@
     type FileEntry
   } from '@tauri-apps/api/fs';
   import JSON5 from 'json5';
+  import { PUBLIC_APP_VERSION } from '$env/static/public';
 
   let projects: Array<FileEntry> = [];
   let current_project_name = '';
@@ -117,12 +118,15 @@
     <div class="w-full max-w-xl p-4">
       <div class="flex flex-row items-end justify-between">
         <h3 class="h3">Projects</h3>
-        <button
-          on:click={() => {
-            new_project_modal.open();
-          }}
-          class="btn-success btn-md">New Project</button
-        >
+        <div class="inline-flex gap-2">
+          <span class="text-xs self-end">v{PUBLIC_APP_VERSION}</span>
+          <button
+            on:click={() => {
+              new_project_modal.open();
+            }}
+            class="btn-success btn-md">New Project</button
+          >
+        </div>
       </div>
       <div class="flex flex-col gap-2 pt-4">
         {#each projects as project}

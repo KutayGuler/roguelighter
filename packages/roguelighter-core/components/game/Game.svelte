@@ -45,17 +45,6 @@
   let scene: PlayableScene;
   let scenes = new Map<number, PlayableScene>();
 
-  function set_camera_tween(x: number, y: number) {
-    camera_x_tween = tweened(x, {
-      duration: DURATION,
-      easing: easings[EASING]
-    });
-    camera_y_tween = tweened(y, {
-      duration: DURATION,
-      easing: easings[EASING]
-    });
-  }
-
   function transform_scenes() {
     for (let [id, scene] of unmodified_scenes) {
       // @ts-expect-error
@@ -68,14 +57,6 @@
           name,
           x,
           y,
-          x_tween: tweened(x, {
-            duration: agents[name].duration || DURATION,
-            easing: easings[agents[name].easing || EASING]
-          }),
-          y_tween: tweened(y, {
-            duration: agents[name].duration || DURATION,
-            easing: easings[agents[name].easing || EASING]
-          }),
           states: agents[name].states,
           state: 'default'
         });
@@ -83,7 +64,6 @@
         if (name == 'player') {
           if (id == current_scene_id) {
             player_pos = pos;
-            set_camera_tween(x, y);
           } else {
             transformed_scene.agents.delete(pos);
           }
@@ -97,10 +77,6 @@
   }
 
   let player_pos = 0;
-
-  let camera_x_tween: Tweened<number>;
-  let camera_y_tween: Tweened<number>;
-
   let game_paused = false;
 
   const f = {
@@ -199,18 +175,9 @@
     Object.assign(player, {
       name: 'player',
       x,
-      y,
-      x_tween: tweened(x, {
-        duration: agents.player.duration || DURATION,
-        easing: easings[agents.player.easing || EASING]
-      }),
-      y_tween: tweened(y, {
-        duration: agents.player.duration || DURATION,
-        easing: easings[agents.player.easing || EASING]
-      })
+      y
     });
     scene.agents.set(to_position, player);
-    set_camera_tween(x, y);
     scene_just_changed = true;
   }
 
@@ -226,8 +193,6 @@
         <Scene
           on:change_scene={change_scene}
           {player_pos}
-          {camera_x_tween}
-          {camera_y_tween}
           {settings}
           {scene}
           {scene_just_changed}

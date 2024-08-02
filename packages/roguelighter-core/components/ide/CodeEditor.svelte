@@ -3,14 +3,12 @@
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-  // @ts-expect-error
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  // @ts-expect-error
   import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-  import { code_string_to_json, generate_types, includes_any } from '../../utils';
+  import { filters, generate_ast, generate_types, includes_any } from '../../utils';
   import { watch } from 'tauri-plugin-fs-watch-api';
   import { join, documentDir } from '@tauri-apps/api/path';
   import { type FileEntry, readDir } from '@tauri-apps/api/fs';
@@ -22,9 +20,11 @@
     variables_regex
   } from '../../constants';
   import { current_project_name } from '../../store';
+  import type { View } from '../../types';
   const dispatch = createEventDispatcher();
 
   export let code: string;
+  export let view: View;
   let editorElement: HTMLDivElement;
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
@@ -93,15 +93,14 @@
   }
 
   function validate(model: monaco.editor.ITextModel) {
-    // TODO: use ast instead
-    const game_data = code_string_to_json(code);
+    const ast = generate_ast(code);
+    const prop_assignments = ast.c[0].c[0].c[2].c;
+    const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
     let markers = [];
     let variable_keys = [];
 
-    if (typeof game_data == 'object') {
-      for (let key of Object.keys(game_data.variables)) {
-        variable_keys.push(key);
-      }
+    for (let assignment of variable_assignments) {
+      variable_keys.push(assignment.c[0].text);
     }
 
     for (let i = 1; i < model.getLineCount() + 1; i++) {
@@ -320,11 +319,19 @@
       code = editor.getValue();
     });
     editor.onKeyUp((e) => {
+      if (view == 'game') {
+        e.preventDefault();
+        return;
+      }
       if (e.keyCode === monaco.KeyCode.Quote) {
         editor.trigger('', 'editor.action.triggerSuggest', '');
       }
     });
     editor.onKeyDown((e) => {
+      if (view == 'game') {
+        e.preventDefault();
+        return;
+      }
       if (e.code === 'Escape') {
         dispatch('unfocus');
       }

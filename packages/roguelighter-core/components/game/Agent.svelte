@@ -1,7 +1,7 @@
 <script lang="ts">
   import { T, useTask } from '@threlte/core';
   import { AnimatedSpriteMaterial, Suspense } from '@threlte/extras';
-  import { DEFAULT_FRAME_COUNT, DEFAULT_FPS } from '../../constants';
+  import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
   import type { Settings, PlayableAgent, AgentAssetUrls } from '../../types';
   import { Mesh, MeshStandardMaterial } from 'three';
 
@@ -26,9 +26,11 @@
   let delay = defaults.delay;
   let filter = defaults.filter || settings.filter || 'nearest';
 
-  const keyboard = { x: 0 };
+  let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
+
+  const keyboard = { x: 0, y: 0 };
   const pressed = new Set<string>();
-  export const playerPosition: [number, number, number] = [-2.0, -2.75, 0.01];
+  export const playerPosition: [number, number, number] = [-2.0, 1.75, zoom];
   const mesh = new Mesh();
   mesh.position.set(...playerPosition);
 
@@ -40,6 +42,12 @@
       case 'd':
       case 'arrowright':
         return (keyboard.x = -value);
+      case 'w':
+      case 'arrowup':
+        return (keyboard.y = -value);
+      case 's':
+      case 'arrowdown':
+        return (keyboard.y = +value);
     }
     return;
   };
@@ -60,11 +68,9 @@
   };
 
   useTask((delta) => {
-    // agent.x = get(agent.x_tween);
-    // agent.y = get(agent.y_tween);
-
-    if (keyboard.x === 0) return;
+    // if (keyboard.x === 0) return;
     playerPosition[0] += -keyboard.x * (delta * 2);
+    playerPosition[1] += -keyboard.y * (delta * 2);
     mesh.position.set(...playerPosition);
   });
 </script>

@@ -21,17 +21,12 @@
   export let scene: PlayableScene;
   export let scene_just_changed: boolean;
   export let player_pos: number;
-  export let camera_x_tween: Tweened<number>;
-  export let camera_y_tween: Tweened<number>;
   const { camera } = useThrelte();
 
   let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
   $camera.position.z = 100 / zoom;
 
   useTask(() => {
-    $camera.position.x = get(camera_x_tween);
-    $camera.position.y = get(camera_y_tween);
-
     if (!scene_just_changed && scene.portals.has(player_pos)) {
       const portal_info = scene.portals.get(player_pos) as Portal;
       dispatch('change_scene', portal_info);

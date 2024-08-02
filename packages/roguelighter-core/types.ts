@@ -496,6 +496,8 @@ export interface Settings {
   };
 }
 
+type UserFunctions = {};
+
 /**
  *
  */
@@ -573,8 +575,6 @@ export interface PlayableAgent extends Agent<string> {
   name: string;
   x: number;
   y: number;
-  x_tween: any;
-  y_tween: any;
   state: string;
 }
 
@@ -648,3 +648,5 @@ import { createDialog, createMenu } from 'svelte-headlessui';
 
 export type DialogController = ReturnType<typeof createDialog>;
 export type DropdownController = ReturnType<typeof createMenu>;
+
+export type View = 'code' | 'scene' | 'game';
