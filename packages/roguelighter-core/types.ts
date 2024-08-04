@@ -408,6 +408,28 @@ type DigitKeys =
   | 'Digit8'
   | 'Digit9';
 
+type NumpadDigitKeys =
+  | 'Numpad0'
+  | 'Numpad1'
+  | 'Numpad2'
+  | 'Numpad3'
+  | 'Numpad4'
+  | 'Numpad5'
+  | 'Numpad6'
+  | 'Numpad7'
+  | 'Numpad8'
+  | 'Numpad9';
+
+type NumpadKeys =
+  | NumpadDigitKeys
+  | 'NumLock'
+  | 'NumpadDivide'
+  | 'NumpadMultiply'
+  | 'NumpadSubtract'
+  | 'NumpadAdd'
+  | 'NumpadEnter'
+  | 'NumpadDecimal';
+
 type FKeys = 'F1' | 'F2' | 'F3' | 'F4' | 'F5' | 'F6' | 'F7' | 'F8' | 'F9' | 'F10' | 'F11' | 'F12';
 
 type Alphabet =
@@ -443,27 +465,39 @@ export type KeyboardEventCode =
   | FKeys
   | DigitKeys
   | ArrowKeys
-  | 'Space'
-  | 'Enter'
+  | NumpadKeys
+  | 'Backquote'
+  | 'Backslash'
+  | 'Backspace'
+  | 'BracketLeft'
+  | 'BracketRight'
+  | 'CapsLock'
+  | 'Comma'
+  | 'ContextMenu'
   | 'ControlLeft'
   | 'ControlRight'
-  | 'ShiftLeft'
-  | 'ShiftRight'
-  | 'Tab'
-  | 'CapsLock'
-  | 'BracketRight'
-  | 'BracketLeft'
-  | 'Backslash'
+  | 'Delete'
+  | 'Enter'
+  | 'Escape'
+  | 'Home'
+  | 'Insert'
+  | 'IntlBackslash'
+  | 'Minus'
+  | 'PageDown'
+  | 'PageUp'
+  | 'Period'
   | 'Quote'
   | 'Semicolon'
-  | 'Period'
-  | 'Comma'
+  | 'ShiftLeft'
+  | 'ShiftRight'
   | 'Slash'
-  | 'Escape';
+  | 'Space'
+  | 'Tab';
 
 export type KeyboardCombinations =
-  | `Ctrl_${Exclude<KeyboardEventCode, 'ControlLeft' | 'ControlRight'>}`
-  | `Ctrl_${Exclude<KeyboardEventCode, 'ShiftLeft' | 'ShiftRight'>}`;
+  | `Control_${Exclude<KeyboardEventCode, 'ControlLeft' | 'ControlRight'>}`
+  | `Shift_${Exclude<KeyboardEventCode, 'ShiftLeft' | 'ShiftRight'>}`
+  | `Alt_${Exclude<KeyboardEventCode, 'AltLeft' | 'AltRight'>}`;
 
 /**
  * Default settings for your game

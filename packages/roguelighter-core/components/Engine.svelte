@@ -263,9 +263,9 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     <div
       class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"
     >
-      <GuiEditor code=""></GuiEditor>
-      <!-- <CodeEditor bind:view bind:code={project.code} on:unfocus={() => code_button.focus()}
-      ></CodeEditor> -->
+      <!-- <GuiEditor code=""></GuiEditor> -->
+      <CodeEditor bind:view bind:code={project.code} on:unfocus={() => code_button.focus()}
+      ></CodeEditor>
     </div>
     <Toast />
   </main>

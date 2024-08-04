@@ -139,9 +139,11 @@
     let event_code = kbd_event.code;
 
     if (kbd_event.ctrlKey) {
-      event_code = 'Ctrl_' + kbd_event.code;
+      event_code = 'Control_' + kbd_event.code;
     } else if (kbd_event.shiftKey) {
       event_code = 'Shift_' + kbd_event.code;
+    } else if (kbd_event.altKey) {
+      event_code = 'Alt_' + kbd_event.code;
     }
 
     // TODO LATER: make the type more encompassing

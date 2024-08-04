@@ -744,10 +744,8 @@ function generate_boilerplate_types({
     [key: string]: GUI_Element;
   }
   
-  type FKeys = 'F1' | 'F2' | 'F3' | 'F4' | 'F5' | 'F6' | 'F7' | 'F8' | 'F9' | 'F10' | 'F11' | 'F12';
-  
   type ArrowKeys = 'ArrowRight' | 'ArrowLeft' | 'ArrowUp' | 'ArrowDown';
-  
+
   type DigitKeys =
     | 'Digit0'
     | 'Digit1'
@@ -760,34 +758,96 @@ function generate_boilerplate_types({
     | 'Digit8'
     | 'Digit9';
   
-    type Alphabet = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' 
-   
-    type KeyboardEventCode =
-      | \`Key\${Alphabet}\`
-      | FKeys
-      | DigitKeys
-      | ArrowKeys
-      | 'Space'
-      | 'Enter'
-      | 'ControlLeft'
-      | 'ControlRight'
-      | 'ShiftLeft'
-      | 'ShiftRight'
-      | 'Tab'
-      | 'CapsLock'
-      | 'BracketRight'
-      | 'BracketLeft'
-      | 'Backslash'
-      | 'Quote'
-      | 'Semicolon'
-      | 'Period'
-      | 'Comma'
-      | 'Slash'
-      | 'Escape';
-
+  type NumpadDigitKeys =
+    | 'Numpad0'
+    | 'Numpad1'
+    | 'Numpad2'
+    | 'Numpad3'
+    | 'Numpad4'
+    | 'Numpad5'
+    | 'Numpad6'
+    | 'Numpad7'
+    | 'Numpad8'
+    | 'Numpad9';
+  
+  type NumpadKeys =
+    | NumpadDigitKeys
+    | 'NumLock'
+    | 'NumpadDivide'
+    | 'NumpadMultiply'
+    | 'NumpadSubtract'
+    | 'NumpadAdd'
+    | 'NumpadEnter'
+    | 'NumpadDecimal';
+  
+  type FKeys = 'F1' | 'F2' | 'F3' | 'F4' | 'F5' | 'F6' | 'F7' | 'F8' | 'F9' | 'F10' | 'F11' | 'F12';
+  
+  type Alphabet =
+    | 'A'
+    | 'B'
+    | 'C'
+    | 'D'
+    | 'E'
+    | 'F'
+    | 'G'
+    | 'H'
+    | 'I'
+    | 'J'
+    | 'K'
+    | 'L'
+    | 'M'
+    | 'N'
+    | 'O'
+    | 'P'
+    | 'Q'
+    | 'R'
+    | 'S'
+    | 'T'
+    | 'U'
+    | 'V'
+    | 'W'
+    | 'X'
+    | 'Y'
+    | 'Z';
+  
+  type KeyboardEventCode =
+    | \`Key\${Alphabet}\`
+    | FKeys
+    | DigitKeys
+    | ArrowKeys
+    | NumpadKeys
+    | 'Backquote'
+    | 'Backslash'
+    | 'Backspace'
+    | 'BracketLeft'
+    | 'BracketRight'
+    | 'CapsLock'
+    | 'Comma'
+    | 'ContextMenu'
+    | 'ControlLeft'
+    | 'ControlRight'
+    | 'Delete'
+    | 'Enter'
+    | 'Escape'
+    | 'Home'
+    | 'Insert'
+    | 'IntlBackslash'
+    | 'Minus'
+    | 'PageDown'
+    | 'PageUp'
+    | 'Period'
+    | 'Quote'
+    | 'Semicolon'
+    | 'ShiftLeft'
+    | 'ShiftRight'
+    | 'Slash'
+    | 'Space'
+    | 'Tab';
+  
   type KeyboardCombinations =
-  | \`Ctrl_\${Exclude<KeyboardEventCode, 'ControlLeft' | 'ControlRight'>}\`
-  | \`Ctrl_\${Exclude<KeyboardEventCode, 'ShiftLeft' | 'ShiftRight'>}\`;
+    | \`Control_\${Exclude<KeyboardEventCode, 'ControlLeft' | 'ControlRight'>}\`
+    | \`Shift_\${Exclude<KeyboardEventCode, 'ShiftLeft' | 'ShiftRight'>}\`
+    | \`Alt_\${Exclude<KeyboardEventCode, 'AltLeft' | 'AltRight'>}\`
   
   declare interface Settings {
     fps?: number;
@@ -893,6 +953,8 @@ export function generate_types(code: string, assets_array: Array<FileEntry> = []
   const prop_assignments = ast.c[0].c[0].c[2].c;
   const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
   const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+  console.log(variable_assignments);
+  // TODO: generate types of variable assignments
 
   let events = '';
   let variables = '';
