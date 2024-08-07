@@ -663,6 +663,11 @@ export interface GameData {
   };
 }
 
+export interface GameEnvironment {
+  variables: Variables;
+  agents: any;
+}
+
 export interface RoguelighterProject {
   code: string;
   scenes: Map<number, Scene>;

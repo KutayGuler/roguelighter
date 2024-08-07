@@ -1,5 +1,6 @@
 <script lang="ts">
   // TODO LATER: introduce helpers
+  // TODO LATER: introduce constants
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
@@ -20,6 +21,12 @@
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   const dispatch = createEventDispatcher();
+
+  // TODO: try catch for user defined functions
+  // TODO: introduce objects
+  // TODO: introduce agents[agent_name].props
+  // TODO: dev_only scenes
+  // TODO: portals can only go through their realms (dev_only, game_only)
 
   export let project: RoguelighterProject;
   export let current_scene_id: number;

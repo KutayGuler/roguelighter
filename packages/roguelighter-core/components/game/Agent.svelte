@@ -1,17 +1,20 @@
 <script lang="ts">
-  import { T, useTask } from '@threlte/core';
-  import { AnimatedSpriteMaterial, Suspense } from '@threlte/extras';
+  import { T, useTask, useThrelte } from '@threlte/core';
+  import { AnimatedSpriteMaterial } from '@threlte/extras';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
   import type { Settings, PlayableAgent, AgentAssetUrls } from '../../types';
-  import { Mesh, MeshStandardMaterial } from 'three';
+  import { Mesh } from 'three';
+  import { noop } from '../../utils';
+  const { camera } = useThrelte();
 
   export let agent: PlayableAgent;
   export let settings: Settings;
   export let agent_asset_urls: AgentAssetUrls;
+  export let position: [number, number, number];
+  const is_player = agent.name == 'player';
+  console.log(agent);
 
   let play: () => void, pause: () => void;
-  window.addEventListener('paused', () => {});
-  window.addEventListener('unpaused', () => {});
 
   const states = agent.states;
   const defaults = states.default;
@@ -26,13 +29,10 @@
   let delay = defaults.delay;
   let filter = defaults.filter || settings.filter || 'nearest';
 
-  let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
-
   const keyboard = { x: 0, y: 0 };
   const pressed = new Set<string>();
-  export const playerPosition: [number, number, number] = [-2.0, 1.75, zoom];
   const mesh = new Mesh();
-  mesh.position.set(...playerPosition);
+  mesh.position.set(...position);
 
   const handleKey = (key: string, value: 0 | 1) => {
     switch (key.toLowerCase()) {
@@ -67,20 +67,24 @@
     if (e.key === 'e') pause();
   };
 
+  $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
   useTask((delta) => {
-    // if (keyboard.x === 0) return;
-    playerPosition[0] += -keyboard.x * (delta * 2);
-    playerPosition[1] += -keyboard.y * (delta * 2);
-    mesh.position.set(...playerPosition);
+    position[0] += -keyboard.x * (delta * 2);
+    position[1] += -keyboard.y * (delta * 2);
+    mesh.position.set(...position);
+    $camera.position.x = position[0];
+    $camera.position.y = position[1];
   });
 </script>
 
-<svelte:window on:keydown={handleKeydown} on:keyup={handleKeyup} />
+<svelte:window
+  on:keydown={is_player ? handleKeydown : noop}
+  on:keyup={is_player ? handleKeyup : noop}
+/>
 
-<Suspense>
+{#if textureUrl}
   <T is={mesh}>
     <AnimatedSpriteMaterial
-      is={new MeshStandardMaterial()}
       {textureUrl}
       {totalFrames}
       {fps}
@@ -93,6 +97,6 @@
       bind:play
       bind:pause
     />
-    <T.PlaneGeometry args={[0.5, 0.5]} />
+    <T.PlaneGeometry />
   </T>
-</Suspense>
+{/if}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Tweened } from 'svelte/motion';
   import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
@@ -9,7 +8,6 @@
   } from '../../types';
   import { T, useTask, useThrelte } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
-  import { get } from 'svelte/store';
   import Agent from './Agent.svelte';
   import { createEventDispatcher } from 'svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
@@ -21,10 +19,8 @@
   export let scene: PlayableScene;
   export let scene_just_changed: boolean;
   export let player_pos: number;
-  const { camera } = useThrelte();
 
   let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
-  $camera.position.z = 100 / zoom;
 
   useTask(() => {
     if (!scene_just_changed && scene.portals.has(player_pos)) {
@@ -32,15 +28,23 @@
       dispatch('change_scene', portal_info);
     }
   });
+
+  function calc_pos(pos: number): [number, number, number] {
+    return [pos % scene.width, -Math.floor(pos / scene.width), zoom];
+  }
 </script>
 
 <T.PerspectiveCamera />
-<T.DirectionalLight position={[0, 10, 10]} />
-<!-- {#each scene.backgrounds.entries() as [pos, texture]}
-  <T.Sprite position={[pos % scene.width, -Math.floor(pos / scene.width)]}>
-    <AnimatedSpriteMaterial textureUrl={bg_asset_urls.get(texture)} totalFrames={1} />
-  </T.Sprite>
-{/each} -->
-{#each scene.agents.values() as agent}
-  <Agent {agent_asset_urls} {agent} {settings} />
+<T.DirectionalLight />
+{#each scene.backgrounds.entries() as [pos, texture]}
+  {@const textureUrl = bg_asset_urls.get(texture)}
+  {#if textureUrl}
+    <T.Sprite position={calc_pos(pos)}>
+      <AnimatedSpriteMaterial autoplay={false} {textureUrl} totalFrames={1} />
+      <T.PlaneGeometry></T.PlaneGeometry>
+    </T.Sprite>
+  {/if}
+{/each}
+{#each scene.agents.entries() as [pos, agent]}
+  <Agent {agent_asset_urls} {agent} {settings} position={calc_pos(pos)} />
 {/each}
