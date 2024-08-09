@@ -1,5 +1,14 @@
-type VariableNames = string;
-type BackgroundNames = string;
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+type AgentAssets = any;
+type BackgroundAssets = any;
+type EventNames = any;
+type VariableNames = any;
+type BackgroundNames = any;
+type AgentStates = any;
+type UserFunctionsAndParameters = any;
+// @REPLACE
 
 type Easing =
   | 'backIn'
@@ -534,13 +543,13 @@ export interface Settings {
  */
 export type KeyBindings = {
   [key in KeyboardEventCode | KeyboardCombinations]?:
-    | string
+    | EventNames
     | InternalEvents
-    | [string | InternalEvents, Array<any>];
+    | UserFunctionsAndParameters;
 };
 
-type SpriteConfig<Assets> = {
-  source: Assets;
+type SpriteConfig = {
+  source: AgentAssets;
   /** The total number of frames in the spritesheet. */
   frame_count?: number;
   /** The desired frames per second of the animation. */
@@ -570,11 +579,11 @@ export interface Agent<Assets> {
     /**
      * Default state of the agent. You can think this of 'idle' animation.
      */
-    default: SpriteConfig<Assets>;
+    default: SpriteConfig;
     /**
      * TODO: doc
      */
-    [state_name: string]: SpriteConfig<Assets>;
+    [state_name: string]: SpriteConfig;
   };
   /**
    * Default easing function for agent animations

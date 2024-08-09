@@ -891,9 +891,13 @@ function generate_boilerplate_types({
     };
     easing?: Easing;
     duration?: number;
+    /** 
+     * props docs
+    */
+    props?: { [key: string]: any };
   }
   
-  declare type Agents = { player: Agent; [name: string]: Agent };
+  declare type Agents = { $all?: Agent<Assets>; player: Agent; [name: string]: Agent };
   declare type XY_Tuple = [x: number, y: number];
   
   declare interface PlayableAgent extends Agent {

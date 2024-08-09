@@ -12,13 +12,14 @@
     code_string_to_json,
     processClasses
   } from '../utils';
-  import type { GameData, RoguelighterDataFile, RoguelighterProject, View } from '../types';
+  import type { GameData } from '../types';
   import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
   import { writeTextFile } from '@tauri-apps/api/fs';
   import { join, documentDir } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/api/shell';
   import Options from './Options.svelte';
   import GuiEditor from './ide/GuiEditor.svelte';
+  import { RoguelighterDataFile, RoguelighterProject, View } from '../types/engine';
 
   export let project: RoguelighterProject;
   let options_open = false;

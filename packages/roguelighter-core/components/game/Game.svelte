@@ -4,22 +4,19 @@
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
-  import type {
-    WritableProps,
-    PlayerPositions,
-    KeyboardEventCode,
-    PlayableScene,
-    RoguelighterProject,
-    BackgroundAssetUrls,
-    AgentAssetUrls,
-    GameData
-  } from '../../types';
+  import type { WritableProps, PlayerPositions, KeyboardEventCode, GameData } from '../../types';
   import { tweened, type Tweened } from 'svelte/motion';
   import * as easings from 'svelte/easing';
   import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
   import { exit } from '@tauri-apps/api/process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import {
+    AgentAssetUrls,
+    BackgroundAssetUrls,
+    PlayableScene,
+    RoguelighterProject
+  } from '../../types/engine';
   const dispatch = createEventDispatcher();
 
   // TODO: try catch for user defined functions

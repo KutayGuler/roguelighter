@@ -1,4 +1,6 @@
 export * from './types';
+export * from './types/engine';
+export * from './types/game';
 
 // CONSTANTS
 export * from './constants';

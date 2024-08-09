@@ -2,9 +2,10 @@
   import { T, useTask, useThrelte } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
-  import type { Settings, PlayableAgent, AgentAssetUrls } from '../../types';
+  import type { Settings } from '../../types';
   import { Mesh } from 'three';
   import { noop } from '../../utils';
+  import { AgentAssetUrls, PlayableAgent } from '../../types/engine';
   const { camera } = useThrelte();
 
   export let agent: PlayableAgent;

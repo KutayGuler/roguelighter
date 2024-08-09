@@ -1,6 +1,6 @@
-import type { RoguelighterProject } from './types';
 import { writable, derived, type Writable, Readable } from 'svelte/store';
 import { generate_id } from './utils';
+import { RoguelighterProject } from './types/engine';
 const NOTIFICATION_TIMEOUT = 3000;
 
 export type NotificationType = 'danger' | 'info' | 'success' | 'warning';

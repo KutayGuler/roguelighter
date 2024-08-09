@@ -1,19 +1,14 @@
 <script lang="ts">
   import Modal from './Modal.svelte';
   import type {
-    AgentAssetUrls,
-    BackgroundAssetUrls,
-    DialogController,
     GameData,
-    Portal,
-    RoguelighterProject,
-    Scene
   } from '../../types';
   import { tooltip } from 'svooltip';
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
   import { createEventDispatcher } from 'svelte';
   import Dropdown from './Dropdown.svelte';
   import { code_string_to_json } from '../../utils';
+  import { AgentAssetUrls, BackgroundAssetUrls, DialogController, Portal, RoguelighterProject, Scene } from '../../types/engine';
   const dispatch = createEventDispatcher();
 
   export let project: RoguelighterProject;
