@@ -12,8 +12,7 @@
     notifications,
     project_store,
     current_project_name as cpn,
-    generate_template_data,
-    type DialogController
+    generate_template_data
   } from 'roguelighter-core';
   import {
     createDir,
