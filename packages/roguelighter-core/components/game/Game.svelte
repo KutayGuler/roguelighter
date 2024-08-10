@@ -11,7 +11,7 @@
   import { exit } from '@tauri-apps/api/process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-  import {
+  import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
     PlayableScene,

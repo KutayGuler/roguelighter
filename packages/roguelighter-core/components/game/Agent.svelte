@@ -5,7 +5,7 @@
   import type { Settings } from '../../types';
   import { Mesh } from 'three';
   import { noop } from '../../utils';
-  import { AgentAssetUrls, PlayableAgent } from '../../types/engine';
+  import type { AgentAssetUrls, PlayableAgent } from '../../types/engine';
   const { camera } = useThrelte();
 
   export let agent: PlayableAgent;

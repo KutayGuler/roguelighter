@@ -391,9 +391,6 @@ export interface GUI_Element {
   visibility_depends_on?: VariableNames;
 }
 
-/**
- * The object that contains all the GUI elements that will be in the game
- */
 export interface GUI {
   /**
    * TODO: doc
@@ -538,9 +535,6 @@ export interface Settings {
   };
 }
 
-/**
- *
- */
 export type KeyBindings = {
   [key in KeyboardEventCode | KeyboardCombinations]?:
     | EventNames
@@ -549,6 +543,7 @@ export type KeyBindings = {
 };
 
 type SpriteConfig = {
+  /** TODO: DOCS */
   source: AgentAssets;
   /** The total number of frames in the spritesheet. */
   frame_count?: number;
@@ -571,7 +566,7 @@ type SpriteConfig = {
 /**
  * TODO: doc
  */
-export interface Agent<Assets> {
+export interface Agent {
   /**
    * Different states of the agent
    */
@@ -596,44 +591,85 @@ export interface Agent<Assets> {
   props?: { [key: string]: any };
 }
 
-/**
- * TODO: doc
- */
-export type Agents<Assets = string> = {
-  $all?: Agent<Assets>;
+export type Agents = {
+  /**
+   * TODO: doc
+   */
+  $all?: Agent;
   /**
    * Player agent settings
    */
-  player: Agent<Assets>;
+  player: Agent;
   /**
    * Non-player agent settings
    */
-  [name: string]: Agent<Assets>;
+  [name: string]: Agent;
 };
 
 export type XY_Tuple = [x: number, y: number];
-
-/**
- * TODO: doc
- */
 export type Collisions = Array<BackgroundNames>;
 
 export interface GameData {
-  variables: Variables;
-  agents: Agents;
-  settings: Settings;
-  events: Events;
-  gui: GUI;
-  keybindings: KeyBindings;
-  collisions: Collisions;
+  /**
+   * TODO: doc
+   */
+  variables: Prettify<Variables>;
+  /**
+   * TODO: doc
+   */
+  agents: Prettify<Agents>;
+  /**
+   * TODO: doc
+   */
+  settings: Prettify<Settings>;
+  /**
+   * TODO: doc
+   */
+  events: Prettify<Events>;
+  /**
+   * The object that contains all the GUI elements that will be in the game
+   */
+  gui: Prettify<GUI>;
+  /**
+   * TODO: doc
+   */
+  keybindings: Prettify<KeyBindings>;
+  /**
+   * TODO: doc
+   */
+  collisions: Prettify<Collisions>;
+  /**
+   * TODO: doc
+   */
   __dev_only?: {
-    variables?: Variables;
-    agents?: Agents;
-    settings?: Settings;
-    events?: Events;
-    gui?: GUI;
-    keybindings?: KeyBindings;
-    collisions?: Collisions;
+    /**
+     * TODO: doc
+     */
+    variables?: Prettify<Variables>;
+    /**
+     * TODO: doc
+     */
+    agents?: Prettify<Agents>;
+    /**
+     * TODO: doc
+     */
+    settings?: Prettify<Settings>;
+    /**
+     * TODO: doc
+     */
+    events?: Prettify<Events>;
+    /**
+     * The object that contains all the GUI elements that will be in the game
+     */
+    gui?: Prettify<GUI>;
+    /**
+     * TODO: doc
+     */
+    keybindings?: Prettify<KeyBindings>;
+    /**
+     * TODO: doc
+     */
+    collisions?: Prettify<Collisions>;
   };
 }
 

@@ -19,7 +19,10 @@
   import { Command } from '@tauri-apps/api/shell';
   import Options from './Options.svelte';
   import GuiEditor from './ide/GuiEditor.svelte';
-  import { RoguelighterDataFile, RoguelighterProject, View } from '../types/engine';
+  import type { RoguelighterDataFile, RoguelighterProject, View } from '../types/engine';
+
+  // FIXME: vite includes error
+  // FIXME: sometimes editor styles not loading up
 
   export let project: RoguelighterProject;
   let options_open = false;

@@ -5,7 +5,12 @@
   import Agent from './Agent.svelte';
   import { createEventDispatcher } from 'svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
-  import { AgentAssetUrls, BackgroundAssetUrls, PlayableScene, Portal } from '../../types/engine';
+  import type {
+    AgentAssetUrls,
+    BackgroundAssetUrls,
+    PlayableScene,
+    Portal
+  } from '../../types/engine';
   const dispatch = createEventDispatcher();
 
   export let bg_asset_urls: BackgroundAssetUrls;
