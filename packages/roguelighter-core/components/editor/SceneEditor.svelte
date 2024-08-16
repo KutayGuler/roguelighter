@@ -13,6 +13,8 @@
     RoguelighterProject,
     Scene
   } from '../../types/engine';
+  import Button from '../ui/Button.svelte';
+  import Select from '../ui/Select.svelte';
   const dispatch = createEventDispatcher();
 
   export let project: RoguelighterProject;
@@ -301,19 +303,23 @@
 >
   <section class="flex flex-col min-w-60 max-w-96">
     <div class="flex flex-row gap-2">
-      <select class="select" bind:value={current_scene_id}>
+      <!-- <select class="select" bind:value={current_scene_id}>
         <option disabled value="">Select a scene</option>
         {#each project.scenes.entries() as [id, { name }]}
           <option value={id}>{name}</option>
         {/each}
-      </select>
-      <button
-        use:tooltip={{
+      </select> -->
+      <Select bind:value={current_scene_id}>
+        <option disabled value="">Select a scene</option>
+        {#each project.scenes.entries() as [id, { name }]}
+          <option value={id}>{name}</option>
+        {/each}
+      </Select>
+      <!-- use:tooltip={{
           content: 'Ctrl + N',
           placement: 'bottom'
-        }}
-        on:click={() => new_scene_modal.open()}
-        class="btn-success btn-md w-full text-white inline-flex justify-center"
+        }} -->
+      <Button on:click={() => new_scene_modal.open()}
         ><svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -324,15 +330,13 @@
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>&nbsp; New scene
-      </button>
+      </Button>
     </div>
-    <button
-      on:click={() => dispatch('switch_view')}
-      use:tooltip={{
+    <!-- use:tooltip={{
         content: 'Ctrl + T',
         placement: 'bottom'
-      }}
-      class="btn-success btn-md inline-flex justify-center items-center gap-1 mt-2 text-white"
+      }} -->
+    <Button on:click={() => dispatch('switch_view')} class="mt-2"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
@@ -346,7 +350,7 @@
           d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
         />
       </svg>
-      Test Scene</button
+      Test Scene</Button
     >
     <div
       class="w-fit relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
@@ -420,26 +424,29 @@
         <div>
           <h4 class="h4">Portals</h4>
           <div class="flex flex-row gap-2 pt-2">
-            <button
-              use:tooltip={{
+            <!-- use:tooltip={{
                 content: 'Ctrl + R'
-              }}
+              }} -->
+            <Button
+              class="w-full"
+              color="purple"
+              outline
               on:click={() => (portal_remove_mode = !portal_remove_mode)}
-              class="btn-md btn-portal-ghost w-1/2 min-w-fit"
-              >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</button
+              >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</Button
             >
-            <button
-              use:tooltip={{
+            <!-- use:tooltip={{
                 content: portal_btn_disabled
                   ? 'You need at least two scenes to place a portal'
                   : 'Ctrl + P'
-              }}
+              }} -->
+            <Button
+              class="w-full"
+              color="purple"
               on:click={() => {
                 if (portal_btn_disabled) return;
                 portal_remove_mode = false;
                 portal_modal.open();
-              }}
-              class="btn-md btn-portal w-1/2">New Portal</button
+              }}>New Portal</Button
             >
           </div>
         </div>
@@ -521,11 +528,12 @@
               {@const bg_url = bg ? bg_asset_urls.get(bg) : ''}
               {@const agent_url = agent ? agent_asset_urls.get(agent)?.default : ''}
 
+              <!-- TODO: arrow key navigation -->
               <button
                 on:contextmenu|preventDefault={() => !show_pos && right_clicked(pos)}
                 on:mouseenter={() => mouse_entered(pos)}
                 on:click={() => cell_clicked(pos)}
-                class="relative flex items-center justify-center w-16 h-16 outline-amber-600"
+                class="relative flex items-center justify-center size-16 focus:z-20"
               >
                 {#if portal}
                   {@const to_scene = project.scenes.get(portal.to_scene_id)}
@@ -613,7 +621,7 @@
         />
       </div>
     </label>
-    <button class="btn-success btn-md w-full">Create</button>
+    <Button>Create</Button>
   </form>
   <button class="absolute top-2 right-4" on:click={() => new_scene_modal.close()}>{CROSS}</button>
 </Modal>
@@ -675,8 +683,9 @@
         {/await}
       {/if}
     </div>
-    <button class="btn-md btn-portal w-full">Create</button>
+    <Button>Create</Button>
   </form>
+
   <button class="absolute top-2 right-4" on:click={() => portal_modal.close()}>{CROSS}</button>
 </Modal>
 

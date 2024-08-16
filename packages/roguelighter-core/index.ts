@@ -15,6 +15,9 @@ export * from './utils';
 export { default as Engine } from './components/Engine.svelte';
 export { default as ProjectCard } from './components/ProjectCard.svelte';
 
+// UI
+export { default as Button } from './components/ui/Button.svelte';
+
 // EDITOR
 export { default as Modal } from './components/editor/Modal.svelte';
 export { default as Dropdown } from './components/editor/Dropdown.svelte';

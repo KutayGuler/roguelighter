@@ -28,3 +28,8 @@ body {
 .link {
   @apply hover:underline hover:text-emerald-400 duration-150 ease-out;
 }
+
+button,
+input {
+  @apply focus:outline-none focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-amber-500;
+}

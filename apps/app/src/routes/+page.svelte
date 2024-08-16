@@ -12,7 +12,9 @@
     notifications,
     project_store,
     current_project_name as cpn,
-    generate_template_data
+    generate_template_data,
+    type DialogController,
+    Button
   } from 'roguelighter-core';
   import {
     createDir,
@@ -119,11 +121,11 @@
         <h3 class="h3">Projects</h3>
         <div class="inline-flex gap-2">
           <span class="text-xs self-end">v{PUBLIC_APP_VERSION}</span>
-          <button
+          <Button
+            color="dark/white"
             on:click={() => {
               new_project_modal.open();
-            }}
-            class="btn-success btn-md">New Project</button
+            }}>New Project</Button
           >
         </div>
       </div>
@@ -155,7 +157,7 @@
             bind:this={new_project_input_element}
           />
         </label>
-        <button class="btn-success btn-md w-full">Create</button>
+        <Button color="emerald">Create</Button>
       </form>
       <button class="absolute top-2 right-4" on:click={() => new_project_modal.close()}
         >{CROSS}</button
@@ -168,7 +170,7 @@
         <button on:click={() => delete_project_modal.close()} class="btn-md btn-ghost"
           >Cancel</button
         >
-        <button on:click={delete_project} class="btn-md btn-alert">Delete</button>
+        <Button color="red" on:click={delete_project}>Delete</Button>
       </div>
     </Modal>
 
