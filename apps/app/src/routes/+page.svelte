@@ -13,8 +13,7 @@
     project_store,
     current_project_name as cpn,
     generate_template_data,
-    type DialogController,
-    Button
+    type DialogController
   } from 'roguelighter-core';
   import {
     createDir,
@@ -118,14 +117,14 @@
   <main class="flex flex-col items-center bg-zinc-700 w-full h-full text-zinc-200">
     <div class="w-full max-w-xl p-4">
       <div class="flex flex-row items-end justify-between">
-        <h3 class="h3">Projects</h3>
+        <h3>Projects</h3>
         <div class="inline-flex gap-2">
           <span class="text-xs self-end">v{PUBLIC_APP_VERSION}</span>
-          <Button
-            color="dark/white"
+          <button
+            class="btn-primary"
             on:click={() => {
               new_project_modal.open();
-            }}>New Project</Button
+            }}>New Project</button
           >
         </div>
       </div>
@@ -144,12 +143,11 @@
     </div>
 
     <Modal bind:dialog={new_project_modal}>
-      <h3 class="h3 pb-4">Create a new project</h3>
+      <h3 class="pb-4">Create a new project</h3>
       <form class="flex flex-col gap-4" on:submit|preventDefault={create_project}>
         <label class="flex flex-col" for="name">
           Name
           <input
-            class="input"
             required
             type="text"
             on:input={on_new_project_input}
@@ -157,7 +155,7 @@
             bind:this={new_project_input_element}
           />
         </label>
-        <Button color="emerald">Create</Button>
+        <button class="btn-primary">Create</button>
       </form>
       <button class="absolute top-2 right-4" on:click={() => new_project_modal.close()}
         >{CROSS}</button
@@ -165,12 +163,10 @@
     </Modal>
 
     <Modal bind:dialog={delete_project_modal}>
-      <h3 class="h3">Delete project "{current_project_name}"?</h3>
+      <h3>Delete project "{current_project_name}"?</h3>
       <div class="flex flex-row gap-2 w-full justify-end pt-4">
-        <button on:click={() => delete_project_modal.close()} class="btn-md btn-ghost"
-          >Cancel</button
-        >
-        <Button color="red" on:click={delete_project}>Delete</Button>
+        <button on:click={() => delete_project_modal.close()} class=" btn-ghost">Cancel</button>
+        <button color="red" on:click={delete_project}>Delete</button>
       </div>
     </Modal>
 

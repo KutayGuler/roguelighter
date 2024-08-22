@@ -1,3 +1,5 @@
+const colors = require('tailwindcss/colors');
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -5,7 +7,10 @@ export default {
     '../../packages/roguelighter-core/components/**/*.svelte'
   ],
   theme: {
-    extend: {}
+    extend: {
+      primary: colors.emerald,
+      secondary: colors.amber
+    }
   },
   plugins: []
 };

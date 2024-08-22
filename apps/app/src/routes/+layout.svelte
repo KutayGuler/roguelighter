@@ -1,7 +1,7 @@
 <script>
   import 'roguelighter-core/styles.css';
+  import 'tippy.js/dist/tippy.css'; // optional for styling
   import '../app.css';
-  import 'svooltip/styles.css';
 </script>
 
 <slot><!-- optional fallback --></slot>
