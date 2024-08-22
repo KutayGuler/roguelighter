@@ -1,5 +1,5 @@
 <script lang="ts">
-  // TODO LATER: save folding information on code
+  // BACKLOG: save folding information on code
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
@@ -8,7 +8,7 @@
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-  import { filters, generate_ast, generate_types, includes_any } from '../../utils';
+  import { debounce, filters, generate_ast, generate_types, includes_any } from '../../utils';
   import { watch } from 'tauri-plugin-fs-watch-api';
   import { join, documentDir } from '@tauri-apps/api/path';
   import { type FileEntry, readDir } from '@tauri-apps/api/fs';
@@ -20,7 +20,8 @@
     variables_regex
   } from '../../constants';
   import { current_project_name } from '../../store';
-  import type { View } from '../../types';
+  import type { View } from '../../types/engine';
+  import { formatDiagnostic } from 'typescript';
   const dispatch = createEventDispatcher();
 
   export let code: string;
@@ -34,6 +35,12 @@
   export function set_code(new_code: string) {
     code = new_code;
     editor.setValue(code);
+  }
+
+  export async function format_document() {
+    console.log('triggering');
+    editor.trigger('anyString', 'editor.action.formatDocument', '');
+    console.log('triggered');
   }
 
   async function load_code(code: string) {
@@ -289,6 +296,7 @@
     };
 
     monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+
     // monaco.languages.css.cssDefaults.setOptions({
     //   data: {
     //     dataProviders: {
@@ -305,19 +313,25 @@
       allowNonTsExtensions: true
     });
 
-    monaco.editor.createModel(generate_types(code), 'typescript');
+    monaco.editor.createModel(generate_types(code) || '', 'typescript');
 
     editor = monaco.editor.create(editorElement, {
       automaticLayout: true,
       theme: 'vs-dark',
-      tabSize: 2
+      tabSize: 2,
+      autoIndent: 'full',
+      formatOnPaste: true,
+      formatOnType: true
     });
 
-    editor.onDidChangeModelContent(() => {
-      update_types();
-      validate(model);
-      code = editor.getValue();
-    });
+    editor.onDidChangeModelContent(
+      debounce(() => {
+        update_types();
+        validate(model);
+        code = editor.getValue();
+        dispatch('change');
+      }, 200)
+    );
     editor.onKeyUp((e) => {
       if (view == 'game') {
         e.preventDefault();
@@ -338,6 +352,8 @@
     });
 
     await load_code(code);
+
+    format_document();
   });
 
   onDestroy(() => {
@@ -353,7 +369,7 @@
       const value = model.getValue();
       if (!value) continue;
       if (value.includes('type Easing =')) {
-        model.setValue(generate_types(editor.getValue(), cached_entries));
+        model.setValue(generate_types(editor.getValue(), cached_entries) || '');
       } else {
         content_id = model.id;
       }

@@ -16,7 +16,10 @@
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
       >
-        <button class="fixed inset-0 bg-black bg-opacity-50" on:click={dialog.close} />
+        <button
+          class="fixed inset-0 bg-black bg-opacity-50 outline-none border-none"
+          on:click={dialog.close}
+        />
       </Transition>
 
       <div class="fixed inset-0 overflow-y-auto">

@@ -9,14 +9,14 @@
 <div class="relative flex flex-row justify-between items-center bg-zinc-800 rounded p-4 shadow-lg">
   <span>{project.name}</span>
   <div class="flex flex-row items-center justify-center gap-2">
-    <button on:click={() => dispatch('open')}>
+    <button class="btn-ghost" on:click={() => dispatch('open')}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         stroke-width="1.5"
         stroke="currentColor"
-        class="w-6 h-6 hover:text-emerald-400 duration-150 ease-out"
+        class="size-6"
       >
         <path
           stroke-linecap="round"
@@ -39,7 +39,7 @@
         viewBox="0 0 24 24"
         stroke-width="1.5"
         stroke="currentColor"
-        class="w-6 h-6 hover:text-emerald-400 ease-out duration-150"
+        class="size-6"
       >
         <path
           stroke-linecap="round"

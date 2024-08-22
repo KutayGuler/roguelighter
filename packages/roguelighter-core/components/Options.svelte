@@ -3,9 +3,13 @@
   import { CROSS } from '../constants';
   import { focus_trap } from '../utils';
   export let open = false;
-  // TODO LATER: hotkey to switch views (Ctrl + Q)
+  // BACKLOG: hotkey to switch views (Ctrl + Q)
+  // BACKLOG: put all stuff inside Roguelighter document
+  // options.json
+  // Projects
+  // Exports
   // options page
-  // options.json should be stored globally
+  // options.json should be stored globally (probably in Roguelighter Options or sth)
   // export game button
   let value = 'Ctrl + Q';
   let editing = false;
@@ -15,7 +19,7 @@
 
     if (!editing) return;
 
-    // TODO: prevent ctrl + tab
+    // BACKLOG: prevent ctrl + tab
 
     value = 'Press a key';
   }
@@ -34,8 +38,6 @@
     }
     value = prefix + e.code;
   }
-
-  // TODO:
 </script>
 
 <svelte:window on:keydown={handle} />

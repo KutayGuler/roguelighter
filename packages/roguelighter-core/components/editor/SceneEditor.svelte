@@ -1,9 +1,8 @@
 <script lang="ts">
   import Modal from './Modal.svelte';
-  import type { GameData } from '../../types';
-  import { tooltip } from 'svooltip';
+  import type { GameData } from '../../types/game';
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import Dropdown from './Dropdown.svelte';
   import type {
     AgentAssetUrls,
@@ -13,8 +12,12 @@
     RoguelighterProject,
     Scene
   } from '../../types/engine';
-  import Button from '../ui/Button.svelte';
-  import Select from '../ui/Select.svelte';
+  import tippy from 'tippy.js';
+
+  onMount(() => {
+    tippy('[data-tippy-content]');
+  });
+
   const dispatch = createEventDispatcher();
 
   export let project: RoguelighterProject;
@@ -52,6 +55,7 @@
     current_scene = current_scene;
     portal_modal.close();
     dispatch('change');
+    tippy('[data-tippy-content]');
   }
 
   async function delete_portal(pos: number) {
@@ -309,17 +313,20 @@
           <option value={id}>{name}</option>
         {/each}
       </select> -->
-      <Select bind:value={current_scene_id}>
-        <option disabled value="">Select a scene</option>
-        {#each project.scenes.entries() as [id, { name }]}
-          <option value={id}>{name}</option>
-        {/each}
-      </Select>
-      <!-- use:tooltip={{
-          content: 'Ctrl + N',
-          placement: 'bottom'
-        }} -->
-      <Button on:click={() => new_scene_modal.open()}
+      <select class="w-full" bind:value={current_scene_id}>
+        <optgroup label="Scenes">
+          {#each project.scenes.entries() as [id, { name }]}
+            <option value={id}>{name}</option>
+          {/each}
+        </optgroup>
+        <optgroup label="Dev Only Scenes">
+          <!--  -->
+        </optgroup>
+      </select>
+      <button
+        data-tippy-content="Ctrl + N"
+        class="btn-primary w-full"
+        on:click={() => new_scene_modal.open()}
         ><svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -330,13 +337,12 @@
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>&nbsp; New scene
-      </Button>
+      </button>
     </div>
-    <!-- use:tooltip={{
-        content: 'Ctrl + T',
-        placement: 'bottom'
-      }} -->
-    <Button on:click={() => dispatch('switch_view')} class="mt-2"
+    <button
+      data-tippy-content="Ctrl + T"
+      on:click={() => dispatch('switch_view')}
+      class="btn-primary mt-2"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
@@ -350,7 +356,7 @@
           d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"
         />
       </svg>
-      Test Scene</Button
+      Test Scene</button
     >
     <div
       class="w-fit relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
@@ -424,29 +430,24 @@
         <div>
           <h4 class="h4">Portals</h4>
           <div class="flex flex-row gap-2 pt-2">
-            <!-- use:tooltip={{
-                content: 'Ctrl + R'
-              }} -->
-            <Button
-              class="w-full"
+            <button
+              data-tippy-content="Ctrl + R"
+              class="btn-outline w-full"
               color="purple"
-              outline
               on:click={() => (portal_remove_mode = !portal_remove_mode)}
-              >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</Button
+              >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</button
             >
-            <!-- use:tooltip={{
-                content: portal_btn_disabled
-                  ? 'You need at least two scenes to place a portal'
-                  : 'Ctrl + P'
-              }} -->
-            <Button
-              class="w-full"
+            <button
+              data-tippy-content={portal_btn_disabled
+                ? 'You need at least two scenes to place a portal'
+                : 'Ctrl + P'}
+              class="btn-secondary w-full"
               color="purple"
               on:click={() => {
                 if (portal_btn_disabled) return;
                 portal_remove_mode = false;
                 portal_modal.open();
-              }}>New Portal</Button
+              }}>New Portal</button
             >
           </div>
         </div>
@@ -458,27 +459,26 @@
       class="relative h-11 bg-zinc-700 w-full rounded p-2 px-4 text-white flex flex-row justify-between"
     >
       <label class="cursor-pointer">
-        <input class="input" type="checkbox" bind:checked={show_pos} />
+        <input type="checkbox" bind:checked={show_pos} />
         Show Positions
       </label>
 
       <Dropdown>
-        <button slot="button">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-6 h-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-            />
-          </svg>
-        </button>
+        <svg
+          slot="button"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-6 h-6"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+          />
+        </svg>
         <div slot="items" class="bg-zinc-700 rounded p-4 flex flex-col gap-2 items-start">
           <button
             on:click={() => {
@@ -498,7 +498,7 @@
     >
       Some agents/backgrounds on the map have no asset references. Change them to elements with
       asset references.
-      <button class="btn-md btn-view py-0" on:click={show_must_be_replaced_elements}>Show</button>
+      <button class=" py-0" on:click={show_must_be_replaced_elements}>Show</button>
       <div class="p-2 bg-amber-950 shadow-inner has-[form]:flex flex-col gap-4 hidden">
         {#each [...must_be_replaced.agent_names.values(), ...must_be_replaced.background_names.values()] as name}
           {@const is_agent = must_be_replaced.agent_names.has(name)}
@@ -528,7 +528,7 @@
               {@const bg_url = bg ? bg_asset_urls.get(bg) : ''}
               {@const agent_url = agent ? agent_asset_urls.get(agent)?.default : ''}
 
-              <!-- TODO: arrow key navigation -->
+              <!-- BACKLOG: arrow key navigation -->
               <button
                 on:contextmenu|preventDefault={() => !show_pos && right_clicked(pos)}
                 on:mouseenter={() => mouse_entered(pos)}
@@ -540,10 +540,7 @@
                   <button
                     on:click={() => delete_portal(pos)}
                     id="portal_{pos}"
-                    use:tooltip={{
-                      content: `${to_scene?.name} #${portal.to_position}`,
-                      target: `#portal_${pos}`
-                    }}
+                    data-tippy-content={`${to_scene?.name} #${portal.to_position}`}
                     class="absolute top-0 border-4 border-purple-600 w-full h-full z-20 {portal_remove_mode
                       ? 'hover:border-red-500'
                       : ''}"
@@ -587,12 +584,11 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <Modal bind:dialog={new_scene_modal}>
-  <h3 class="h3 pb-4">Create a new scene</h3>
+  <h3 class="pb-4">Create a new scene</h3>
   <form class="flex flex-col gap-4" on:submit={create_scene}>
     <label class="flex flex-col" for="name">
       Name
       <input
-        class="input"
         on:input={scene_name_input}
         required
         type="text"
@@ -603,25 +599,11 @@
     <label for="dimensions">
       Dimensions (width, height)
       <div class="flex flex-row gap-2 pb-2">
-        <input
-          required
-          min="0"
-          max="100"
-          bind:value={map_width}
-          class="input w-1/2"
-          type="number"
-        />
-        <input
-          required
-          min="0"
-          max="100"
-          bind:value={map_height}
-          class="input w-1/2"
-          type="number"
-        />
+        <input required min="0" max="100" bind:value={map_width} type="number" />
+        <input required min="0" max="100" bind:value={map_height} type="number" />
       </div>
     </label>
-    <Button>Create</Button>
+    <button class="btn-primary">Create</button>
   </form>
   <button class="absolute top-2 right-4" on:click={() => new_scene_modal.close()}>{CROSS}</button>
 </Modal>
@@ -642,7 +624,6 @@
         <label class="flex flex-col w-1/2">
           Position
           <input
-            class="input"
             required
             type="number"
             min={0}
@@ -671,7 +652,6 @@
             <label class="flex flex-col w-1/2">
               Position
               <input
-                class="input"
                 required
                 type="number"
                 min={0}
@@ -683,7 +663,7 @@
         {/await}
       {/if}
     </div>
-    <Button>Create</Button>
+    <button class="btn-primary">Create</button>
   </form>
 
   <button class="absolute top-2 right-4" on:click={() => portal_modal.close()}>{CROSS}</button>
@@ -695,10 +675,10 @@
     on:submit|preventDefault={delete_current_scene}
     class="flex flex-row gap-2 w-full justify-end pt-4"
   >
-    <button type="button" on:click={() => delete_scene_modal.close()} class="btn-md btn-ghost">
+    <button type="button" on:click={() => delete_scene_modal.close()} class=" btn-ghost">
       Cancel
     </button>
-    <button type="submit" class="btn-md btn-alert">Delete</button>
+    <button type="submit" class="btn-alert">Delete</button>
   </form>
 </Modal>
 

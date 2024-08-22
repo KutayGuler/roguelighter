@@ -4,7 +4,12 @@
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
-  import type { WritableProps, PlayerPositions, KeyboardEventCode, GameData } from '../../types';
+  import type {
+    WritableProps,
+    PlayerPositions,
+    KeyboardEventCode,
+    GameData
+  } from '../../types/game';
   import { tweened, type Tweened } from 'svelte/motion';
   import * as easings from 'svelte/easing';
   import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
@@ -19,11 +24,11 @@
   } from '../../types/engine';
   const dispatch = createEventDispatcher();
 
-  // TODO: try catch for user defined functions
-  // TODO: introduce objects
-  // TODO: introduce agents[agent_name].props
-  // TODO: dev_only scenes
-  // TODO: portals can only go through their realms (dev_only, game_only)
+  // BACKLOG: try catch for user defined functions
+  // BACKLOG: introduce objects
+  // BACKLOG: introduce agents[agent_name].props
+  // BACKLOG: dev_only scenes
+  // BACKLOG: portals can only go through their realms (dev_only, game_only)
 
   export let project: RoguelighterProject;
   export let current_scene_id: number;
@@ -120,7 +125,7 @@
 
   let internal_variables = { $pause_menu: false };
   Object.assign(variables, internal_variables);
-  Object.assign(events, { ...f });
+  Object.assign(events, f);
 
   // for (let [key, fn] of Object.entries(events)) {
   //   if (key[0] == '$') {
@@ -150,7 +155,6 @@
       event_code = 'Alt_' + kbd_event.code;
     }
 
-    // TODO LATER: make the type more encompassing
     let event_name = keybindings[event_code as KeyboardEventCode];
 
     if (DEV && __dev_only?.keybindings && !event_name) {

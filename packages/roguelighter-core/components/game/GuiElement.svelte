@@ -1,6 +1,6 @@
 <script lang="ts">
   import { noop } from '../../utils';
-  import type { GUI_Element, Variables, Events } from '../../types';
+  import type { GUI_Element, Variables, Events } from '../../types/game';
   import * as transitions from 'svelte/transition';
   import GuiText from './GuiText.svelte';
 

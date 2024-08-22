@@ -1,12 +1,13 @@
 import RunCSS from 'runcss';
 import JSON5 from 'json5';
 import ts from 'typescript';
-import type { Agents, GUI, GUI_Element, GameData } from './types';
 import { DEFAULT_DIR, function_regex } from './constants';
 import { join, documentDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { FileEntry, readDir } from '@tauri-apps/api/fs';
 import { generate_boilerplate_types } from './generate_boilerplate_types';
+import { GameData, Agents, GUI } from './types/game';
+import { parse_errors } from './store';
 
 export const { processClasses } = RunCSS();
 export const noop = () => {};
@@ -106,9 +107,15 @@ export function code_string_to_json(code: string): string | GameData {
       ${t}
     }`;
 
+    // BACKLOG: cannot parse undefined & null
     return JSON5.parse(t).game_data;
   } catch (e) {
     console.log(t, e);
+    parse_errors.set({
+      json: t,
+      // @ts-expect-error
+      error: e.toString()
+    });
     return code;
   }
 }
@@ -328,85 +335,104 @@ export const filters: { [key: string]: ({ text }: { text: string }) => boolean }
   // agent_states: ({ text }) => text.startsWith('variables:'),
 };
 
+function infer_type(kind: string) {
+  // BACKLOG: cannot infer the types of objects inside variables
+  if (kind === 'FirstLiteralToken') {
+    return 'number';
+  } else if (kind === 'StringLiteral') {
+    return 'string';
+  } else if (['TrueKeyword', 'FalseKeyword'].includes(kind)) {
+    return 'boolean';
+  } else if (kind === 'ObjectLiteralExpression') {
+    return 'object';
+  }
+
+  return 'undefined';
+}
+
 export function generate_types(code: string, assets_array: Array<FileEntry> = []) {
-  // TODO: try catch in case ast fails
-  const ast = generate_ast(code);
-  const prop_assignments = ast.c[0].c[0].c[2].c;
-  const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
-  const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
-  console.log(variable_assignments);
-  // TODO: generate types of variable assignments
+  try {
+    const ast = generate_ast(code);
+    const prop_assignments = ast.c[0].c[0].c[2].c;
+    const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
+    const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
 
-  let events = '';
-  let variables = '';
-  let agent_states = '';
-  let user_functions_and_parameters = '';
-  let event_types: { [key: string]: string } = {};
+    let events = '';
+    let variables = '';
+    let agent_states = '';
+    let user_functions_and_parameters = '';
+    let event_types: { [key: string]: string } = {};
 
-  for (let assignment of event_functions) {
-    let identifier = assignment.c[0].text;
-    let parameters = [];
-    let tuple_type = '[]';
+    for (let assignment of event_functions) {
+      let identifier = assignment.c[0].text;
+      let parameters = [];
+      let tuple_type = '[]';
 
-    events += `| '${identifier}'`;
+      events += `| '${identifier}'`;
 
-    // TODO LATER: also add regular function declaration
-    if (assignment.c[1].kind == 'ArrowFunction') {
-      parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
-    } else {
-      parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
-    }
-
-    if (parameters.length == 2) {
-      tuple_type = parameters[1].c[1].text;
-    }
-
-    event_types[identifier] = tuple_type;
-  }
-
-  for (let [key, val] of Object.entries(event_types)) {
-    user_functions_and_parameters += `| ["${key}", ${val}]`;
-  }
-
-  let assets = {
-    agents: `'ERROR: no assets found'`,
-    backgrounds: `'ERROR: no assets found'`
-  };
-
-  for (let assignment of variable_assignments) {
-    variables += `| '${assignment.c[0].text}'`;
-  }
-
-  // TODO: agent_states
-  // for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
-  //   if (key === 'default') continue;
-  //   agent_states += `| '${key}'`;
-  // }
-
-  if (assets_array.length) {
-    assets.agents = '';
-    assets.backgrounds = '';
-
-    for (let asset of assets_array) {
-      if (asset.children) {
-        assets[asset.name as keyof typeof assets] += retrieve_children_names(asset);
-        continue;
+      // BACKLOG: also add regular function declaration
+      if (assignment.c[1].kind == 'ArrowFunction') {
+        parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
+      } else {
+        parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
       }
 
-      assets[asset.name as keyof typeof assets] += `| '${asset.name}'`;
+      if (parameters.length == 2) {
+        tuple_type = parameters[1].c[1].text;
+      }
+
+      event_types[identifier] = tuple_type;
     }
+
+    for (let [key, val] of Object.entries(event_types)) {
+      user_functions_and_parameters += `| ["${key}", ${val}]`;
+    }
+
+    let assets = {
+      agents: `'ERROR: no assets found'`,
+      backgrounds: `'ERROR: no assets found'`
+    };
+
+    let variables_interface = '';
+
+    for (let assignment of variable_assignments) {
+      console.log(assignment.c[1]);
+      variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
+    }
+
+    // TODO: agent_states
+    // for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
+    //   if (key === 'default') continue;
+    //   agent_states += `| '${key}'`;
+    // }
+
+    if (assets_array.length) {
+      assets.agents = '';
+      assets.backgrounds = '';
+
+      for (let asset of assets_array) {
+        if (asset.children) {
+          assets[asset.name as keyof typeof assets] += retrieve_children_names(asset);
+          continue;
+        }
+
+        assets[asset.name as keyof typeof assets] += `| '${asset.name}'`;
+      }
+    }
+
+    assets.agents = assets.agents.replaceAll('agents/', '');
+    assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
+
+    return generate_boilerplate_types({
+      assets,
+      events,
+      variables,
+      agent_states,
+      user_functions_and_parameters
+    });
+  } catch (e) {
+    console.log(e);
   }
-
-  assets.agents = assets.agents.replaceAll('agents/', '');
-  assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
-
-  return generate_boilerplate_types({
-    assets,
-    events,
-    variables,
-    agent_states,
-    user_functions_and_parameters
-  });
 }
 
 export function focus_trap(node: HTMLElement, enabled: boolean) {

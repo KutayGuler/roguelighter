@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Settings } from '../../types';
+  import type { Settings } from '../../types/game';
   import { T, useTask, useThrelte } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
   import Agent from './Agent.svelte';

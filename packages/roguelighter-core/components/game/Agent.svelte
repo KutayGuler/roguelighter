@@ -2,10 +2,10 @@
   import { T, useTask, useThrelte } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
-  import type { Settings } from '../../types';
   import { Mesh } from 'three';
   import { noop } from '../../utils';
   import type { AgentAssetUrls, PlayableAgent } from '../../types/engine';
+  import type { Settings } from '../../types/game';
   const { camera } = useThrelte();
 
   export let agent: PlayableAgent;
@@ -70,8 +70,8 @@
 
   $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
   useTask((delta) => {
-    position[0] += -keyboard.x * (delta * 2);
-    position[1] += -keyboard.y * (delta * 2);
+    position[0] += -keyboard.x * (delta * 5);
+    position[1] += -keyboard.y * (delta * 5);
     mesh.position.set(...position);
     $camera.position.x = position[0];
     $camera.position.y = position[1];

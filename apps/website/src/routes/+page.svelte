@@ -10,7 +10,7 @@
   <div class="flex flex-col gap-16 max-w-6xl">
     <div class="flex flex-row relative pb-20 pt-12 overflow-visible">
       <div class="z-10">
-        <h1 class="h1 young-serif">
+        <h1 class="young-serif">
           The game engine <br /> for roguelikes.
         </h1>
         <p class="text-xl pt-4">

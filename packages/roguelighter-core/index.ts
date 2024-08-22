@@ -1,4 +1,3 @@
-export * from './types';
 export * from './types/engine';
 export * from './types/game';
 
@@ -14,9 +13,6 @@ export * from './utils';
 // BASE ENGINE
 export { default as Engine } from './components/Engine.svelte';
 export { default as ProjectCard } from './components/ProjectCard.svelte';
-
-// UI
-export { default as Button } from './components/ui/Button.svelte';
 
 // EDITOR
 export { default as Modal } from './components/editor/Modal.svelte';

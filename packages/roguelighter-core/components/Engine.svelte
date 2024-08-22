@@ -1,10 +1,9 @@
 <script lang="ts">
-  import 'svooltip/styles.css';
   import CodeEditor from './ide/CodeEditor.svelte';
   import SceneEditor from './editor/SceneEditor.svelte';
   import Game from './game/Game.svelte';
   import Toast from './editor/Toast.svelte';
-  import { current_project_name, notifications } from '../store';
+  import { current_project_name, errors, notifications, parse_errors } from '../store';
   import {
     debounce,
     get_asset_urls,
@@ -12,7 +11,6 @@
     code_string_to_json,
     processClasses
   } from '../utils';
-  import type { GameData } from '../types';
   import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
   import { writeTextFile } from '@tauri-apps/api/fs';
   import { join, documentDir } from '@tauri-apps/api/path';
@@ -20,9 +18,11 @@
   import Options from './Options.svelte';
   import GuiEditor from './ide/GuiEditor.svelte';
   import type { RoguelighterDataFile, RoguelighterProject, View } from '../types/engine';
+  import type { GameData } from '../types/game';
+  import { SvelteComponent } from 'svelte';
 
-  // FIXME: vite includes error
-  // FIXME: sometimes editor styles not loading up
+  // BACKLOG: vite includes error
+  // BACKLOG: sometimes editor styles not loading up
 
   export let project: RoguelighterProject;
   let options_open = false;
@@ -32,6 +32,7 @@
   let code_button: HTMLButtonElement;
   let scene_button: HTMLButtonElement;
   let agents: GameData['agents'];
+  let code_editor: any;
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
@@ -62,6 +63,7 @@
           break;
         }
         case 'KeyS': {
+          code_editor.format_document();
           recalculate();
           save_file();
           break;
@@ -101,7 +103,7 @@
   }
 
   const commands: Array<string> = [
-    // TODO LATER:
+    // BACKLOG:
     // # Create Roguelighter Exports/cache
     // # git clone --filter=blob:none --sparse https://github.com/roguelighter
     // # git sparse-checkout add apps/export-app
@@ -172,6 +174,21 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
   }
 
   $: view, save_file(), recalculate();
+
+  function highlight(pre: HTMLPreElement) {
+    const lines = pre.textContent?.split('\n');
+    let line_number = parseInt($parse_errors?.error?.split('at')[1].split(':')[0]) || 0;
+
+    const line = lines[line_number - 1];
+
+    if (line) {
+      let text = pre.innerHTML?.replace(
+        line,
+        `<span id="error" class="bg-red-600 w-full">${line}</span>`
+      );
+      pre.innerHTML = text;
+    }
+  }
 </script>
 
 <svelte:window on:keydown={handle} />
@@ -202,9 +219,8 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       <div class="flex flex-row gap-2">
         <button
           bind:this={code_button}
-          class="{view == 'code'
-            ? 'btn-view-selected'
-            : 'btn-view'} btn-md text-sm text-white flex items-center justify-center"
+          class:btn-primary={view == 'code'}
+          class="btn-outline"
           on:click={() => {
             previousView = view;
             view = 'code';
@@ -213,9 +229,8 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         </button>
         <button
           bind:this={scene_button}
-          class="{view != 'code'
-            ? 'btn-view-selected'
-            : 'btn-view'} btn-md text-sm text-white flex items-center"
+          class:btn-primary={view == 'scene'}
+          class="btn-outline"
           on:click={() => {
             view = previousView;
           }}>Scene</button
@@ -268,9 +283,28 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"
     >
       <!-- <GuiEditor code=""></GuiEditor> -->
-      <CodeEditor bind:view bind:code={project.code} on:unfocus={() => code_button.focus()}
+      <CodeEditor
+        bind:this={code_editor}
+        bind:view
+        bind:code={project.code}
+        on:unfocus={() => code_button.focus()}
+        on:change={save_file}
       ></CodeEditor>
     </div>
     <Toast />
+  </main>
+{:else}
+  <!-- BACKLOG: add button to go back -->
+  <main class="bg-zinc-700 h-full text-white p-4 flex flex-col gap-2">
+    <p>Engine has not been initialized.</p>
+    {#if $parse_errors.error}
+      <pre class="overflow-auto h-full w-full bg-zinc-800 rounded p-2" use:highlight>
+        {@html $parse_errors.json}
+      </pre>
+      <div class="inline-flex justify-between">
+        <p class="text-red-400">{$parse_errors.error}</p>
+        <a class="btn-outline" href="#error">Show error line </a>
+      </div>
+    {/if}
   </main>
 {/if}

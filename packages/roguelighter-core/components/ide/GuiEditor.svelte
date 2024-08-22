@@ -9,7 +9,7 @@
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
   import { page } from '$app/stores';
 
-  // TODO: reproduce the error in an isolated environment, ask remcohaszing for help
+  // BACKLOG: reproduce the error in an isolated environment, ask remcohaszing for help
 
   window.MonacoEnvironment = {
     getWorker(moduleId, label) {

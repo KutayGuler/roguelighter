@@ -7,7 +7,6 @@ let writing = false;
 
 console.log('Listening for changes on ' + types_dir);
 
-// FIXME: fs.readFileSync returns empty (probably formatter gets in the way)
 chokidar.watch(types_dir).on('change', async (event, path) => {
   if (writing) return;
   try {
@@ -26,6 +25,7 @@ chokidar.watch(types_dir).on('change', async (event, path) => {
     output = output.replace('$rep', t);
     await writeFile(generator_function_dir, output, 'utf8');
     writing = false;
+    console.log('updated types');
   } catch (err) {
     writing = false;
     console.error(err);

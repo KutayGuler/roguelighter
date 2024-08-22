@@ -1,7 +1,7 @@
 import { createDialog, createMenu } from 'svelte-headlessui';
-import { Agent } from '../types';
+import type { Agent } from './game';
 
-export interface PlayableAgent extends Agent<string> {
+export interface PlayableAgent extends Agent {
   name: string;
   x: number;
   y: number;

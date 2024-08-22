@@ -4,11 +4,10 @@ type Prettify<T> = {
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
-type VariableNames = any;
+type Variables = { [key: string]: any };
 type BackgroundNames = any;
 type AgentStates = any;
 type UserFunctionsAndParameters = any;
-// @REPLACE
 
 type Easing =
   | 'backIn'
@@ -348,14 +347,7 @@ export type F = {
   [key in InternalEvents]: UserFunction;
 };
 
-/**
- * TODO: docs
- */
-export interface Variables {
-  [variable_name: string]: any;
-}
-
-type UserFunction = (_: GameData, args?: Array<any>) => void;
+type UserFunction = (_: GameEnvironment, args?: Array<any>) => void;
 
 /**
  * TODO: docs
@@ -388,7 +380,7 @@ export interface GUI_Element {
     easing?: Easing;
   };
   /** Variable name that will determine the visibility of the element */
-  visibility_depends_on?: VariableNames;
+  visibility_depends_on?: keyof Variables;
 }
 
 export interface GUI {

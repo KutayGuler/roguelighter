@@ -22,24 +22,23 @@ export function generate_boilerplate_types({
   type AgentAssets = ${assets.agents};
   type BackgroundAssets = ${assets.backgrounds};
   type EventNames = ${events};
-  type VariableNames = ${variables};
+  type Variables = { ${variables} };
   type BackgroundNames = ${assets.backgrounds};
   type AgentStates = ${agent_states};
   type UserFunctionsAndParameters = ${user_functions_and_parameters};
   `;
 
   // @start
-const static_types = `type Prettify<T> = {
+  const static_types = `type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
-type VariableNames = any;
+type Variables = { [key: string]: any };
 type BackgroundNames = any;
 type AgentStates = any;
 type UserFunctionsAndParameters = any;
-// @REPLACE
 
 type Easing =
   | 'backIn'
@@ -379,14 +378,7 @@ declare type F = {
   [key in InternalEvents]: UserFunction;
 };
 
-/**
- * TODO: docs
- */
-declare interface Variables {
-  [variable_name: string]: any;
-}
-
-type UserFunction = (_: GameData, args?: Array<any>) => void;
+type UserFunction = (_: GameEnvironment, args?: Array<any>) => void;
 
 /**
  * TODO: docs
@@ -419,7 +411,7 @@ declare interface GUI_Element {
     easing?: Easing;
   };
   /** Variable name that will determine the visibility of the element */
-  visibility_depends_on?: VariableNames;
+  visibility_depends_on?: keyof Variables;
 }
 
 declare interface GUI {
@@ -708,8 +700,8 @@ declare interface GameEnvironment {
   variables: Variables;
   agents: any;
 }
-`
-// @end
+`;
+  // @end
 
   return generated_types + static_types + variable_declarations;
 }

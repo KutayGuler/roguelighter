@@ -65,7 +65,7 @@
 
 <main class="flex flex-row gap-2 h-full overflow-hidden">
   <div class="flex flex-col h-full w-1/2 px-4">
-    <h3 class="h3 young-serif">{header}</h3>
+    <h3 class="young-serif">{header}</h3>
     <!-- <p>{description}</p> -->
     <p>
       Lorem ipsum dolor sit amet, consectetur adipisicing elit. Est, nemo. Atque officia blanditiis
