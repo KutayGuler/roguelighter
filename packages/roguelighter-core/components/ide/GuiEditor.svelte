@@ -16,18 +16,12 @@
       console.log(label);
 
       switch (label) {
-        case 'html':
-          return new htmlWorker(
-            new URL('/monaco-editor/esm/vs/language/html/html.worker?worker', $page.url.origin)
-          );
+        // case 'html':
+        //   return new htmlWorker();
         case 'editorWorkerService':
-          return new editorWorker(
-            new URL('/monaco-editor/esm/vs/editor/editor.worker.js?worker', $page.url.origin)
-          );
+          return new editorWorker();
         case 'tailwindcss':
-          return new twWorker(
-            new URL('/monaco-tailwindcss/tailwindcss.worker?worker', $page.url.origin)
-          );
+          return new twWorker();
         default:
           throw new Error(`Unknown label ${label}`);
       }

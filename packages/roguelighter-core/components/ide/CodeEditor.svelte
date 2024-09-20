@@ -327,7 +327,11 @@
     editor.onDidChangeModelContent(
       debounce(() => {
         update_types();
-        validate(model);
+        try {
+          validate(model);
+        } catch (e) {
+          console.log(e);
+        }
         code = editor.getValue();
         dispatch('change');
       }, 200)

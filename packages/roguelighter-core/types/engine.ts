@@ -46,4 +46,4 @@ export interface Portal {
 export type DialogController = ReturnType<typeof createDialog>;
 export type DropdownController = ReturnType<typeof createMenu>;
 
-export type View = 'code' | 'scene' | 'game';
+export type View = 'code' | 'gui' | 'scene' | 'game' | 'logs';

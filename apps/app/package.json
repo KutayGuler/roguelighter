@@ -61,6 +61,7 @@
   "type": "module",
   "dependencies": {
     "json5": "^2.2.3",
+    "monaco-tailwindcss": "^0.6.1",
     "roguelighter-core": "0.1.2",
     "tauri-plugin-fs-watch-api": "github:tauri-apps/tauri-plugin-fs-watch#v1",
     "tippy.js": "^6.3.7"

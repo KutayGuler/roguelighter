@@ -177,6 +177,10 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
 
   function highlight(pre: HTMLPreElement) {
     const lines = pre.textContent?.split('\n');
+
+    if (!$parse_errors.error || !$parse_errors.error.includes('at')) return;
+    console.log($parse_errors.error);
+
     let line_number = parseInt($parse_errors?.error?.split('at')[1].split(':')[0]) || 0;
 
     const line = lines[line_number - 1];
@@ -227,14 +231,34 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           }}
           >Code
         </button>
+
+        <!-- <button
+          class:btn-primary={view == 'gui'}
+          class="btn-outline"
+          on:click={() => {
+            previousView = view;
+            view = 'gui';
+          }}
+          >GUI
+        </button> -->
         <button
           bind:this={scene_button}
           class:btn-primary={view == 'scene'}
           class="btn-outline"
           on:click={() => {
-            view = previousView;
+            previousView = view;
+            view = 'scene';
           }}>Scene</button
         >
+        <button
+          class:btn-primary={view == 'logs'}
+          class="btn-outline"
+          on:click={() => {
+            previousView = view;
+            view = 'logs';
+          }}
+          >Logs
+        </button>
       </div>
       <button on:click={() => (options_open = true)}>
         <svg
@@ -282,7 +306,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     <div
       class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"
     >
-      <!-- <GuiEditor code=""></GuiEditor> -->
+      <!-- <GuiEditor></GuiEditor> -->
       <CodeEditor
         bind:this={code_editor}
         bind:view

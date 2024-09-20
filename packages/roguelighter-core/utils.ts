@@ -120,14 +120,17 @@ export function code_string_to_json(code: string): string | GameData {
   }
 }
 
+// BACKLOG: fix indentation
 export function json_to_code_string(json: GameData) {
   let str = ``;
 
   for (let [key, val] of Object.entries(json)) {
-    str += `${key} = ${JSON.stringify(val, null, '\t')};\n\n`;
+    str += `${key}: ${JSON.stringify(val, null, '\t')},\n`;
   }
 
-  return str.replace(/"([^"]+)":/g, '$1:');
+  return `game_data = {
+  ${str.replace(/"([^"]+)":/g, '$1:')}}
+  `;
 }
 
 export async function get_asset_urls(project_dir: string, agents: Agents<string>) {

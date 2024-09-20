@@ -64,10 +64,8 @@
     "chokidar": "^3.6.0",
     "monaco-tailwindcss": "^0.6.0",
     "runcss": "^0.1.5",
-    "string-ts": "^1.3.3",
     "svelte-headlessui": "^0.0.42",
     "svelte-transition": "^0.0.17",
-    "svooltip": "^0.7.7",
     "three": "^0.157.0"
   },
   "workspaces": [
