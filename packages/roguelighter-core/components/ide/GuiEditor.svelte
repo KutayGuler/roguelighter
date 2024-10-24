@@ -48,4 +48,4 @@
   });
 </script>
 
-<div id="editor" class="h-full" />
+<div id="editor" class="h-full"></div>

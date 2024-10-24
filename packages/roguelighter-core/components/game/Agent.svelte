@@ -8,14 +8,20 @@
   import type { Settings } from '../../types/game';
   const { camera } = useThrelte();
 
-  export let agent: PlayableAgent;
-  export let settings: Settings;
-  export let agent_asset_urls: AgentAssetUrls;
-  export let position: [number, number, number];
+  interface Props {
+    agent: PlayableAgent;
+    settings: Settings;
+    agent_asset_urls: AgentAssetUrls;
+    position: [number, number, number];
+  }
+
+  let { agent, settings, agent_asset_urls, position = $bindable() }: Props = $props();
   const is_player = agent.name == 'player';
   console.log(agent);
 
-  let play: () => void, pause: () => void;
+  // @ts-expect-error
+  let play: () => void = $state(),
+    pause: () => void = $state();
 
   const states = agent.states;
   const defaults = states.default;
@@ -79,8 +85,8 @@
 </script>
 
 <svelte:window
-  on:keydown={is_player ? handleKeydown : noop}
-  on:keyup={is_player ? handleKeyup : noop}
+  onkeydown={is_player ? handleKeydown : noop}
+  onkeyup={is_player ? handleKeyup : noop}
 />
 
 {#if textureUrl}

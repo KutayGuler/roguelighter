@@ -1,9 +1,10 @@
 <script lang="ts">
   import { fade, scale } from 'svelte/transition';
-  import { tooltip } from 'svooltip';
   export let env: string;
   export let command: string;
   let copied = false;
+
+  // TODO: tooltip
 
   async function copy() {
     await navigator.clipboard.writeText(`${env} ${command}`);
@@ -17,12 +18,7 @@
 >
   <span class="text-emerald-400">{env}</span>
   <span>{command}</span>
-  <button
-    use:tooltip={{
-      content: copied ? 'Copied!' : 'Copy to clipboard'
-    }}
-    on:click={copy}
-  >
+  <button on:click={copy}>
     {#if copied}
       <svg
         in:scale={{ duration: 150 }}

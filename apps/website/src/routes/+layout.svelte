@@ -1,7 +1,6 @@
 <script lang="ts">
   import 'roguelighter-core/styles.css';
   import '../app.css';
-  import 'svooltip/styles.css';
 </script>
 
 <main class="bg-[#1a141f] relative w-full h-full text-white flex flex-col items-center pt-16">

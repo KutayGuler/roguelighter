@@ -1,9 +1,20 @@
+<script module>
+    interface Props {
+    bg_asset_urls: BackgroundAssetUrls;
+    agent_asset_urls: AgentAssetUrls;
+    settings: Settings;
+    scene: PlayableScene;
+    scene_just_changed: boolean;
+    player_pos: number;
+    change_scene: (portal_info: Portal) => void
+  }
+</script>
+
 <script lang="ts">
   import type { Settings } from '../../types/game';
   import { T, useTask, useThrelte } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
   import Agent from './Agent.svelte';
-  import { createEventDispatcher } from 'svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
   import type {
     AgentAssetUrls,
@@ -11,21 +22,23 @@
     PlayableScene,
     Portal
   } from '../../types/engine';
-  const dispatch = createEventDispatcher();
 
-  export let bg_asset_urls: BackgroundAssetUrls;
-  export let agent_asset_urls: AgentAssetUrls;
-  export let settings: Settings;
-  export let scene: PlayableScene;
-  export let scene_just_changed: boolean;
-  export let player_pos: number;
+  let {
+    bg_asset_urls,
+    agent_asset_urls,
+    settings,
+    scene,
+    scene_just_changed,
+    player_pos,
+    change_scene
+  }: Props = $props();
 
   let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
 
   useTask(() => {
     if (!scene_just_changed && scene.portals.has(player_pos)) {
       const portal_info = scene.portals.get(player_pos) as Portal;
-      dispatch('change_scene', portal_info);
+      change_scene(portal_info);
     }
   });
 

@@ -1,6 +1,15 @@
+<script module>
+  interface Props {
+    code: string;
+    view: View;
+    unfocus_from_code_editor: Function
+    save_file: Function
+  }
+</script>
+
 <script lang="ts">
   // BACKLOG: save folding information on code
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
@@ -9,9 +18,9 @@
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
   import { debounce, filters, generate_ast, generate_types, includes_any } from '../../utils';
-  import { watch } from 'tauri-plugin-fs-watch-api';
+  import { watchImmediate } from '@tauri-apps/plugin-fs';
   import { join, documentDir } from '@tauri-apps/api/path';
-  import { type FileEntry, readDir } from '@tauri-apps/api/fs';
+  import { type DirEntry, readDir } from '@tauri-apps/plugin-fs';
   import {
     DEFAULT_DIR,
     INTERNAL_EVENTS,
@@ -21,15 +30,12 @@
   } from '../../constants';
   import { current_project_name } from '../../store';
   import type { View } from '../../types/engine';
-  import { formatDiagnostic } from 'typescript';
-  const dispatch = createEventDispatcher();
 
-  export let code: string;
-  export let view: View;
-  let editorElement: HTMLDivElement;
+  let { code = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file }: Props = $props();
+  let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
-  let cached_entries: Array<FileEntry> = [];
+  let cached_entries: Array<DirEntry> = [];
   let filePath = '';
 
   export function set_code(new_code: string) {
@@ -83,17 +89,20 @@
     monaco.editor.setTheme('default');
     editor.setModel(model);
 
-    const entries = await readDir(filePath, { recursive: true });
+    // TODO: test recursiveness
+    const entries = await readDir(filePath);
     cached_entries = entries;
     model.setValue(code);
     update_types();
 
-    await watch(
+    // TODO: test recursiveness
+    await watchImmediate(
       filePath,
-      async () => {
-        const entries = await readDir(filePath, { recursive: true });
-        cached_entries = entries;
-        update_types();
+      async (e) => {
+        // const entries = await readDir(filePath);
+        // cached_entries = entries;
+        // update_types();
+        console.log(e)
       },
       { recursive: true }
     );
@@ -315,7 +324,7 @@
 
     monaco.editor.createModel(generate_types(code) || '', 'typescript');
 
-    editor = monaco.editor.create(editorElement, {
+    editor = monaco.editor.create(editorElement as HTMLDivElement, {
       automaticLayout: true,
       theme: 'vs-dark',
       tabSize: 2,
@@ -333,7 +342,7 @@
           console.log(e);
         }
         code = editor.getValue();
-        dispatch('change');
+        save_file()
       }, 200)
     );
     editor.onKeyUp((e) => {
@@ -351,7 +360,7 @@
         return;
       }
       if (e.code === 'Escape') {
-        dispatch('unfocus');
+        unfocus_from_code_editor()
       }
     });
 
@@ -381,4 +390,4 @@
   }
 </script>
 
-<div class="h-full" bind:this={editorElement} />
+<div class="h-full" bind:this={editorElement}></div>

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { navigating } from '$app/stores';
+  import { beforeNavigate, goto } from '$app/navigation';
   import {
     ProjectCard,
     Modal,
@@ -8,7 +7,7 @@
     CROSS,
     DEFAULT_DIR,
     MAPS,
-    dir,
+    baseDir,
     notifications,
     project_store,
     current_project_name as cpn,
@@ -16,63 +15,72 @@
     type DialogController
   } from 'roguelighter-core';
   import {
-    createDir,
+    create,
     readDir,
     exists,
-    removeDir,
+    remove,
     writeTextFile,
     readTextFile,
-    type FileEntry
-  } from '@tauri-apps/api/fs';
+    mkdir,
+    type DirEntry
+  } from '@tauri-apps/plugin-fs';
   import JSON5 from 'json5';
   import { PUBLIC_APP_VERSION } from '$env/static/public';
 
-  let projects: Array<FileEntry> = [];
-  let current_project_name = '';
-  let delete_project_modal: DialogController;
-  let new_project_name = '';
-  let new_project_modal: DialogController;
-  let new_project_input_element: HTMLInputElement;
-  let loading_screen: DialogController;
-  $: $loading_screen && ($loading_screen.expanded = $navigating == null ? false : true);
+  let projects: Array<DirEntry> = $state([]);
+  let current_project_name = $state('');
+  let delete_project_modal: DialogController | undefined = $state();
+  let new_project_name = $state('');
+  let new_project_modal: DialogController | undefined = $state();
+  let new_project_input_element: HTMLInputElement | undefined = $state();
+  let loading_screen: DialogController | undefined = $state();
+
+  beforeNavigate(() => {
+    if ($loading_screen) {
+      $loading_screen.expanded = true;
+    }
+  });
 
   function trimEnds(str: string) {
     return str.trimEnd().trimStart();
   }
 
   function on_new_project_input(e: Event) {
-    if (
-      projects
-        .map(({ name }) => name)
-        // @ts-expect-error
-        .includes(trimEnds(e.target.value))
-    ) {
-      new_project_input_element.setCustomValidity('There is already a project with this name');
+    // @ts-expect-error
+    if (projects.map(({ name }) => name).includes(trimEnds(e.target.value))) {
+      new_project_input_element?.setCustomValidity('There is already a project with this name');
     } else {
-      new_project_input_element.setCustomValidity('');
+      new_project_input_element?.setCustomValidity('');
     }
   }
 
-  async function create_project() {
-    await createDir(`${DEFAULT_DIR}\\${new_project_name}`, {
-      dir,
-      recursive: true
+  async function create_project(e: SubmitEvent) {
+    e.preventDefault();
+    await mkdir(`${DEFAULT_DIR}\\${new_project_name}`, {
+      baseDir
     });
-    await createDir(`${DEFAULT_DIR}\\${new_project_name}\\assets`, {
-      dir,
-      recursive: true
+    await mkdir(`${DEFAULT_DIR}\\${new_project_name}\\assets`, {
+      baseDir
     });
+    await Promise.all([
+      mkdir(`${DEFAULT_DIR}\\${new_project_name}\\assets\\backgrounds`, {
+        baseDir
+      }),
+      mkdir(`${DEFAULT_DIR}\\${new_project_name}\\assets\\agents`, {
+        baseDir
+      })
+    ]);
     await writeTextFile(
       `${DEFAULT_DIR}\\${new_project_name}\\data.json`,
       generate_template_data(),
-      { dir }
+      { baseDir }
     );
-    new_project_modal.close();
+    new_project_modal?.close();
     open_project(new_project_name);
   }
 
   async function open_project(project_name: string) {
-    const res = await readTextFile(`${DEFAULT_DIR}\\${project_name}\\data.json`, { dir });
+    const res = await readTextFile(`${DEFAULT_DIR}\\${project_name}\\data.json`, { baseDir });
     let parsed = JSON5.parse(res);
     parsed.scenes = parsed.scenes.length ? new Map(parsed.scenes) : new Map();
 
@@ -89,9 +97,9 @@
   }
 
   async function delete_project() {
-    delete_project_modal.close();
-    await removeDir(`${DEFAULT_DIR}\\${current_project_name}`, {
-      dir,
+    delete_project_modal?.close();
+    await remove(`${DEFAULT_DIR}\\${current_project_name}`, {
+      baseDir,
       recursive: true
     });
     projects = projects.filter(({ name }) => name != current_project_name);
@@ -99,16 +107,16 @@
   }
 
   async function get_projects() {
-    let _exists = await exists(DEFAULT_DIR, { dir });
+    let _exists = await exists(DEFAULT_DIR, { baseDir });
     if (!_exists) {
-      await createDir(DEFAULT_DIR, { dir, recursive: true });
+      await mkdir(DEFAULT_DIR, { baseDir });
       return;
     }
 
-    projects = await readDir(DEFAULT_DIR, { dir, recursive: true });
+    projects = await readDir(DEFAULT_DIR, { baseDir });
   }
 
-  async function on_project_open(project: FileEntry) {
+  async function on_project_open(project: DirEntry) {
     open_project(project.name as string);
   }
 </script>
@@ -122,8 +130,8 @@
           <span class="text-xs self-end">v{PUBLIC_APP_VERSION}</span>
           <button
             class="btn-primary"
-            on:click={() => {
-              new_project_modal.open();
+            onclick={() => {
+              new_project_modal?.open();
             }}>New Project</button
           >
         </div>
@@ -132,10 +140,10 @@
         {#each projects as project}
           <ProjectCard
             {project}
-            on:open={() => on_project_open(project)}
-            on:delete={() => {
+            open_project={() => on_project_open(project)}
+            delete_project={() => {
               current_project_name = project.name;
-              delete_project_modal.open();
+              delete_project_modal?.open();
             }}
           ></ProjectCard>
         {/each}
@@ -144,20 +152,20 @@
 
     <Modal bind:dialog={new_project_modal}>
       <h3 class="pb-4">Create a new project</h3>
-      <form class="flex flex-col gap-4" on:submit|preventDefault={create_project}>
+      <form class="flex flex-col gap-4" onsubmit={create_project}>
         <label class="flex flex-col" for="name">
           Name
           <input
             required
             type="text"
-            on:input={on_new_project_input}
+            oninput={on_new_project_input}
             bind:value={new_project_name}
             bind:this={new_project_input_element}
           />
         </label>
         <button class="btn-primary">Create</button>
       </form>
-      <button class="absolute top-2 right-4" on:click={() => new_project_modal.close()}
+      <button class="absolute top-2 right-4" onclick={() => new_project_modal?.close()}
         >{CROSS}</button
       >
     </Modal>
@@ -165,8 +173,8 @@
     <Modal bind:dialog={delete_project_modal}>
       <h3>Delete project "{current_project_name}"?</h3>
       <div class="flex flex-row gap-2 w-full justify-end pt-4">
-        <button on:click={() => delete_project_modal.close()} class=" btn-ghost">Cancel</button>
-        <button color="red" on:click={delete_project}>Delete</button>
+        <button onclick={() => delete_project_modal?.close()} class=" btn-ghost">Cancel</button>
+        <button class="btn-primary" onclick={delete_project}>Delete</button>
       </div>
     </Modal>
 

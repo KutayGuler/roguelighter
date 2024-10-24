@@ -3,8 +3,8 @@ import JSON5 from 'json5';
 import ts from 'typescript';
 import { DEFAULT_DIR, function_regex } from './constants';
 import { join, documentDir } from '@tauri-apps/api/path';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
-import { FileEntry, readDir } from '@tauri-apps/api/fs';
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
 import { generate_boilerplate_types } from './generate_boilerplate_types';
 import { GameData, Agents, GUI } from './types/game';
 import { parse_errors } from './store';
@@ -133,7 +133,7 @@ export function json_to_code_string(json: GameData) {
   `;
 }
 
-export async function get_asset_urls(project_dir: string, agents: Agents<string>) {
+export async function get_asset_urls(project_dir: string, agents: Agents) {
   let bg_asset_urls = new Map<string, string>();
   let agent_asset_urls = new Map<string, any>();
 
@@ -143,7 +143,7 @@ export async function get_asset_urls(project_dir: string, agents: Agents<string>
     documentDirPath,
     `${DEFAULT_DIR}/${project_dir}/assets/backgrounds`
   );
-  const bg_entries = await readDir(bg_file_path, { recursive: true });
+  const bg_entries = await readDir(bg_file_path);
 
   let bg_children = [];
 
@@ -291,10 +291,10 @@ export function get_tailwind_classes(gui: GUI) {
   return set;
 }
 
-function get_children_assets(entry: FileEntry, parent_name = ''): Array<Array<string>> {
+function get_children_assets(entry: DirEntry, parent_name = ''): Array<Array<string>> {
   let children = [];
 
-  for (let child of entry.children as FileEntry[]) {
+  for (let child of entry.children as DirEntry[]) {
     if (child.children) {
       children.push(...get_children_assets(child, entry.name));
       continue;
@@ -313,10 +313,10 @@ function get_children_assets(entry: FileEntry, parent_name = ''): Array<Array<st
   return children;
 }
 
-function retrieve_children_names(entry: FileEntry, parent_name = '') {
+function retrieve_children_names(entry: DirEntry, parent_name = '') {
   let children = '';
 
-  for (let child of entry.children as FileEntry[]) {
+  for (let child of entry.children as DirEntry[]) {
     if (child.children) {
       children += retrieve_children_names(child, entry.name);
       continue;
@@ -353,7 +353,7 @@ function infer_type(kind: string) {
   return 'undefined';
 }
 
-export function generate_types(code: string, assets_array: Array<FileEntry> = []) {
+export function generate_types(code: string, assets_array: Array<DirEntry> = []) {
   try {
     const ast = generate_ast(code);
     const prop_assignments = ast.c[0].c[0].c[2].c;

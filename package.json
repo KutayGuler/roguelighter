@@ -35,9 +35,9 @@
     "svelte": "^4.0.5"
   },
   "devDependencies": {
-    "@sveltejs/adapter-auto": "^2.0.0",
-    "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^1.20.4",
+    "@sveltejs/adapter-auto": "^3.3.0",
+    "@sveltejs/adapter-static": "^3.0.5",
+    "@sveltejs/kit": "^2.7.2",
     "@sveltejs/package": "^2.2.2",
     "@types/three": "^0.157.2",
     "autoprefixer": "^10.4.15",
@@ -45,28 +45,28 @@
     "monaco-editor": "^0.44.0",
     "postcss": "^8.4.29",
     "publint": "^0.2.5",
-    "svelte": "^4.0.5",
-    "svelte-check": "^3.4.3",
-    "tailwindcss": "^3.3.3",
+    "svelte": "^5.0.5",
+    "svelte-check": "^4.0.5",
+    "tailwindcss": "^3.4.14",
     "tslib": "^2.4.1",
     "turbo": "^1.12.1",
     "typedoc": "^0.25.4",
     "typescript": "^5.2.2",
-    "vite": "^4.4.2"
+    "vite": "^5.3.5"
   },
   "type": "module",
   "dependencies": {
     "@neoconfetti/svelte": "^2.2.1",
-    "@tauri-apps/api": "^1.5.3",
-    "@tauri-apps/cli": "^1.5.6",
-    "@threlte/core": "^7.0.12",
-    "@threlte/extras": "^8.5.0",
+    "@tauri-apps/api": "^2.0.3",
+    "@tauri-apps/cli": "^2.0.4",
+    "@threlte/core": "^8.0.0-next.21",
+    "@threlte/extras": "^9.0.0-next.28",
     "chokidar": "^3.6.0",
     "monaco-tailwindcss": "^0.6.0",
     "runcss": "^0.1.5",
     "svelte-headlessui": "^0.0.42",
     "svelte-transition": "^0.0.17",
-    "three": "^0.157.0"
+    "three": "^0.169.0"
   },
   "workspaces": [
     "packages/*",

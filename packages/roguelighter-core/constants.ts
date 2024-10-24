@@ -1,4 +1,4 @@
-import { BaseDirectory } from '@tauri-apps/api/fs';
+import { BaseDirectory } from '@tauri-apps/plugin-fs';
 
 export const DEFAULT_FRAME_COUNT = 1;
 export const DEFAULT_FPS = 24;
@@ -8,7 +8,7 @@ export const DEFAULT_MAP_WIDTH = 10;
 export const DEFAULT_CAMERA_ZOOM = 20;
 export const DEFAULT_DIR = 'Roguelighter Projects';
 export const DEFAULT_EXPORT_DIR = 'Roguelighter Exports';
-export const dir = BaseDirectory.Document;
+export const baseDir = BaseDirectory.Document;
 export const MAPS = ['backgrounds', 'agents', 'portals'];
 
 export const CROSS = '🞫';

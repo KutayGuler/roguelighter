@@ -1,3 +1,15 @@
+<script module>
+  interface Props {
+    // BACKLOG: portals can only go through their realms (dev_only, game_only)
+    project: RoguelighterProject;
+    current_scene_id: number;
+    bg_asset_urls: BackgroundAssetUrls;
+    agent_asset_urls: AgentAssetUrls;
+    DEV?: boolean;
+    exit_dev?: Function
+  }
+</script>
+
 <script lang="ts">
   // TODO LATER: introduce helpers
   // TODO LATER: introduce constants
@@ -13,31 +25,31 @@
   import { tweened, type Tweened } from 'svelte/motion';
   import * as easings from 'svelte/easing';
   import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
-  import { exit } from '@tauri-apps/api/process';
+  import { exit } from '@tauri-apps/plugin-process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
   import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
     PlayableScene,
     RoguelighterProject
   } from '../../types/engine';
-  const dispatch = createEventDispatcher();
 
   // BACKLOG: try catch for user defined functions
   // BACKLOG: introduce objects
   // BACKLOG: introduce agents[agent_name].props
   // BACKLOG: dev_only scenes
-  // BACKLOG: portals can only go through their realms (dev_only, game_only)
 
-  export let project: RoguelighterProject;
-  export let current_scene_id: number;
-  export let bg_asset_urls: BackgroundAssetUrls;
-  export let agent_asset_urls: AgentAssetUrls;
-  export let DEV = false;
+  let {
+    project,
+    current_scene_id,
+    bg_asset_urls,
+    agent_asset_urls,
+    DEV = false,
+    exit_dev
+  }: Props = $props();
 
   let _ = code_string_to_json(project.code) as GameData;
-  let { variables, agents, settings, events, gui, keybindings, collisions, __dev_only } = _;
+  let { variables, agents, settings, events, gui, keybindings, collisions, __dev_only } = $state(_);
 
   for (let [key, val] of Object.entries(events)) {
     if (typeof val === 'string') {
@@ -51,7 +63,7 @@
   const EASING = settings.easing || DEFAULT_EASING;
 
   let unmodified_scenes = structuredClone(project.scenes);
-  let scene: PlayableScene;
+  let scene: PlayableScene = $state() as PlayableScene;
   let scenes = new Map<number, PlayableScene>();
 
   function transform_scenes() {
@@ -85,7 +97,7 @@
     scene = scenes.get(current_scene_id) as PlayableScene;
   }
 
-  let player_pos = 0;
+  let player_pos = $state(0);
   let game_paused = false;
 
   const f = {
@@ -107,8 +119,8 @@
       }
     },
     $exit: async () => {
-      if (DEV) {
-        dispatch('exit');
+      if (DEV && exit_dev) {
+        exit_dev()
       } else {
         await exit();
       }
@@ -172,7 +184,7 @@
     variables = variables;
   }
 
-  let scene_just_changed = false;
+  let scene_just_changed = $state(false);
 
   function change_scene(e: CustomEvent) {
     const { to_scene_id, to_position } = e.detail;
@@ -194,14 +206,14 @@
   transform_scenes();
 </script>
 
-<svelte:window on:keydown={handle} />
+<svelte:window onkeydown={handle} />
 
 <main class="flex items-center justify-center w-full h-full bg-black">
   <section class="relative flex flex-col w-full h-full">
     {#if scene}
       <Canvas>
         <Scene
-          on:change_scene={change_scene}
+          {change_scene}
           {player_pos}
           {settings}
           {scene}

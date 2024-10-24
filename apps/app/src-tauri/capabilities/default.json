@@ -1,0 +1,32 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "enables the default permissions",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "shell:allow-execute",
+    "shell:allow-open",
+    "shell:allow-spawn",
+    "shell:allow-kill",
+    "core:path:default",
+    "fs:allow-document-read-recursive",
+    "fs:allow-document-write-recursive",
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+    },
+    {
+      "identifier": "fs:read-all",
+      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+    },
+    {
+      "identifier": "fs:write-all",
+      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+    }
+  ]
+}

@@ -2,7 +2,11 @@
   import { PUBLIC_APP_VERSION } from '$env/static/public';
   import { CROSS } from '../constants';
   import { focus_trap } from '../utils';
-  export let open = false;
+  interface Props {
+    open?: boolean;
+  }
+
+  let { open = $bindable(false) }: Props = $props();
   // BACKLOG: hotkey to switch views (Ctrl + Q)
   // BACKLOG: put all stuff inside Roguelighter document
   // options.json
@@ -11,8 +15,8 @@
   // options page
   // options.json should be stored globally (probably in Roguelighter Options or sth)
   // export game button
-  let value = 'Ctrl + Q';
-  let editing = false;
+  let value = $state('Ctrl + Q');
+  let editing = $state(false);
 
   function toggleEdit() {
     editing = !editing;
@@ -40,7 +44,7 @@
   }
 </script>
 
-<svelte:window on:keydown={handle} />
+<svelte:window onkeydown={handle} />
 
 {#if open}
   <div
@@ -48,7 +52,7 @@
     use:focus_trap={true}
   >
     <div class="flex flex-row justify-end">
-      <button class="text-2xl" on:click={() => (open = false)}>{CROSS}</button>
+      <button class="text-2xl" onclick={() => (open = false)}>{CROSS}</button>
     </div>
     <span class="text-xs">Version: {PUBLIC_APP_VERSION}</span>
     <h1 class="pt-8 pb-2 text-xl">Keybindings</h1>
@@ -65,7 +69,7 @@
       <button
         class:text-zinc-400={editing}
         class="bg-zinc-700 shadow-inner py-1 px-2 rounded"
-        on:click={toggleEdit}
+        onclick={toggleEdit}
         ><svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

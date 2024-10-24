@@ -11,28 +11,32 @@
     code_string_to_json,
     processClasses
   } from '../utils';
-  import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
-  import { writeTextFile } from '@tauri-apps/api/fs';
+  import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, baseDir } from '../constants';
+  import { writeTextFile } from '@tauri-apps/plugin-fs';
   import { join, documentDir } from '@tauri-apps/api/path';
-  import { Command } from '@tauri-apps/api/shell';
+  import { Command } from '@tauri-apps/plugin-shell';
   import Options from './Options.svelte';
   import GuiEditor from './ide/GuiEditor.svelte';
   import type { RoguelighterDataFile, RoguelighterProject, View } from '../types/engine';
   import type { GameData } from '../types/game';
-  import { SvelteComponent } from 'svelte';
 
   // BACKLOG: vite includes error
-  // BACKLOG: sometimes editor styles not loading up
 
-  export let project: RoguelighterProject;
-  let options_open = false;
-  let current_scene_id = 0;
-  let view: View = 'code';
-  let previousView: View = 'scene';
-  let code_button: HTMLButtonElement;
-  let scene_button: HTMLButtonElement;
-  let agents: GameData['agents'];
-  let code_editor: any;
+  interface Props {
+    // BACKLOG: sometimes editor styles not loading up
+    project: RoguelighterProject;
+  }
+
+  let { project = $bindable() }: Props = $props();
+  let options_open = $state(false);
+  let current_scene_id = $state(0);
+  let view: View = $state('code');
+  let previousView: View = $state('scene');
+  let code_button: HTMLButtonElement | undefined = $state();
+  let scene_button: HTMLButtonElement | undefined = $state();
+  // @ts-expect-error
+  let agents: GameData['agents'] = $state();
+  let code_editor: any = $state();
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
@@ -72,8 +76,8 @@
     }
   }
 
-  let bg_asset_urls = new Map<string, string>();
-  let agent_asset_urls = new Map<string, any>();
+  let bg_asset_urls = $state(new Map<string, string>());
+  let agent_asset_urls = $state(new Map<string, any>());
 
   async function calc_asset_urls(parsed: GameData) {
     try {
@@ -99,7 +103,9 @@
     let obj: RoguelighterDataFile = { code: project.code, scenes: Array.from(scenes) };
     let file_contents = JSON.stringify(obj);
 
-    writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, { dir });
+    writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, {
+      baseDir
+    });
   }
 
   const commands: Array<string> = [
@@ -149,7 +155,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     await writeTextFile(project_path + '/' + bat_name + '.bat', bat_content);
 
     for (let command of commands) {
-      let c = new Command('cmd', ['/C', command], { cwd: project_path, encoding: 'utf-8' });
+      let c = Command.create('cmd', ['/C', command], { cwd: project_path, encoding: 'utf-8' });
       c.on('close', (data) => {
         console.log(`command finished with code ${data.code} and signal ${data.signal}`);
       });
@@ -160,7 +166,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     }
   }
 
-  let initialized = false;
+  let initialized = $state(false);
 
   function recalculate() {
     let parsed = code_string_to_json(project.code);
@@ -173,7 +179,13 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     }
   }
 
-  $: view, save_file(), recalculate();
+  // BACKLOG: keep this as an effect?
+  $effect(() => {
+    if (view) {
+      save_file();
+      recalculate();
+    }
+  });
 
   function highlight(pre: HTMLPreElement) {
     const lines = pre.textContent?.split('\n');
@@ -193,9 +205,17 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       pre.innerHTML = text;
     }
   }
+
+  function unfocus_from_code_editor() {
+    code_button?.focus();
+  }
+
+  function unfocus_from_scene_editor() {
+    scene_button?.focus();
+  }
 </script>
 
-<svelte:window on:keydown={handle} />
+<svelte:window onkeydown={handle} />
 
 {#if initialized}
   <main class="relative flex flex-col w-full h-full overflow-hidden select-none">
@@ -225,7 +245,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           bind:this={code_button}
           class:btn-primary={view == 'code'}
           class="btn-outline"
-          on:click={() => {
+          onclick={() => {
             previousView = view;
             view = 'code';
           }}
@@ -245,7 +265,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           bind:this={scene_button}
           class:btn-primary={view == 'scene'}
           class="btn-outline"
-          on:click={() => {
+          onclick={() => {
             previousView = view;
             view = 'scene';
           }}>Scene</button
@@ -253,14 +273,14 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
         <button
           class:btn-primary={view == 'logs'}
           class="btn-outline"
-          on:click={() => {
+          onclick={() => {
             previousView = view;
             view = 'logs';
           }}
           >Logs
         </button>
       </div>
-      <button on:click={() => (options_open = true)}>
+      <button onclick={() => (options_open = true)}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -284,23 +304,23 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     </nav>
     {#if view == 'scene'}
       <SceneEditor
+        bind:agents
+        bind:project
         bind:bg_asset_urls
         bind:agent_asset_urls
         bind:current_scene_id
-        bind:project
-        bind:agents
-        on:change={debounce(save_file, 100)}
-        on:switch_view={switch_to_game}
-        on:unfocus={() => scene_button.focus()}
+        save_file={debounce(save_file, 100)}
+        {switch_to_game}
+        {unfocus_from_scene_editor}
       />
     {:else if view == 'game'}
       <Game
         DEV
+        {project}
         {bg_asset_urls}
         {agent_asset_urls}
         {current_scene_id}
-        {project}
-        on:exit={() => (view = 'scene')}
+        exit_dev={() => (view = 'scene')}
       />
     {/if}
     <div
@@ -308,11 +328,11 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     >
       <!-- <GuiEditor></GuiEditor> -->
       <CodeEditor
-        bind:this={code_editor}
         bind:view
+        bind:this={code_editor}
         bind:code={project.code}
-        on:unfocus={() => code_button.focus()}
-        on:change={save_file}
+        {unfocus_from_code_editor}
+        save_file={debounce(save_file, 100)}
       ></CodeEditor>
     </div>
     <Toast />
