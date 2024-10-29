@@ -1,13 +1,14 @@
 import RunCSS from 'runcss';
 import JSON5 from 'json5';
 import ts from 'typescript';
-import { DEFAULT_DIR, function_regex } from './constants';
-import { join, documentDir } from '@tauri-apps/api/path';
+import { PROJECTS_DIR, documentDirPath, function_regex } from './constants';
+import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
 import { generate_boilerplate_types } from './generate_boilerplate_types';
 import { GameData, Agents, GUI } from './types/game';
 import { parse_errors } from './store';
+import { EntryTuple } from './types/engine';
 
 export const { processClasses } = RunCSS();
 export const noop = () => {};
@@ -24,6 +25,7 @@ export function pos_to_xy(pos: number, scene_width: number) {
 }
 
 export function debounce(fn: Function, ms: number) {
+  // @ts-expect-error
   let timeout: NodeJS.Timeout;
   return function () {
     clearTimeout(timeout);
@@ -133,48 +135,47 @@ export function json_to_code_string(json: GameData) {
   `;
 }
 
-export async function get_asset_urls(project_dir: string, agents: Agents) {
-  let bg_asset_urls = new Map<string, string>();
-  let agent_asset_urls = new Map<string, any>();
+export async function process_entries_recursively(
+  parent: string,
+  entries: DirEntry[],
+  type: 'backgrounds' | 'agents'
+) {
+  let _entries: Array<EntryTuple> = [];
 
-  const documentDirPath = await documentDir();
+  for (const entry of entries) {
+    const dir = await join(parent, entry.name);
+    const path = convertFileSrc(dir);
 
-  const bg_file_path = await join(
-    documentDirPath,
-    `${DEFAULT_DIR}/${project_dir}/assets/backgrounds`
-  );
-  const bg_entries = await readDir(bg_file_path);
-
-  let bg_children = [];
-
-  for (let entry of bg_entries) {
-    bg_children.push(...get_children_assets(entry));
-  }
-
-  for (let [key, path] of bg_children) {
-    let source = convertFileSrc(path);
-    bg_asset_urls.set(key, source);
-  }
-
-  for (let [key, obj] of Object.entries(agents)) {
-    let url_obj = {};
-
-    for (let [_key, val] of Object.entries(obj.states)) {
-      const filePath = await join(
-        documentDirPath,
-        `${DEFAULT_DIR}/${project_dir}/assets/agents/${val.source}`
-      );
-      // @ts-expect-error
-      url_obj[_key] = convertFileSrc(filePath);
+    if (entry.isDirectory) {
+      const children = await process_entries_recursively(dir, await readDir(dir), type);
+      _entries.push(...children);
+      continue;
     }
 
-    agent_asset_urls.set(key, url_obj);
+    _entries.push([
+      // split gets rid of the file extension
+      entry.name.replace('http://asset.localhost/', '').split('.')[0],
+      path,
+      type
+    ]);
   }
 
-  return {
-    backgrounds: bg_asset_urls,
-    agents: agent_asset_urls
-  };
+  return _entries;
+}
+
+export async function generate_asset_urls(project_dir: string, type: 'backgrounds' | 'agents') {
+  let asset_urls = new Map<string, string>();
+
+  const file_path = await join(documentDirPath, `${PROJECTS_DIR}/${project_dir}/assets/${type}`);
+  const entries = await readDir(file_path);
+  let children = await process_entries_recursively(file_path, entries, type);
+
+  for (let [key, path] of children) {
+    let source = convertFileSrc(path);
+    asset_urls.set(key, source);
+  }
+
+  return asset_urls;
 }
 
 export const template_json_code: GameData = {
@@ -291,47 +292,6 @@ export function get_tailwind_classes(gui: GUI) {
   return set;
 }
 
-function get_children_assets(entry: DirEntry, parent_name = ''): Array<Array<string>> {
-  let children = [];
-
-  for (let child of entry.children as DirEntry[]) {
-    if (child.children) {
-      children.push(...get_children_assets(child, entry.name));
-      continue;
-    }
-
-    if (parent_name) {
-      children.push([
-        `${parent_name}/${entry.name}/${child.name?.replace('.png', '')}`,
-        child.path
-      ]);
-    } else {
-      children.push([`${entry.name}/${child.name?.replace('.png', '')}`, child.path]);
-    }
-  }
-
-  return children;
-}
-
-function retrieve_children_names(entry: DirEntry, parent_name = '') {
-  let children = '';
-
-  for (let child of entry.children as DirEntry[]) {
-    if (child.children) {
-      children += retrieve_children_names(child, entry.name);
-      continue;
-    }
-
-    if (parent_name) {
-      children += `| '${parent_name}/${entry.name}/${child.name}'`;
-    } else {
-      children += `| '${entry.name}/${child.name}'`;
-    }
-  }
-
-  return children;
-}
-
 export const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {
   events: ({ text }) => text.startsWith('events:'),
   variables: ({ text }) => text.startsWith('variables:')
@@ -353,7 +313,8 @@ function infer_type(kind: string) {
   return 'undefined';
 }
 
-export function generate_types(code: string, assets_array: Array<DirEntry> = []) {
+export function generate_types(code: string, cached_entries: Array<EntryTuple> = []) {
+  console.log(cached_entries);
   try {
     const ast = generate_ast(code);
     const prop_assignments = ast.c[0].c[0].c[2].c;
@@ -399,7 +360,7 @@ export function generate_types(code: string, assets_array: Array<DirEntry> = [])
     let variables_interface = '';
 
     for (let assignment of variable_assignments) {
-      console.log(assignment.c[1]);
+      // console.log(assignment.c[1]);
       variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
     }
 
@@ -409,17 +370,12 @@ export function generate_types(code: string, assets_array: Array<DirEntry> = [])
     //   agent_states += `| '${key}'`;
     // }
 
-    if (assets_array.length) {
+    if (cached_entries.length) {
       assets.agents = '';
       assets.backgrounds = '';
 
-      for (let asset of assets_array) {
-        if (asset.children) {
-          assets[asset.name as keyof typeof assets] += retrieve_children_names(asset);
-          continue;
-        }
-
-        assets[asset.name as keyof typeof assets] += `| '${asset.name}'`;
+      for (let [key, _, type] of cached_entries) {
+        assets[type] += `| '${key}'`;
       }
     }
 

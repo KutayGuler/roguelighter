@@ -3,7 +3,7 @@
   "version": "0.1.2",
   "scripts": {
     "start": "vite dev --force",
-    "dev": "tauri dev && typegen",
+    "dev": "tauri dev",
     "typegen": "cd ../.. && node generate_types.js",
     "build": "vite build",
     "package": "svelte-kit sync && svelte-package && publint",

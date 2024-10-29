@@ -13,8 +13,6 @@
 
   window.MonacoEnvironment = {
     getWorker(moduleId, label) {
-      console.log(label);
-
       switch (label) {
         // case 'html':
         //   return new htmlWorker();

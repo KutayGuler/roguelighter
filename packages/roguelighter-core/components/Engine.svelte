@@ -6,12 +6,12 @@
   import { current_project_name, errors, notifications, parse_errors } from '../store';
   import {
     debounce,
-    get_asset_urls,
     get_tailwind_classes,
     code_string_to_json,
-    processClasses
+    processClasses,
+    generate_asset_urls
   } from '../utils';
-  import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, baseDir } from '../constants';
+  import { EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
   import { writeTextFile } from '@tauri-apps/plugin-fs';
   import { join, documentDir } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/plugin-shell';
@@ -79,17 +79,6 @@
   let bg_asset_urls = $state(new Map<string, string>());
   let agent_asset_urls = $state(new Map<string, any>());
 
-  async function calc_asset_urls(parsed: GameData) {
-    try {
-      ({ backgrounds: bg_asset_urls, agents: agent_asset_urls } = await get_asset_urls(
-        $current_project_name,
-        parsed.agents
-      ));
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
   function save_file() {
     let scenes = structuredClone(project.scenes);
 
@@ -103,7 +92,7 @@
     let obj: RoguelighterDataFile = { code: project.code, scenes: Array.from(scenes) };
     let file_contents = JSON.stringify(obj);
 
-    writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, {
+    writeTextFile(`${PROJECTS_DIR}\\${$current_project_name}\\data.json`, file_contents, {
       baseDir
     });
   }
@@ -128,15 +117,15 @@
 
   async function export_game() {
     const documents = await documentDir();
-    const project_path = await join(documents, `${DEFAULT_DIR}/${$current_project_name}`);
+    const project_path = await join(documents, `${PROJECTS_DIR}/${$current_project_name}`);
 
     const bat_name = 'export';
     const bat_content = `
 cd ../..
 
-if not exist "${DEFAULT_EXPORT_DIR}" (
-  mkdir "${DEFAULT_EXPORT_DIR}"
-  cd "${DEFAULT_EXPORT_DIR}"
+if not exist "${EXPORT_DIR}" (
+  mkdir "${EXPORT_DIR}"
+  cd "${EXPORT_DIR}"
   git clone --filter=blob:none --sparse https://github.com/roguelighterengine/roguelighter cache
   cd cache
   git sparse-checkout add apps/export-app
@@ -168,12 +157,14 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
 
   let initialized = $state(false);
 
-  function recalculate() {
+  async function recalculate() {
     let parsed = code_string_to_json(project.code);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      calc_asset_urls(parsed);
+      agent_asset_urls = await generate_asset_urls($current_project_name, 'agents');
+      bg_asset_urls = await generate_asset_urls($current_project_name, 'backgrounds');
+
       agents = parsed.agents;
       initialized = true;
     }

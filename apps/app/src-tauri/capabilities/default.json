@@ -14,19 +14,19 @@
     "fs:allow-document-write-recursive",
     {
       "identifier": "fs:allow-remove",
-      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+      "allow": [{ "path": "$DOCUMENT/roguelighter" }]
     },
     {
       "identifier": "fs:allow-exists",
-      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+      "allow": [{ "path": "$DOCUMENT/roguelighter" }]
     },
     {
       "identifier": "fs:read-all",
-      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+      "allow": [{ "path": "$DOCUMENT/roguelighter" }]
     },
     {
       "identifier": "fs:write-all",
-      "allow": [{ "path": "$DOCUMENT/**" }, { "path": "$DOCUMENT/*" }, { "path": "$DOCUMENT" }]
+      "allow": [{ "path": "$DOCUMENT/roguelighter" }]
     }
   ]
 }

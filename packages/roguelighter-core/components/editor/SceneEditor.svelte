@@ -689,7 +689,7 @@
 </Modal>
 
 <Modal bind:dialog={delete_scene_modal}>
-  <h3 class="h3">Delete scene "{current_scene.name}"?</h3>
+  <h3 class="h3">Delete scene "{current_scene?.name}"?</h3>
   <form
     onsubmit={delete_current_scene}
     class="flex flex-row gap-2 w-full justify-end pt-4"

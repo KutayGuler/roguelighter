@@ -17,7 +17,6 @@
 
   let { agent, settings, agent_asset_urls, position = $bindable() }: Props = $props();
   const is_player = agent.name == 'player';
-  console.log(agent);
 
   // @ts-expect-error
   let play: () => void = $state(),

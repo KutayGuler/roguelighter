@@ -17,26 +17,29 @@
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-  import { debounce, filters, generate_ast, generate_types, includes_any } from '../../utils';
+  import { debounce, filters, generate_ast, generate_types, includes_any, process_entries_recursively } from '../../utils';
   import { watchImmediate } from '@tauri-apps/plugin-fs';
   import { join, documentDir } from '@tauri-apps/api/path';
-  import { type DirEntry, readDir } from '@tauri-apps/plugin-fs';
+  import { readDir } from '@tauri-apps/plugin-fs';
   import {
-    DEFAULT_DIR,
     INTERNAL_EVENTS,
     INTERNAL_GUI,
     INTERNAL_TEXTS,
+    PROJECTS_DIR,
     variables_regex
   } from '../../constants';
   import { current_project_name } from '../../store';
-  import type { View } from '../../types/engine';
+  import type { EntryTuple, View } from '../../types/engine';
 
   let { code = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
-  let cached_entries: Array<DirEntry> = [];
-  let filePath = '';
+  let agents_cached_entries: Array<EntryTuple> = [];
+  let bg_cached_entries: Array<EntryTuple> = [];
+  let agentsFilePath = ''
+  let bgFilePath = ''
+
 
   export function set_code(new_code: string) {
     code = new_code;
@@ -44,9 +47,9 @@
   }
 
   export async function format_document() {
-    console.log('triggering');
+    // console.log('triggering');
     editor.trigger('anyString', 'editor.action.formatDocument', '');
-    console.log('triggered');
+    // console.log('triggered');
   }
 
   async function load_code(code: string) {
@@ -90,18 +93,18 @@
     editor.setModel(model);
 
     // TODO: test recursiveness
-    const entries = await readDir(filePath);
-    cached_entries = entries;
+    bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
+    agents_cached_entries = await process_entries_recursively(agentsFilePath, await readDir(agentsFilePath), 'agents');
     model.setValue(code);
     update_types();
 
     // TODO: test recursiveness
     await watchImmediate(
-      filePath,
+      [bgFilePath, agentsFilePath],
       async (e) => {
-        // const entries = await readDir(filePath);
-        // cached_entries = entries;
-        // update_types();
+        bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
+        agents_cached_entries = await process_entries_recursively(agentsFilePath, await readDir(agentsFilePath), 'agents');
+        update_types();
         console.log(e)
       },
       { recursive: true }
@@ -281,7 +284,8 @@
     create_custom_tokenizer();
 
     const documentDirPath = await documentDir();
-    filePath = await join(documentDirPath, `${DEFAULT_DIR}/${$current_project_name}/assets`);
+    agentsFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${$current_project_name}/assets/agents`);
+    bgFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${$current_project_name}/assets/backgrounds`);
 
     self.MonacoEnvironment = {
       getWorker(moduleID, label) {
@@ -382,7 +386,7 @@
       const value = model.getValue();
       if (!value) continue;
       if (value.includes('type Easing =')) {
-        model.setValue(generate_types(editor.getValue(), cached_entries) || '');
+        model.setValue(generate_types(editor.getValue(), [...agents_cached_entries, ...bg_cached_entries]) || '');
       } else {
         content_id = model.id;
       }

@@ -5,17 +5,17 @@
     Modal,
     Toast,
     CROSS,
-    DEFAULT_DIR,
+    PROJECTS_DIR,
     MAPS,
     baseDir,
     notifications,
     project_store,
     current_project_name as cpn,
     generate_template_data,
-    type DialogController
+    type DialogController,
+    DEFAULT_DIR
   } from 'roguelighter-core';
   import {
-    create,
     readDir,
     exists,
     remove,
@@ -34,6 +34,8 @@
   let new_project_modal: DialogController | undefined = $state();
   let new_project_input_element: HTMLInputElement | undefined = $state();
   let loading_screen: DialogController | undefined = $state();
+
+  // FIXME: forbidden to read images from disk
 
   beforeNavigate(() => {
     if ($loading_screen) {
@@ -56,22 +58,22 @@
 
   async function create_project(e: SubmitEvent) {
     e.preventDefault();
-    await mkdir(`${DEFAULT_DIR}\\${new_project_name}`, {
+    await mkdir(`${PROJECTS_DIR}\\${new_project_name}`, {
       baseDir
     });
-    await mkdir(`${DEFAULT_DIR}\\${new_project_name}\\assets`, {
+    await mkdir(`${PROJECTS_DIR}\\${new_project_name}\\assets`, {
       baseDir
     });
     await Promise.all([
-      mkdir(`${DEFAULT_DIR}\\${new_project_name}\\assets\\backgrounds`, {
+      mkdir(`${PROJECTS_DIR}\\${new_project_name}\\assets\\backgrounds`, {
         baseDir
       }),
-      mkdir(`${DEFAULT_DIR}\\${new_project_name}\\assets\\agents`, {
+      mkdir(`${PROJECTS_DIR}\\${new_project_name}\\assets\\agents`, {
         baseDir
       })
     ]);
     await writeTextFile(
-      `${DEFAULT_DIR}\\${new_project_name}\\data.json`,
+      `${PROJECTS_DIR}\\${new_project_name}\\data.json`,
       generate_template_data(),
       { baseDir }
     );
@@ -80,7 +82,7 @@
   }
 
   async function open_project(project_name: string) {
-    const res = await readTextFile(`${DEFAULT_DIR}\\${project_name}\\data.json`, { baseDir });
+    const res = await readTextFile(`${PROJECTS_DIR}\\${project_name}\\data.json`, { baseDir });
     let parsed = JSON5.parse(res);
     parsed.scenes = parsed.scenes.length ? new Map(parsed.scenes) : new Map();
 
@@ -98,7 +100,7 @@
 
   async function delete_project() {
     delete_project_modal?.close();
-    await remove(`${DEFAULT_DIR}\\${current_project_name}`, {
+    await remove(`${PROJECTS_DIR}\\${current_project_name}`, {
       baseDir,
       recursive: true
     });
@@ -107,13 +109,15 @@
   }
 
   async function get_projects() {
-    let _exists = await exists(DEFAULT_DIR, { baseDir });
-    if (!_exists) {
+    if (!(await exists(DEFAULT_DIR, { baseDir }))) {
       await mkdir(DEFAULT_DIR, { baseDir });
-      return;
     }
 
-    projects = await readDir(DEFAULT_DIR, { baseDir });
+    if (!(await exists(PROJECTS_DIR, { baseDir }))) {
+      await mkdir(PROJECTS_DIR, { baseDir });
+    }
+
+    projects = await readDir(PROJECTS_DIR, { baseDir });
   }
 
   async function on_project_open(project: DirEntry) {
@@ -146,6 +150,8 @@
               delete_project_modal?.open();
             }}
           ></ProjectCard>
+        {:else}
+          <p>You don't have any projects.</p>
         {/each}
       </div>
     </div>

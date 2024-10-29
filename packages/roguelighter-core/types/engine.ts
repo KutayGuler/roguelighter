@@ -21,6 +21,8 @@ export interface Scene {
 
 export type AgentAssetUrls = Map<string, { default: string; [key: string]: string }>;
 export type BackgroundAssetUrls = Map<string, string>;
+export type AssetType = 'backgrounds' | 'agents';
+export type EntryTuple = [key: string, path: string, type: AssetType];
 
 export interface RoguelighterProject {
   code: string;
