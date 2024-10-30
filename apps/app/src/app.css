@@ -4,6 +4,11 @@
 }
 
 @font-face {
+  font-family: bla;
+  src: url(/GermaniaOne-Regular.ttf) format(truetype);
+}
+
+@font-face {
   font-family: mono;
   src: url(/GeistMono-Regular.otf) format(truetype);
 }
@@ -16,8 +21,16 @@ html body {
   width: 100vw;
 }
 
+.regular {
+  font-family: regular;
+}
+
 .mono {
   font-family: mono;
+}
+
+.serif {
+  font-family: bla;
 }
 
 .link {
