@@ -1,7 +1,7 @@
 <script module>
   interface Props {
     project_name: string;
-    code: string;
+    project: RoguelighterProject
     view: View;
     unfocus_from_code_editor: Function
     save_file: Function
@@ -20,7 +20,7 @@
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
   import { debounce, filters, generate_ast, generate_types, includes_any, process_entries_recursively } from '../../utils';
   import { watchImmediate } from '@tauri-apps/plugin-fs';
-  import { join, documentDir } from '@tauri-apps/api/path';
+  import { join } from '@tauri-apps/api/path';
   import { readDir } from '@tauri-apps/plugin-fs';
   import {
   documentDirPromise,
@@ -30,9 +30,9 @@
     PROJECTS_DIR,
     variables_regex
   } from '../../constants';
-  import type { EntryTuple, View } from '../../types/engine';
+  import type { EntryTuple, RoguelighterProject, View } from '../../types/engine';
 
-  let { code = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name }: Props = $props();
+  let { project = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
@@ -40,11 +40,11 @@
   let bg_cached_entries: Array<EntryTuple> = [];
   let agentsFilePath = ''
   let bgFilePath = ''
-
+  let unwatch: any;
 
   export function set_code(new_code: string) {
-    code = new_code;
-    editor.setValue(code);
+    project.code = new_code;
+    editor.setValue(project.code);
   }
 
   export async function format_document() {
@@ -93,14 +93,12 @@
     monaco.editor.setTheme('default');
     editor.setModel(model);
 
-    // TODO: test recursiveness
     bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
     agents_cached_entries = await process_entries_recursively(agentsFilePath, await readDir(agentsFilePath), 'agents');
     model.setValue(code);
     update_types();
 
-    // TODO: test recursiveness
-    await watchImmediate(
+     unwatch = await watchImmediate(
       [bgFilePath, agentsFilePath],
       async (e) => {
         bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
@@ -113,7 +111,7 @@
   }
 
   function validate(model: monaco.editor.ITextModel) {
-    const ast = generate_ast(code);
+    const ast = generate_ast(project.code);
     const prop_assignments = ast.c[0].c[0].c[2].c;
     const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
     let markers = [];
@@ -327,7 +325,7 @@
       allowNonTsExtensions: true
     });
 
-    monaco.editor.createModel(generate_types(code) || '', 'typescript');
+    monaco.editor.createModel(generate_types(project.code) || '', 'typescript');
 
     editor = monaco.editor.create(editorElement as HTMLDivElement, {
       automaticLayout: true,
@@ -346,7 +344,7 @@
         } catch (e) {
           console.log(e);
         }
-        code = editor.getValue();
+        project.code = editor.getValue();
         save_file()
       }, 200)
     );
@@ -369,7 +367,7 @@
       }
     });
 
-    await load_code(code);
+    await load_code(project.code);
 
     format_document();
   });
@@ -377,6 +375,7 @@
   onDestroy(() => {
     monaco?.editor.getModels().forEach((model) => model.dispose());
     editor?.dispose();
+    unwatch()
   });
 
   function update_types() {

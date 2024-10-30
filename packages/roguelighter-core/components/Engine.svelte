@@ -188,7 +188,7 @@ if not exist "${EXPORT_DIR}" (
   function highlight(pre: HTMLPreElement) {
     const lines = pre.textContent?.split('\n');
 
-    if (!$parse_errors.error || !$parse_errors.error.includes('at')) return;
+    if (!lines || !$parse_errors.error || !$parse_errors.error.includes('at')) return;
     console.log($parse_errors.error);
 
     let line_number = parseInt($parse_errors?.error?.split('at')[1].split(':')[0]) || 0;
@@ -221,7 +221,7 @@ if not exist "${EXPORT_DIR}" (
     <nav
       class="absolute top-0 z-40 bg-zinc-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-zinc-200"
     >
-      <a href="/" class=""
+      <a aria-label="Home" href="/" class=""
         ><svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -278,7 +278,7 @@ if not exist "${EXPORT_DIR}" (
           >Logs
         </button>
       </div>
-      <button onclick={() => (options_open = true)}>
+      <button aria-label="Options" onclick={() => (options_open = true)}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -328,8 +328,8 @@ if not exist "${EXPORT_DIR}" (
       <CodeEditor
         project_name={project.name}
         bind:view
+        bind:project
         bind:this={code_editor}
-        bind:code={project.code}
         {unfocus_from_code_editor}
         save_file={debounce(save_file, 100)}
       ></CodeEditor>

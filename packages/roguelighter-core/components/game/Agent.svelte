@@ -20,6 +20,7 @@
 
   // @ts-expect-error
   let play: () => void = $state(),
+    // @ts-expect-error
     pause: () => void = $state();
 
   const states = agent.states;
@@ -59,6 +60,7 @@
   };
 
   // TODO: player should be able to define keybindings
+  // TODO: render
 
   const handleKeydown = (e: KeyboardEvent) => {
     pressed.add(e.key);

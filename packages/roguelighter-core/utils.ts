@@ -368,12 +368,6 @@ export function generate_types(code: string, cached_entries: Array<EntryTuple> =
       variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
     }
 
-    // TODO: agent_states
-    // for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
-    //   if (key === 'default') continue;
-    //   agent_states += `| '${key}'`;
-    // }
-
     if (cached_entries.length) {
       assets.agents = '';
       assets.backgrounds = '';

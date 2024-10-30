@@ -1,4 +1,4 @@
 <script lang="ts">
-  // TODO: logs view
-  // TODO: download logs
+  // BACKLOG: logs view
+  // BACKLOG: download logs
 </script>

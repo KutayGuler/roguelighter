@@ -2,8 +2,8 @@ import { writable, derived, type Writable, Readable } from 'svelte/store';
 import { generate_id } from './utils';
 const NOTIFICATION_TIMEOUT = 3000;
 
-// TODO: migrate stores
-// TODO: use svelte-french-toast library
+// BACKLOG: migrate stores
+// BACKLOG: use svelte-french-toast library
 
 export type NotificationType = 'danger' | 'info' | 'success' | 'warning';
 

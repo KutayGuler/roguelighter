@@ -1,7 +1,7 @@
 <script module>
   interface Props {
     project: RoguelighterProject;
-    current_scene_id: number;
+    current_scene_id: UUID;
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     agents: GameData['agents'];
@@ -9,8 +9,6 @@
     switch_to_game: Function
     save_file: Function
   }
-
-
 </script>
 
 <script lang="ts">
@@ -27,7 +25,10 @@
     DialogController,
     Portal,
     RoguelighterProject,
-    Scene
+    Scene,
+
+    UUID
+
   } from '../../types/engine';
   import tippy from 'tippy.js';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -52,7 +53,7 @@
   let show_pos = $state(false);
   let portal_remove_mode = $state(false);
   let portal_from_pos = $state(0);
-  let portal_to_id = $state(-1);
+  let portal_to_id = $state();
   let portal_to_pos = $state(0);
   let scene_name = $state('');
   let map_width = $state(DEFAULT_MAP_WIDTH);
@@ -132,10 +133,10 @@
 
   async function create_portal() {
     current_scene.portals.set(portal_from_pos, {
-      to_scene_id: portal_to_id,
+      to_scene_id: portal_to_id as UUID,
       to_position: portal_to_pos
     });
-    let portalled_scene = project.scenes.get(portal_to_id);
+    let portalled_scene = project.scenes.get(portal_to_id as UUID);
     portalled_scene?.portals.set(portal_to_pos, {
       to_scene_id: current_scene_id,
       to_position: portal_from_pos
@@ -175,20 +176,8 @@
     }
   }
 
-  function generate_id(increment_by = 0) {
-    let scene_number = project.scenes.size + increment_by;
-    let id = scene_number;
-    let scene = project.scenes.get(id);
-
-    if (scene) {
-      return generate_id(1);
-    }
-
-    return id;
-  }
-
   function create_scene() {
-    let id = generate_id();
+    let id = crypto.randomUUID();
     project.scenes.set(id, {
       name: scene_name,
       backgrounds: new SvelteMap(),
@@ -201,7 +190,6 @@
     scene_name = '';
     current_scene_id = id;
     new_scene_modal?.close();
-    project.scenes = project.scenes;
   }
 
   function scene_name_input(e: Event) {
@@ -357,7 +345,7 @@
     </div>
     <button
       data-tippy-content="Ctrl + T"
-      onclick={() => switch_to_game}
+      onclick={() => switch_to_game()}
       class="btn-primary mt-2"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
@@ -380,11 +368,11 @@
       {#if current_scene_id != undefined}
         {#if agent_asset_urls.size}
           <div>
-            <h4 class:text-emerald-400={fill_mode == 'agent'} class="h4 pb-2">
+            <h3 class:text-emerald-400={fill_mode == 'agent'} class="h4 pb-2 serif">
               Agents <span class="text-zinc-300 text-sm"
                 >{fill_mode == 'bg' ? '(F to switch) ' : ''}</span
               >
-            </h4>
+            </h3>
             <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
               {#each Object.entries(agents) as [key, val], i}
                 <button
@@ -393,15 +381,15 @@
                   class:active={brushes.agent == key}
                   title={key}
                 >
-                  <span
+                <span
                     style:width="64px"
                     style:height="64px"
                     style:background-size="cover"
                     style:background-repeat="no-repeat"
-                    style:background-image="url({agent_asset_urls.get(key)?.default})"
+                    style:background-image="url({agent_asset_urls.get(key)})"
 ></span>
-                  <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
-                    >{i + 1}</span
+                  <span class="text-xs absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
+                    >{i + 1} </span
                   >
                 </button>
               {/each}
@@ -412,11 +400,11 @@
         {/if}
         {#if bg_asset_urls.size}
           <div>
-            <h4 class:text-emerald-400={fill_mode == 'bg'} class="h4 pb-2">
-              Backgrounds <span class="text-zinc-300 text-sm"
+            <h3 class:text-emerald-400={fill_mode == 'bg'} class="h4 pb-2 serif">
+              Backgrounds <span class="text-zinc-300 text-sm regular"
                 >{fill_mode == 'agent' ? '(F to switch)' : ''}</span
               >
-            </h4>
+            </h3>
             <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
               {#each Object.entries(backgrounds) as [key, val], i}
                 <button
@@ -432,7 +420,7 @@
                     style:background-repeat="no-repeat"
                     style:background-image="url({bg_asset_urls.get(key)})"
 ></span>
-                  <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
+                <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
                     >{i + 1}</span
                   >
                 </button>
@@ -444,11 +432,12 @@
         {/if}
         <div class="flex-grow"></div>
         <div>
-          <h4 class="h4">Portals</h4>
+          <h3 class="h4 serif">Portals</h3>
           <div class="flex flex-row gap-2 pt-2">
             <button
+              disabled={current_scene?.portals?.size == 0}
               data-tippy-content="Ctrl + R"
-              class="btn-outline w-full"
+              class="btn-outline w-full disabled:cursor-not-allowed"
               color="purple"
               onclick={() => (portal_remove_mode = !portal_remove_mode)}
               >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</button
@@ -503,7 +492,7 @@
               onclick={() => {
               /** TODO **/
             }}
-              class="hover:text-emerald-400 ease-out duration-150">SvelteSet as starting scene</button
+              class="hover:text-emerald-400 ease-out duration-150">Set as starting scene</button
             >
             <button
               onclick={() => delete_scene_modal?.open()}
@@ -546,9 +535,7 @@
               {@const bg = current_scene.backgrounds.get(pos)}
               {@const portal = current_scene.portals.get(pos)}
               {@const bg_url = bg ? bg_asset_urls.get(bg) : ''}
-              {@const agent_url = agent ? agent_asset_urls.get(agent)?.default : ''}
-
-              <!-- BACKLOG: arrow key navigation -->
+              {@const agent_url = agent ? agent_asset_urls.get(agent) : ''}
               <button
                 oncontextmenu={(e) => {
                   e.preventDefault()
@@ -626,6 +613,10 @@
         <input required min="0" max="100" bind:value={map_height} type="number" />
       </div>
     </label>
+    <label class="flex flex-row gap-2 items-center" for="devonly">
+      <input type="checkbox" name="devonly">
+      Dev only
+    </label>
     <button class="btn-primary">Create</button>
   </form>
   <button class="absolute top-2 right-4" onclick={() => new_scene_modal?.close()}>{CROSS}</button>
@@ -661,7 +652,7 @@
         To
         <select class="select" required bind:value={portal_to_id}>
           {#each project.scenes.entries() as [id, { name }]}
-            {#if name != current_scene.name}
+            {#if name != current_scene?.name}
               <option value={id}>{name}</option>
             {/if}
           {/each}

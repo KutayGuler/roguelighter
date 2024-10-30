@@ -1,5 +1,5 @@
 <script module>
-    interface Props {
+  interface Props {
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     settings: Settings;
