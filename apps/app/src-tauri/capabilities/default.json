@@ -12,6 +12,7 @@
     "core:path:default",
     "fs:allow-document-read-recursive",
     "fs:allow-document-write-recursive",
+    "fs:allow-watch",
     {
       "identifier": "fs:allow-remove",
       "allow": [{ "path": "$DOCUMENT/roguelighter" }]

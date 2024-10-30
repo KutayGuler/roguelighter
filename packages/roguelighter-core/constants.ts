@@ -27,7 +27,9 @@ export const INTERNAL_GUI = ['$pause_menu'];
 export const variables_regex = /\$var\(([^)]+)\)/g;
 export const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
 
-export let documentDirPath = '';
-(async () => {
-  documentDirPath = await documentDir();
-})();
+async function _getDocumentDir() {
+  const documentDirPath = await documentDir();
+  return documentDirPath;
+}
+
+export const documentDirPromise = _getDocumentDir();

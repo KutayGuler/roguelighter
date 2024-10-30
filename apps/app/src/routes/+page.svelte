@@ -6,11 +6,8 @@
     Toast,
     CROSS,
     PROJECTS_DIR,
-    MAPS,
     baseDir,
     notifications,
-    project_store,
-    current_project_name as cpn,
     generate_template_data,
     type DialogController,
     DEFAULT_DIR
@@ -20,11 +17,9 @@
     exists,
     remove,
     writeTextFile,
-    readTextFile,
     mkdir,
     type DirEntry
   } from '@tauri-apps/plugin-fs';
-  import JSON5 from 'json5';
   import { PUBLIC_APP_VERSION } from '$env/static/public';
 
   let projects: Array<DirEntry> = $state([]);
@@ -34,8 +29,6 @@
   let new_project_modal: DialogController | undefined = $state();
   let new_project_input_element: HTMLInputElement | undefined = $state();
   let loading_screen: DialogController | undefined = $state();
-
-  // FIXME: forbidden to read images from disk
 
   beforeNavigate(() => {
     if ($loading_screen) {
@@ -57,6 +50,7 @@
   }
 
   async function create_project(e: SubmitEvent) {
+    // BACKLOG: any of the following steps could fail?
     e.preventDefault();
     await mkdir(`${PROJECTS_DIR}\\${new_project_name}`, {
       baseDir
@@ -78,24 +72,7 @@
       { baseDir }
     );
     new_project_modal?.close();
-    open_project(new_project_name);
-  }
-
-  async function open_project(project_name: string) {
-    const res = await readTextFile(`${PROJECTS_DIR}\\${project_name}\\data.json`, { baseDir });
-    let parsed = JSON5.parse(res);
-    parsed.scenes = parsed.scenes.length ? new Map(parsed.scenes) : new Map();
-
-    for (let scene of parsed.scenes.values()) {
-      for (let map of MAPS) {
-        scene[map] =
-          Array.isArray(scene[map]) && scene[map].length ? new Map(scene[map]) : new Map();
-      }
-    }
-
-    project_store.set(parsed);
-    cpn.set(project_name);
-    goto('/project');
+    goto('/projects/' + new_project_name);
   }
 
   async function delete_project() {
@@ -119,10 +96,6 @@
 
     projects = await readDir(PROJECTS_DIR, { baseDir });
   }
-
-  async function on_project_open(project: DirEntry) {
-    open_project(project.name as string);
-  }
 </script>
 
 {#await get_projects() then _}
@@ -144,7 +117,6 @@
         {#each projects as project}
           <ProjectCard
             {project}
-            open_project={() => on_project_open(project)}
             delete_project={() => {
               current_project_name = project.name;
               delete_project_modal?.open();

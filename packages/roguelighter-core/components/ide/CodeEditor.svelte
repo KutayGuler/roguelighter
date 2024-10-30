@@ -1,5 +1,6 @@
 <script module>
   interface Props {
+    project_name: string;
     code: string;
     view: View;
     unfocus_from_code_editor: Function
@@ -22,16 +23,16 @@
   import { join, documentDir } from '@tauri-apps/api/path';
   import { readDir } from '@tauri-apps/plugin-fs';
   import {
+  documentDirPromise,
     INTERNAL_EVENTS,
     INTERNAL_GUI,
     INTERNAL_TEXTS,
     PROJECTS_DIR,
     variables_regex
   } from '../../constants';
-  import { current_project_name } from '../../store';
   import type { EntryTuple, View } from '../../types/engine';
 
-  let { code = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file }: Props = $props();
+  let { code = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
@@ -283,9 +284,9 @@
   onMount(async () => {
     create_custom_tokenizer();
 
-    const documentDirPath = await documentDir();
-    agentsFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${$current_project_name}/assets/agents`);
-    bgFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${$current_project_name}/assets/backgrounds`);
+    const documentDirPath = await documentDirPromise
+    agentsFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${project_name}/assets/agents`);
+    bgFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${project_name}/assets/backgrounds`);
 
     self.MonacoEnvironment = {
       getWorker(moduleID, label) {

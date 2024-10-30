@@ -1,7 +1,9 @@
 import { writable, derived, type Writable, Readable } from 'svelte/store';
 import { generate_id } from './utils';
-import { RoguelighterProject } from './types/engine';
 const NOTIFICATION_TIMEOUT = 3000;
+
+// TODO: migrate stores
+// TODO: use svelte-french-toast library
 
 export type NotificationType = 'danger' | 'info' | 'success' | 'warning';
 
@@ -57,8 +59,6 @@ function createNotificationStore() {
 }
 
 export const notifications = createNotificationStore();
-export const project_store = writable<RoguelighterProject>();
-export const current_project_name = writable<string>();
 export const errors = writable('');
 export const parse_errors = writable({
   json: '',

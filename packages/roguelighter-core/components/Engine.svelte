@@ -1,9 +1,18 @@
+<script module>
+  import type { RoguelighterProject } from '../types/engine';
+
+
+  interface Props {
+    project: RoguelighterProject;
+  }
+</script>
+
 <script lang="ts">
   import CodeEditor from './ide/CodeEditor.svelte';
   import SceneEditor from './editor/SceneEditor.svelte';
   import Game from './game/Game.svelte';
   import Toast from './editor/Toast.svelte';
-  import { current_project_name, errors, notifications, parse_errors } from '../store';
+  import { errors, notifications, parse_errors } from '../store';
   import {
     debounce,
     get_tailwind_classes,
@@ -17,15 +26,13 @@
   import { Command } from '@tauri-apps/plugin-shell';
   import Options from './Options.svelte';
   import GuiEditor from './ide/GuiEditor.svelte';
-  import type { RoguelighterDataFile, RoguelighterProject, View } from '../types/engine';
+  import type { RoguelighterDataFile, View } from '../types/engine';
   import type { GameData } from '../types/game';
 
   // BACKLOG: vite includes error
+  // BACKLOG: sometimes editor styles not loading up
 
-  interface Props {
-    // BACKLOG: sometimes editor styles not loading up
-    project: RoguelighterProject;
-  }
+
 
   let { project = $bindable() }: Props = $props();
   let options_open = $state(false);
@@ -91,8 +98,8 @@
 
     let obj: RoguelighterDataFile = { code: project.code, scenes: Array.from(scenes) };
     let file_contents = JSON.stringify(obj);
-
-    writeTextFile(`${PROJECTS_DIR}\\${$current_project_name}\\data.json`, file_contents, {
+  
+    writeTextFile(`${PROJECTS_DIR}\\${project.name}\\data.json`, file_contents, {
       baseDir
     });
   }
@@ -117,7 +124,7 @@
 
   async function export_game() {
     const documents = await documentDir();
-    const project_path = await join(documents, `${PROJECTS_DIR}/${$current_project_name}`);
+    const project_path = await join(documents, `${PROJECTS_DIR}/${project.name}`);
 
     const bat_name = 'export';
     const bat_content = `
@@ -162,8 +169,8 @@ if not exist "${EXPORT_DIR}" (
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      agent_asset_urls = await generate_asset_urls($current_project_name, 'agents');
-      bg_asset_urls = await generate_asset_urls($current_project_name, 'backgrounds');
+      agent_asset_urls = await generate_asset_urls(project.name, 'agents');
+      bg_asset_urls = await generate_asset_urls(project.name, 'backgrounds');
 
       agents = parsed.agents;
       initialized = true;
@@ -319,6 +326,7 @@ if not exist "${EXPORT_DIR}" (
     >
       <!-- <GuiEditor></GuiEditor> -->
       <CodeEditor
+        project_name={project.name}
         bind:view
         bind:this={code_editor}
         bind:code={project.code}

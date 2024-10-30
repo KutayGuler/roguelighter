@@ -1,7 +1,6 @@
 <script module>
     interface Props {
     project: DirEntry;
-    open_project: Function
     delete_project: Function
   }
 </script>
@@ -9,13 +8,13 @@
 <script lang="ts">
   import type { DirEntry } from '@tauri-apps/plugin-fs';
   import Dropdown from './editor/Dropdown.svelte';
-  let { project, open_project, delete_project }: Props = $props();
+  let { project, delete_project }: Props = $props();
 </script>
 
 <div class="relative flex flex-row justify-between items-center bg-zinc-800 rounded p-4 shadow-lg">
   <span>{project.name}</span>
   <div class="flex flex-row items-center justify-center gap-2">
-    <button class="btn-ghost" onclick={() => open_project()}>
+    <a aria-label="Project {project.name}" href="/projects/{project.name}" class="btn-ghost">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -35,7 +34,7 @@
           d="M15.91 11.672a.375.375 0 010 .656l-5.603 3.113a.375.375 0 01-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112z"
         />
       </svg>
-    </button>
+    </a>
 
     <Dropdown>
       {#snippet button()}

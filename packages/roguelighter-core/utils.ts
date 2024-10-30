@@ -1,7 +1,7 @@
 import RunCSS from 'runcss';
 import JSON5 from 'json5';
 import ts from 'typescript';
-import { PROJECTS_DIR, documentDirPath, function_regex } from './constants';
+import { PROJECTS_DIR, documentDirPromise, function_regex } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
@@ -152,10 +152,12 @@ export async function process_entries_recursively(
       continue;
     }
 
+    const name = entry.name.replace('http://asset.localhost/', '');
+
     _entries.push([
       // split gets rid of the file extension
-      entry.name.replace('http://asset.localhost/', '').split('.')[0],
-      path,
+      name.split('.')[0],
+      parent + '\\' + name,
       type
     ]);
   }
@@ -166,7 +168,10 @@ export async function process_entries_recursively(
 export async function generate_asset_urls(project_dir: string, type: 'backgrounds' | 'agents') {
   let asset_urls = new Map<string, string>();
 
-  const file_path = await join(documentDirPath, `${PROJECTS_DIR}/${project_dir}/assets/${type}`);
+  const file_path = await join(
+    await documentDirPromise,
+    `${PROJECTS_DIR}/${project_dir}/assets/${type}`
+  );
   const entries = await readDir(file_path);
   let children = await process_entries_recursively(file_path, entries, type);
 
@@ -314,7 +319,6 @@ function infer_type(kind: string) {
 }
 
 export function generate_types(code: string, cached_entries: Array<EntryTuple> = []) {
-  console.log(cached_entries);
   try {
     const ast = generate_ast(code);
     const prop_assignments = ast.c[0].c[0].c[2].c;

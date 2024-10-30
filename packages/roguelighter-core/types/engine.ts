@@ -25,6 +25,7 @@ export type AssetType = 'backgrounds' | 'agents';
 export type EntryTuple = [key: string, path: string, type: AssetType];
 
 export interface RoguelighterProject {
+  name: string;
   code: string;
   scenes: Map<number, Scene>;
 }

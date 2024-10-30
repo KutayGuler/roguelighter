@@ -9,13 +9,17 @@
     switch_to_game: Function
     save_file: Function
   }
+
+
 </script>
 
 <script lang="ts">
+  // @ts-expect-error
   import Modal from './Modal.svelte';
   import type { GameData } from '../../types/game';
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
   import { onMount } from 'svelte';
+  // @ts-expect-error
   import Dropdown from './Dropdown.svelte';
   import type {
     AgentAssetUrls,
@@ -43,19 +47,88 @@
     save_file
   }: Props = $props();
 
-  const backgrounds = Object.fromEntries(bg_asset_urls);
-
-  // @ts-expect-error
-  let current_scene: Scene = $derived(project.scenes.get(current_scene_id));
   let fill_mode: 'bg' | 'agent' = $state('bg');
   let holding = $state(false);
   let show_pos = $state(false);
-  let portal_modal: DialogController | undefined = $state();
   let portal_remove_mode = $state(false);
   let portal_from_pos = $state(0);
   let portal_to_id = $state(-1);
   let portal_to_pos = $state(0);
+  let scene_name = $state('');
+  let map_width = $state(DEFAULT_MAP_WIDTH);
+  let map_height = $state(DEFAULT_MAP_WIDTH);
+
+  let portal_modal: DialogController | undefined = $state();
+  let new_scene_modal: DialogController | undefined = $state();
+  let delete_scene_modal: DialogController | undefined = $state();
+
+  // @ts-expect-error
+  let current_scene: Scene = $derived(project.scenes.get(current_scene_id));
   let portal_btn_disabled = $derived((project.scenes?.size || 0) <= 1)
+
+  interface Brushes {
+    bg: keyof typeof backgrounds | undefined;
+    agent: keyof typeof agents | undefined;
+  }
+
+  let brushes: Brushes = $state({
+    bg: undefined,
+    agent: undefined
+  });
+
+  let must_be_replaced = $state({
+    agent_names: new SvelteSet(),
+    background_names: new SvelteSet()
+  });
+
+  let name_input_element: HTMLInputElement | undefined = $state();
+
+  const backgrounds = Object.fromEntries(bg_asset_urls);
+
+  const fillers = {
+    bg(pos: number) {
+      if (brushes.bg) {
+        current_scene.backgrounds.set(pos, brushes.bg as string);
+      } else {
+        current_scene.backgrounds.delete(pos);
+      }
+    },
+    agent(pos: number) {
+      if (brushes.agent) {
+        if (brushes.agent == 'player') {
+          for (let [_pos, val] of current_scene.agents.entries()) {
+            if (val == 'player') {
+              current_scene.agents.set(pos, val);
+              current_scene.agents.delete(_pos);
+              return;
+            }
+          }
+        }
+
+        current_scene.agents.set(pos, brushes.agent as string);
+      } else {
+        current_scene.agents.delete(pos);
+      }
+    }
+  };
+
+  const selects = {
+    agent(key: keyof typeof agents) {
+      fill_mode = 'agent';
+      brushes.agent = brushes.agent == key ? undefined : key;
+      brushes.bg = undefined;
+    },
+    bg(key: keyof typeof backgrounds) {
+      fill_mode = 'bg';
+      brushes.bg = brushes.bg == key ? undefined : key;
+      brushes.agent = undefined;
+    }
+  };
+
+  const digit_selects = {
+    agent: Object.keys(agents),
+    bg: Object.keys(backgrounds)
+  };
 
   async function create_portal() {
     current_scene.portals.set(portal_from_pos, {
@@ -94,43 +167,6 @@
     save_file();
   }
 
-  interface Brushes {
-    bg: keyof typeof backgrounds | undefined;
-    agent: keyof typeof agents | undefined;
-  }
-
-  let brushes: Brushes = $state({
-    bg: undefined,
-    agent: undefined
-  });
-
-  const fillers = {
-    bg(pos: number) {
-      if (brushes.bg) {
-        current_scene.backgrounds.set(pos, brushes.bg as string);
-      } else {
-        current_scene.backgrounds.delete(pos);
-      }
-    },
-    agent(pos: number) {
-      if (brushes.agent) {
-        if (brushes.agent == 'player') {
-          for (let [_pos, val] of current_scene.agents.entries()) {
-            if (val == 'player') {
-              current_scene.agents.set(pos, val);
-              current_scene.agents.delete(_pos);
-              return;
-            }
-          }
-        }
-
-        current_scene.agents.set(pos, brushes.agent as string);
-      } else {
-        current_scene.agents.delete(pos);
-      }
-    }
-  };
-
   function right_clicked(pos: number) {
     if (fill_mode == 'bg') {
       brushes.bg = current_scene.backgrounds.get(pos);
@@ -138,26 +174,6 @@
       brushes.agent = current_scene.agents.get(pos);
     }
   }
-
-  const selects = {
-    agent(key: keyof typeof agents) {
-      fill_mode = 'agent';
-      brushes.agent = brushes.agent == key ? undefined : key;
-      brushes.bg = undefined;
-    },
-    bg(key: keyof typeof backgrounds) {
-      fill_mode = 'bg';
-      brushes.bg = brushes.bg == key ? undefined : key;
-      brushes.agent = undefined;
-    }
-  };
-
-  let new_scene_modal: DialogController | undefined = $state();
-  let delete_scene_modal: DialogController | undefined = $state();
-
-  let scene_name = $state('');
-  let map_width = $state(DEFAULT_MAP_WIDTH);
-  let map_height = $state(DEFAULT_MAP_WIDTH);
 
   function generate_id(increment_by = 0) {
     let scene_number = project.scenes.size + increment_by;
@@ -201,13 +217,6 @@
     }
   }
 
-  let name_input_element: HTMLInputElement | undefined = $state();
-
-  const digit_selects = {
-    agent: Object.keys(agents),
-    bg: Object.keys(backgrounds)
-  };
-
   function mouse_entered(pos: number) {
     if (holding && !show_pos) {
       fillers[fill_mode](pos);
@@ -221,11 +230,6 @@
       save_file();
     }
   }
-
-  let must_be_replaced = $state({
-    agent_names: new SvelteSet(),
-    background_names: new SvelteSet()
-  });
 
   function show_must_be_replaced_elements() {
     const agent_elements = document.getElementsByClassName('must-be-replaced-agent');
@@ -276,7 +280,7 @@
       return;
     }
 
-    if ($portal_modal.expanded || $new_scene_modal?.expanded || $delete_scene_modal?.expanded) {
+    if ($portal_modal?.expanded || $new_scene_modal?.expanded || $delete_scene_modal?.expanded) {
       return;
     }
 
