@@ -6,6 +6,7 @@
   import { noop } from '../../utils';
   import type { AgentAssetUrls, PlayableAgent } from '../../types/engine';
   import type { Settings } from '../../types/game';
+  import { SvelteSet } from 'svelte/reactivity';
   const { camera } = useThrelte();
 
   interface Props {
@@ -23,21 +24,19 @@
     // @ts-expect-error
     pause: () => void = $state();
 
-  const states = agent.states;
-  const defaults = states.default;
+  const defaults = agent.states.default;
+  const textureUrl = agent_asset_urls.get(agent.name);
+  const totalFrames = defaults.frame_count || DEFAULT_FRAME_COUNT;
+  const fps = defaults.fps || settings?.fps || DEFAULT_FPS;
+  const columns = defaults.columns;
+  const rows = defaults.rows;
+  const startFrame = defaults.start_frame;
+  const endFrame = defaults.end_frame;
+  const delay = defaults.delay;
+  const filter = defaults.filter || settings.filter || 'nearest';
 
-  let textureUrl = agent_asset_urls.get(agent.name)?.default;
-  let totalFrames = defaults.frame_count || DEFAULT_FRAME_COUNT;
-  let fps = defaults.fps || settings?.fps || DEFAULT_FPS;
-  let columns = defaults.columns;
-  let rows = defaults.rows;
-  let startFrame = defaults.start_frame;
-  let endFrame = defaults.end_frame;
-  let delay = defaults.delay;
-  let filter = defaults.filter || settings.filter || 'nearest';
-
-  const keyboard = { x: 0, y: 0 };
-  const pressed = new Set<string>();
+  let keyboard = $state({ x: 0, y: 0 });
+  const pressed = $state(new SvelteSet<string>());
   const mesh = new Mesh();
   mesh.position.set(...position);
 
@@ -60,7 +59,6 @@
   };
 
   // TODO: player should be able to define keybindings
-  // TODO: render
 
   const handleKeydown = (e: KeyboardEvent) => {
     pressed.add(e.key);
@@ -75,10 +73,15 @@
     if (e.key === 'e') pause();
   };
 
+  // FIXME: camera position not updating
+
   $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
   useTask((delta) => {
-    position[0] += -keyboard.x * (delta * 5);
-    position[1] += -keyboard.y * (delta * 5);
+    let makeHalf = keyboard.x && keyboard.y;
+    const sqrtTwo = 1.4;
+
+    position[0] += (-keyboard.x * (delta * 5)) / (makeHalf ? sqrtTwo : 1);
+    position[1] += (-keyboard.y * (delta * 5)) / (makeHalf ? sqrtTwo : 1);
     mesh.position.set(...position);
     $camera.position.x = position[0];
     $camera.position.y = position[1];

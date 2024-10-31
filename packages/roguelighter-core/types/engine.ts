@@ -2,6 +2,8 @@ import { createDialog, createMenu } from 'svelte-headlessui';
 import type { Agent } from './game';
 import { SvelteMap } from 'svelte/reactivity';
 
+// FIXME: dev server closes when types are modified
+
 export interface PlayableAgent extends Agent {
   name: string;
   x: number;
@@ -20,11 +22,12 @@ export interface Scene {
   height: number;
 }
 
-export type AgentAssetUrls = Map<string, { default: string; [key: string]: string }>;
+// export type AgentAssetUrls = Map<string, { default: string; [key: string]: string }>;
+export type AgentAssetUrls = Map<string, string>;
 export type BackgroundAssetUrls = Map<string, string>;
 export type AssetType = 'backgrounds' | 'agents';
 export type EntryTuple = [key: string, path: string, type: AssetType];
-export type UUID = ReturnType<typeof crypto.randomUUID>;
+export type UUID = `${string}-${string}-${string}-${string}-${string}`;
 
 export interface RoguelighterProject {
   name: string;

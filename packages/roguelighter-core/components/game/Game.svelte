@@ -2,7 +2,7 @@
   interface Props {
     // BACKLOG: portals can only go through their realms (dev_only, game_only)
     project: RoguelighterProject;
-    current_scene_id: number;
+    current_scene_id: UUID;
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     DEV?: boolean;
@@ -12,18 +12,13 @@
 
 <script lang="ts">
   // TODO LATER: introduce helpers
-  // TODO LATER: introduce constants
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
   import type {
-    WritableProps,
-    PlayerPositions,
     KeyboardEventCode,
     GameData
   } from '../../types/game';
-  import { tweened, type Tweened } from 'svelte/motion';
-  import * as easings from 'svelte/easing';
   import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
   import { exit } from '@tauri-apps/plugin-process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
@@ -31,7 +26,9 @@
     AgentAssetUrls,
     BackgroundAssetUrls,
     PlayableScene,
-    RoguelighterProject
+    Portal,
+    RoguelighterProject,
+    UUID
   } from '../../types/engine';
 
   // BACKLOG: try catch for user defined functions
@@ -64,7 +61,7 @@
 
   let unmodified_scenes = structuredClone(project.scenes);
   let scene: PlayableScene = $state() as PlayableScene;
-  let scenes = new Map<number, PlayableScene>();
+  let scenes = new Map<UUID, PlayableScene>();
 
   function transform_scenes() {
     for (let [id, scene] of unmodified_scenes) {
@@ -180,14 +177,12 @@
     } else {
       events[event_name](_);
     }
-
-    variables = variables;
   }
 
   let scene_just_changed = $state(false);
 
-  function change_scene(e: CustomEvent) {
-    const { to_scene_id, to_position } = e.detail;
+  function change_scene(portal_info: Portal) {
+    const { to_scene_id, to_position } = portal_info;
     let player = scene.agents.get(player_pos);
     if (!player) return;
 
