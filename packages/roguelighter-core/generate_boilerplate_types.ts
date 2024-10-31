@@ -29,7 +29,7 @@ export function generate_boilerplate_types({
   `;
 
   // @start
-  const static_types = `type Prettify<T> = {
+const static_types = `type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 type AgentAssets = any;
@@ -378,7 +378,7 @@ declare type F = {
   [key in InternalEvents]: UserFunction;
 };
 
-type UserFunction = (_: GameEnvironment, args?: Array<any>) => void;
+type UserFunction = (_: GameEnvironment, ...args: any) => void;
 
 /**
  * TODO: docs
@@ -700,8 +700,8 @@ declare interface GameEnvironment {
   variables: Variables;
   agents: any;
 }
-`;
-  // @end
+`
+// @end
 
   return generated_types + static_types + variable_declarations;
 }

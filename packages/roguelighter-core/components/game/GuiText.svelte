@@ -1,26 +1,25 @@
-<script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import { variables_regex } from '../../constants';
+<script module>
   interface Props {
     text: string;
     variables: any;
   }
+</script>
 
-  let { text, variables }: Props = $props();
+<script lang="ts">
+  import { variables_regex } from '../../constants';
+
+  let { text, variables = $bindable() }: Props = $props();
   const matches = Array.from(text.matchAll(variables_regex));
-  let modified_text = $state('');
 
-  function update_text() {
-    modified_text = text;
+  let modified_text = $derived.by(() => {
+    let modified = text;
+    
     for (let match of matches) {
-      modified_text = modified_text.replace(match[0], variables[match[1]]);
+      modified = modified.replace(match[0], variables[match[1]]);
     }
-  }
 
-  run(() => {
-    variables, update_text();
-  });
+    return modified;
+  })
 </script>
 
 <span>{modified_text}</span>

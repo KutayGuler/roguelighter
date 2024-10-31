@@ -76,9 +76,11 @@
   // FIXME: camera position not updating
 
   $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
+
+  const sqrtTwo = 1.4;
+
   useTask((delta) => {
     let makeHalf = keyboard.x && keyboard.y;
-    const sqrtTwo = 1.4;
 
     position[0] += (-keyboard.x * (delta * 5)) / (makeHalf ? sqrtTwo : 1);
     position[1] += (-keyboard.y * (delta * 5)) / (makeHalf ? sqrtTwo : 1);

@@ -32,6 +32,8 @@
   } from '../../constants';
   import type { EntryTuple, RoguelighterProject, View } from '../../types/engine';
 
+  // TODO: get rid of array syntax
+
   let { project = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;

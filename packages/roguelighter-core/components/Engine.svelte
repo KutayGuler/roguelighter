@@ -1,5 +1,5 @@
 <script module>
-  import type { RoguelighterProject } from '../types/engine';
+  import type { RoguelighterProject, UUID } from '../types/engine';
 
 
   interface Props {
@@ -36,7 +36,7 @@
 
   let { project = $bindable() }: Props = $props();
   let options_open = $state(false);
-  let current_scene_id = $state(0);
+  let current_scene_id: UUID | undefined = $state();
   let view: View = $state('code');
   let previousView: View = $state('scene');
   let code_button: HTMLButtonElement | undefined = $state();
@@ -46,6 +46,7 @@
   let code_editor: any = $state();
 
   function switch_to_game() {
+    // @ts-expect-error
     let current_scene = project.scenes.get(current_scene_id);
     if (view == 'scene') {
       if (!current_scene) {

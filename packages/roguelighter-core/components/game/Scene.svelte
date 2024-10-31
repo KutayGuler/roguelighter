@@ -12,7 +12,7 @@
 
 <script lang="ts">
   import type { Settings } from '../../types/game';
-  import { T, useTask, useThrelte } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
   import Agent from './Agent.svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';

@@ -347,7 +347,7 @@ export type F = {
   [key in InternalEvents]: UserFunction;
 };
 
-type UserFunction = (_: GameEnvironment, args?: Array<any>) => void;
+type UserFunction = (_: GameEnvironment, ...args: any) => void;
 
 /**
  * TODO: docs

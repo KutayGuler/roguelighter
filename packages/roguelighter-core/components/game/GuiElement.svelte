@@ -1,26 +1,21 @@
 <script lang="ts">
   import GuiElement from './GuiElement.svelte';
   import { noop } from '../../utils';
-  import type { GUI_Element, Variables, Events } from '../../types/game';
+  import type { GUI_Element } from '../../types/game';
   import * as transitions from 'svelte/transition';
   import GuiText from './GuiText.svelte';
 
   interface Props {
-    variables: Variables;
-    events: Events;
+    variables: { [key: string]: any };
+    events: any;
     name: keyof typeof events;
     guiElement: GUI_Element;
   }
 
-  let {
-    variables,
-    events,
-    name,
-    guiElement
-  }: Props = $props();
+  let { variables = $bindable(), events, name, guiElement }: Props = $props();
 
-  let { on_click: on_click_name, text, type, visibility_depends_on, tokens } = guiElement;
-  const on_click = on_click_name ? events[on_click_name] : noop;
+  let { on_click: on_click_name, text, type, visibility_depends_on, tokens } = $state(guiElement);
+  const onclick = on_click_name ? events[on_click_name] : noop;
   const element_transition = guiElement.transition
     ? transitions[guiElement.transition?.type]
     : noop;
@@ -34,10 +29,12 @@
     <svelte:element
       this={type || 'div'}
       transition:element_transition
-      onclick={on_click}
+      {onclick}
       class={joined_tokens}
     >
-      {#if text}{text}{/if}
+      {#if text}
+        <GuiText {text} bind:variables></GuiText>
+      {/if}
       {#each Object.entries(guiElement?.children || []) as [name, child]}
         <GuiElement guiElement={child} {variables} {events} {name} />
       {/each}
@@ -51,7 +48,9 @@
       onoutrostart={events.$close_pause_menu}
       class={joined_tokens}
     >
-      {#if text}{text}{/if}
+      {#if text}
+        <GuiText {text} bind:variables></GuiText>
+      {/if}
       {#each Object.entries(guiElement?.children || []) as [name, child]}
         <GuiElement guiElement={child} {variables} {events} {name} />
       {/each}
@@ -63,11 +62,10 @@
     this={type || 'div'}
     class={joined_tokens}
     transition:element_transition
-    onclick={on_click}
+    {onclick}
   >
     {#if text}
-      <!-- {@const modified_text = text.replaceAll()} -->
-      <GuiText {text} {variables}></GuiText>
+      <GuiText {text} bind:variables></GuiText>
     {/if}
     {#each Object.entries(guiElement?.children || []) as [name, child]}
       <GuiElement guiElement={child} {variables} {events} {name} />

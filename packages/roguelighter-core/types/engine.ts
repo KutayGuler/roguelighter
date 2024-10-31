@@ -37,7 +37,7 @@ export interface RoguelighterProject {
 
 export interface RoguelighterDataFile {
   code: string;
-  scenes: Array<[number, Scene]>;
+  scenes: Array<[UUID, Scene]>;
 }
 
 export interface PlayableScene extends Omit<Scene, 'agents'> {

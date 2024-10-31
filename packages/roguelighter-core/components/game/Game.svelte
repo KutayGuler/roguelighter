@@ -2,7 +2,7 @@
   interface Props {
     // BACKLOG: portals can only go through their realms (dev_only, game_only)
     project: RoguelighterProject;
-    current_scene_id: UUID;
+    current_scene_id: UUID | undefined;
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     DEV?: boolean;
@@ -45,23 +45,45 @@
     exit_dev
   }: Props = $props();
 
-  let _ = code_string_to_json(project.code) as GameData;
+  let _ = $state(code_string_to_json(project.code) as GameData);
   let { variables, agents, settings, events, gui, keybindings, collisions, __dev_only } = $state(_);
-
-  for (let [key, val] of Object.entries(events)) {
-    if (typeof val === 'string') {
-      const fn_str = val;
-      const fn = new Function('return ' + fn_str)();
-      events[key] = fn;
-    }
-  }
-
-  const DURATION = settings.duration || DEFAULT_DURATION;
-  const EASING = settings.easing || DEFAULT_EASING;
 
   let unmodified_scenes = structuredClone(project.scenes);
   let scene: PlayableScene = $state() as PlayableScene;
   let scenes = new Map<UUID, PlayableScene>();
+  let scene_just_changed = $state(false);
+  let player_pos = $state(0);
+  let game_paused = $state(false);
+  let special_keys: Array<KeyboardEventCode> = [];
+
+  const DURATION = settings.duration || DEFAULT_DURATION;
+  const EASING = settings.easing || DEFAULT_EASING;
+  const f = {
+    $open_pause_menu() {
+      window.dispatchEvent(new Event('paused'));
+      variables.$pause_menu = true;
+      game_paused = true;
+    },
+    $close_pause_menu() {
+      window.dispatchEvent(new Event('unpaused'));
+      variables.$pause_menu = false;
+      game_paused = false;
+    },
+    $toggle_pause_menu() {
+      if (game_paused) {
+        f.$close_pause_menu();
+      } else {
+        f.$open_pause_menu();
+      }
+    },
+    $exit: async () => {
+      if (DEV && exit_dev) {
+        exit_dev()
+      } else {
+        await exit();
+      }
+    }
+  } as const;
 
   function transform_scenes() {
     for (let [id, scene] of unmodified_scenes) {
@@ -91,50 +113,29 @@
       scenes.set(id, transformed_scene);
     }
 
-    scene = scenes.get(current_scene_id) as PlayableScene;
+    scene = scenes.get(current_scene_id as UUID) as PlayableScene;
   }
 
-  let player_pos = $state(0);
-  let game_paused = false;
-
-  const f = {
-    $open_pause_menu() {
-      window.dispatchEvent(new Event('paused'));
-      variables.$pause_menu = true;
-      game_paused = true;
-    },
-    $close_pause_menu() {
-      window.dispatchEvent(new Event('unpaused'));
-      variables.$pause_menu = false;
-      game_paused = false;
-    },
-    $toggle_pause_menu() {
-      if (game_paused) {
-        f.$close_pause_menu();
-      } else {
-        f.$open_pause_menu();
-      }
-    },
-    $exit: async () => {
-      if (DEV && exit_dev) {
-        exit_dev()
-      } else {
-        await exit();
+  function instantiate() {
+    for (let [key, event_name] of Object.entries(keybindings)) {
+      if ((event_name as string)[0] == '$') {
+        special_keys.push(key as KeyboardEventCode);
       }
     }
-  } as const;
 
-  let special_keys: Array<KeyboardEventCode> = [];
-
-  for (let [key, event_name] of Object.entries(keybindings)) {
-    if ((event_name as string)[0] == '$') {
-      special_keys.push(key as KeyboardEventCode);
+    for (let [key, val] of Object.entries(events)) {
+      if (typeof val === 'string') {
+        const fn_str = val;
+        const fn = new Function('return ' + fn_str)();
+        events[key] = fn;
+      }
     }
+
+    let internal_variables = { $pause_menu: false };
+    Object.assign(variables, internal_variables);
+    Object.assign(events, f);
+    transform_scenes()
   }
-
-  let internal_variables = { $pause_menu: false };
-  Object.assign(variables, internal_variables);
-  Object.assign(events, f);
 
   // for (let [key, fn] of Object.entries(events)) {
   //   if (key[0] == '$') {
@@ -179,8 +180,6 @@
     }
   }
 
-  let scene_just_changed = $state(false);
-
   function change_scene(portal_info: Portal) {
     const { to_scene_id, to_position } = portal_info;
     let player = scene.agents.get(player_pos);
@@ -198,13 +197,13 @@
     scene_just_changed = true;
   }
 
-  transform_scenes();
+  instantiate();
 </script>
 
 <svelte:window onkeydown={handle} />
 
 <main class="flex items-center justify-center w-full h-full bg-black">
-  <section class="relative flex flex-col w-full h-full">
+  <section class="relative flex flex-col w-full h-full top-12">
     {#if scene}
       <Canvas>
         <Scene
@@ -219,7 +218,7 @@
       </Canvas>
     {/if}
     {#each Object.entries(gui) as [name, guiElement]}
-      <GuiElement {events} {name} {variables} {guiElement} />
+      <GuiElement {events} {name} {guiElement} bind:variables />
     {/each}
   </section>
 </main>

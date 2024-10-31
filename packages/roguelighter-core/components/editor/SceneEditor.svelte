@@ -1,7 +1,7 @@
 <script module>
   interface Props {
     project: RoguelighterProject;
-    current_scene_id: UUID;
+    current_scene_id: UUID | undefined;
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     agents: GameData['agents'];
@@ -12,12 +12,10 @@
 </script>
 
 <script lang="ts">
-  // @ts-expect-error
   import Modal from './Modal.svelte';
   import type { GameData } from '../../types/game';
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
   import { onMount } from 'svelte';
-  // @ts-expect-error
   import Dropdown from './Dropdown.svelte';
   import type {
     AgentAssetUrls,
@@ -53,7 +51,7 @@
   let show_pos = $state(false);
   let portal_remove_mode = $state(false);
   let portal_from_pos = $state(0);
-  let portal_to_id = $state();
+  let portal_to_id: UUID | undefined = $state();
   let portal_to_pos = $state(0);
   let scene_name = $state('');
   let map_width = $state(DEFAULT_MAP_WIDTH);
@@ -138,7 +136,7 @@
     });
     let portalled_scene = project.scenes.get(portal_to_id as UUID);
     portalled_scene?.portals.set(portal_to_pos, {
-      to_scene_id: current_scene_id,
+      to_scene_id: current_scene_id as UUID,
       to_position: portal_from_pos
     });
     portal_modal?.close();
@@ -539,8 +537,8 @@
               <button
                 oncontextmenu={(e) => {
                   e.preventDefault()
-!show_pos && right_clicked(pos)
-                } }
+                  !show_pos && right_clicked(pos)
+                }}
                 onmouseenter={() => mouse_entered(pos)}
                 onclick={() => cell_clicked(pos)}
                 class="relative flex items-center justify-center size-16 focus:z-20"
