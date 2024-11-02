@@ -1,9 +1,9 @@
 <script module>
   import type { RoguelighterProject, UUID } from '../types/engine';
 
-
   interface Props {
     project: RoguelighterProject;
+    document_path: string;
   }
 </script>
 
@@ -17,24 +17,23 @@
     debounce,
     get_tailwind_classes,
     code_string_to_json,
-    processClasses,
     generate_asset_urls
   } from '../utils';
   import { EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
   import { writeTextFile } from '@tauri-apps/plugin-fs';
-  import { join, documentDir } from '@tauri-apps/api/path';
+  import { join } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/plugin-shell';
   import Options from './Options.svelte';
   import GuiEditor from './ide/GuiEditor.svelte';
   import type { RoguelighterDataFile, View } from '../types/engine';
   import type { GameData } from '../types/game';
+  import RunCSS from 'runcss';
+  const { processClasses } = RunCSS();
 
   // BACKLOG: vite includes error
   // BACKLOG: sometimes editor styles not loading up
 
-
-
-  let { project = $bindable() }: Props = $props();
+  let { project = $bindable(), document_path }: Props = $props();
   let options_open = $state(false);
   let current_scene_id: UUID | undefined = $state();
   let view: View = $state('code');
@@ -44,6 +43,7 @@
   // @ts-expect-error
   let agents: GameData['agents'] = $state();
   let code_editor: any = $state();
+  let initialized = $state(false);
 
   function switch_to_game() {
     // @ts-expect-error
@@ -124,8 +124,7 @@
   ];
 
   async function export_game() {
-    const documents = await documentDir();
-    const project_path = await join(documents, `${PROJECTS_DIR}/${project.name}`);
+    const project_path = await join(document_path, `${PROJECTS_DIR}/${project.name}`);
 
     const bat_name = 'export';
     const bat_content = `
@@ -163,15 +162,14 @@ if not exist "${EXPORT_DIR}" (
     }
   }
 
-  let initialized = $state(false);
 
   async function recalculate() {
     let parsed = code_string_to_json(project.code);
 
     if (typeof parsed == 'object') {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      agent_asset_urls = await generate_asset_urls(project.name, 'agents');
-      bg_asset_urls = await generate_asset_urls(project.name, 'backgrounds');
+      agent_asset_urls = await generate_asset_urls(project.name, 'agents', document_path);
+      bg_asset_urls = await generate_asset_urls(project.name, 'backgrounds', document_path);
 
       agents = parsed.agents;
       initialized = true;
@@ -235,7 +233,7 @@ if not exist "${EXPORT_DIR}" (
             stroke-linecap="round"
             stroke-linejoin="round"
             d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125
-           1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+            1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
           />
         </svg>
       </a>
@@ -311,6 +309,7 @@ if not exist "${EXPORT_DIR}" (
         save_file={debounce(save_file, 100)}
         {switch_to_game}
         {unfocus_from_scene_editor}
+        
       />
     {:else if view == 'game'}
       <Game
@@ -327,6 +326,7 @@ if not exist "${EXPORT_DIR}" (
     >
       <!-- <GuiEditor></GuiEditor> -->
       <CodeEditor
+      {document_path}
         project_name={project.name}
         bind:view
         bind:project

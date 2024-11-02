@@ -1,4 +1,3 @@
-import { documentDir } from '@tauri-apps/api/path';
 import { BaseDirectory } from '@tauri-apps/plugin-fs';
 
 export const DEFAULT_FRAME_COUNT = 1;
@@ -26,10 +25,3 @@ export const INTERNAL_GUI = ['$pause_menu'];
 
 export const variables_regex = /\$var\(([^)]+)\)/g;
 export const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
-
-async function _getDocumentDir() {
-  const documentDirPath = await documentDir();
-  return documentDirPath;
-}
-
-export const documentDirPromise = _getDocumentDir();

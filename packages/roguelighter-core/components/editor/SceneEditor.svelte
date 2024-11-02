@@ -261,10 +261,11 @@
   onmousedown={() => (holding = true)}
   onmouseup={() => (holding = false)}
   onkeydown={(e) => {
-    if (e.code == 'Escape') {
-      unfocus_from_scene_editor()
-      return;
-    }
+    // TODO: change this
+    // if (e.code == 'Escape') {
+    //   unfocus_from_scene_editor()
+    //   return;
+    // }
 
     if ($portal_modal?.expanded || $new_scene_modal?.expanded || $delete_scene_modal?.expanded) {
       return;

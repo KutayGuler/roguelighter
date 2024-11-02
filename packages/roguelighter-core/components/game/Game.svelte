@@ -174,7 +174,8 @@
     if (!event_name || game_paused) return;
 
     if (Array.isArray(event_name)) {
-      events[event_name[0]](_, event_name[1]);
+      const [fn_name, args] = [...event_name]
+      events[fn_name](_, ...args);
     } else {
       events[event_name](_);
     }

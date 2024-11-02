@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { documentDir } from '@tauri-apps/api/path';
   import { Engine } from 'roguelighter-core';
   let { data } = $props();
-  console.log(data);
 </script>
 
-<Engine project={data.project} />
+{#await documentDir() then document_path}
+  <Engine project={data.project} {document_path} />
+{/await}

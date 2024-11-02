@@ -5,6 +5,7 @@
     view: View;
     unfocus_from_code_editor: Function
     save_file: Function
+    document_path: string
   }
 </script>
 
@@ -18,12 +19,11 @@
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-  import { debounce, filters, generate_ast, generate_types, includes_any, process_entries_recursively } from '../../utils';
+  import { debounce, filters, includes_any, process_entries_recursively } from '../../utils';
   import { watchImmediate } from '@tauri-apps/plugin-fs';
   import { join } from '@tauri-apps/api/path';
   import { readDir } from '@tauri-apps/plugin-fs';
   import {
-  documentDirPromise,
     INTERNAL_EVENTS,
     INTERNAL_GUI,
     INTERNAL_TEXTS,
@@ -31,10 +31,12 @@
     variables_regex
   } from '../../constants';
   import type { EntryTuple, RoguelighterProject, View } from '../../types/engine';
+  import ts from 'typescript';
+  import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
   // TODO: get rid of array syntax
 
-  let { project = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name }: Props = $props();
+  let { project = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name, document_path }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
@@ -94,23 +96,164 @@
     });
     monaco.editor.setTheme('default');
     editor.setModel(model);
-
-    bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
-    agents_cached_entries = await process_entries_recursively(agentsFilePath, await readDir(agentsFilePath), 'agents');
     model.setValue(code);
-    update_types();
+
+    async function process_and_update() {
+      bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
+      agents_cached_entries = await process_entries_recursively(agentsFilePath, await readDir(agentsFilePath), 'agents');
+      update_types();
+    }
+
+    process_and_update()
 
      unwatch = await watchImmediate(
       [bgFilePath, agentsFilePath],
-      async (e) => {
-        bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
-        agents_cached_entries = await process_entries_recursively(agentsFilePath, await readDir(agentsFilePath), 'agents');
-        update_types();
-        console.log(e)
-      },
+      process_and_update,
       { recursive: true }
     );
   }
+
+  function infer_type(kind: string) {
+  // BACKLOG: cannot infer the types of objects inside variables
+  if (kind === 'FirstLiteralToken') {
+    return 'number';
+  } else if (kind === 'StringLiteral') {
+    return 'string';
+  } else if (['TrueKeyword', 'FalseKeyword'].includes(kind)) {
+    return 'boolean';
+  } else if (kind === 'ObjectLiteralExpression') {
+    return 'object';
+  }
+
+  return 'undefined';
+}
+
+  function update_types() {
+    const models = monaco.editor.getModels();
+    let content_id = '';
+
+    for (let model of models) {
+      const value = model.getValue();
+      if (!value) continue;
+      if (value.includes('type Easing =')) {
+        model.setValue(generate_types(editor.getValue(), [...agents_cached_entries, ...bg_cached_entries]) || '');
+      } else {
+        content_id = model.id;
+      }
+    }
+  }
+
+  export function generate_types(code: string, cached_entries: Array<EntryTuple> = []) {
+    try {
+      const ast = generate_ast(code);
+      const prop_assignments = ast.c[0].c[0].c[2].c;
+      const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
+      const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+
+      let events = '';
+      let variables = '';
+      let agent_states = '';
+      let user_functions_and_parameters = '';
+      let event_types: { [key: string]: string } = {};
+
+      for (let assignment of event_functions) {
+        let identifier = assignment.c[0].text;
+        let parameters = [];
+
+        events += `| '${identifier}'`;
+
+        // BACKLOG: also add regular function declaration
+        if (assignment.c[1].kind == 'ArrowFunction') {
+          parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
+        } else {
+          parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
+        }
+
+        let typed_parameters = []
+
+        for (let p of parameters) {
+          if (p.text == "_") continue;
+
+          let optional = ""
+
+          for (let c of p.c) {
+            if (c.text == "?") optional = " | null"
+          }
+
+          let type = p.c.find(({ kind }) => kind.includes('Keyword'))
+          typed_parameters.push(type.text + optional)
+        }
+
+        event_types[identifier] = "[" + typed_parameters.join(", ") + "]";
+      }
+
+      for (let [key, val] of Object.entries(event_types)) {
+        user_functions_and_parameters += `| ["${key}", ${val}]`;
+      }
+
+      let assets = {
+        agents: `'ERROR: no assets found'`,
+        backgrounds: `'ERROR: no assets found'`
+      };
+
+      let variables_interface = '';
+
+      for (let assignment of variable_assignments) {
+        // console.log(assignment.c[1]);
+        variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
+      }
+
+      if (cached_entries.length) {
+        assets.agents = '';
+        assets.backgrounds = '';
+
+        for (let [key, _, type] of cached_entries) {
+          assets[type] += `| '${key}'`;
+        }
+      }
+
+      assets.agents = assets.agents.replaceAll('agents/', '');
+      assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
+
+      return generate_boilerplate_types({
+        assets,
+        events,
+        variables,
+        agent_states,
+        user_functions_and_parameters
+      });
+    } catch (e) {
+      console.log(e);
+    }
+}
+
+  function generate_ast(code: string) {
+  const ast = ts.createSourceFile(
+    'code.ts',
+    code,
+    {
+      languageVersion: ts.ScriptTarget.Latest
+    },
+    true,
+    ts.ScriptKind.TS
+  );
+
+  function ast_to_obj(node: ts.Node): any {
+    const result: any = {
+      kind: ts.SyntaxKind[node.kind],
+      text: node.getText(),
+      c: []
+    };
+
+    ts.forEachChild(node, (child) => {
+      result.c.push(ast_to_obj(child));
+    });
+
+    return result;
+  }
+
+  return ast_to_obj(ast);
+}
 
   function validate(model: monaco.editor.ITextModel) {
     const ast = generate_ast(project.code);
@@ -284,9 +427,8 @@
   onMount(async () => {
     create_custom_tokenizer();
 
-    const documentDirPath = await documentDirPromise
-    agentsFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${project_name}/assets/agents`);
-    bgFilePath = await join(documentDirPath, `${PROJECTS_DIR}/${project_name}/assets/backgrounds`);
+    agentsFilePath = await join(document_path, `${PROJECTS_DIR}/${project_name}/assets/agents`);
+    bgFilePath = await join(document_path, `${PROJECTS_DIR}/${project_name}/assets/backgrounds`);
 
     self.MonacoEnvironment = {
       getWorker(moduleID, label) {
@@ -379,21 +521,6 @@
     editor?.dispose();
     unwatch()
   });
-
-  function update_types() {
-    const models = monaco.editor.getModels();
-    let content_id = '';
-
-    for (let model of models) {
-      const value = model.getValue();
-      if (!value) continue;
-      if (value.includes('type Easing =')) {
-        model.setValue(generate_types(editor.getValue(), [...agents_cached_entries, ...bg_cached_entries]) || '');
-      } else {
-        content_id = model.id;
-      }
-    }
-  }
 </script>
 
 <div class="h-full" bind:this={editorElement}></div>

@@ -1,7 +1,6 @@
-import RunCSS from 'runcss';
 import JSON5 from 'json5';
 import ts from 'typescript';
-import { PROJECTS_DIR, documentDirPromise, function_regex } from './constants';
+import { PROJECTS_DIR, function_regex } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
@@ -10,8 +9,10 @@ import { GameData, Agents, GUI } from './types/game';
 import { parse_errors } from './store';
 import { EntryTuple } from './types/engine';
 
-export const { processClasses } = RunCSS();
-export const noop = () => {};
+export const noop = () => {
+  console.log('Abla');
+};
+
 export function generate_id() {
   return (Math.random() + 1).toString(36).substring(7);
 }
@@ -32,34 +33,6 @@ export function debounce(fn: Function, ms: number) {
     // @ts-expect-error
     timeout = setTimeout(() => fn.apply(this, arguments), ms);
   };
-}
-
-export function generate_ast(code: string) {
-  const ast = ts.createSourceFile(
-    'code.ts',
-    code,
-    {
-      languageVersion: ts.ScriptTarget.Latest
-    },
-    true,
-    ts.ScriptKind.TS
-  );
-
-  function ast_to_obj(node: ts.Node): any {
-    const result: any = {
-      kind: ts.SyntaxKind[node.kind],
-      text: node.getText(),
-      c: []
-    };
-
-    ts.forEachChild(node, (child) => {
-      result.c.push(ast_to_obj(child));
-    });
-
-    return result;
-  }
-
-  return ast_to_obj(ast);
 }
 
 export function code_string_to_json(code: string): string | GameData {
@@ -144,7 +117,6 @@ export async function process_entries_recursively(
 
   for (const entry of entries) {
     const dir = await join(parent, entry.name);
-    const path = convertFileSrc(dir);
 
     if (entry.isDirectory) {
       const children = await process_entries_recursively(dir, await readDir(dir), type);
@@ -165,13 +137,14 @@ export async function process_entries_recursively(
   return _entries;
 }
 
-export async function generate_asset_urls(project_dir: string, type: 'backgrounds' | 'agents') {
+export async function generate_asset_urls(
+  project_dir: string,
+  type: 'backgrounds' | 'agents',
+  document_path: string
+) {
   let asset_urls = new Map<string, string>();
 
-  const file_path = await join(
-    await documentDirPromise,
-    `${PROJECTS_DIR}/${project_dir}/assets/${type}`
-  );
+  const file_path = await join(document_path, `${PROJECTS_DIR}/${project_dir}/assets/${type}`);
   const entries = await readDir(file_path);
   let children = await process_entries_recursively(file_path, entries, type);
 
@@ -302,95 +275,6 @@ export const filters: { [key: string]: ({ text }: { text: string }) => boolean }
   variables: ({ text }) => text.startsWith('variables:')
   // agent_states: ({ text }) => text.startsWith('variables:'),
 };
-
-function infer_type(kind: string) {
-  // BACKLOG: cannot infer the types of objects inside variables
-  if (kind === 'FirstLiteralToken') {
-    return 'number';
-  } else if (kind === 'StringLiteral') {
-    return 'string';
-  } else if (['TrueKeyword', 'FalseKeyword'].includes(kind)) {
-    return 'boolean';
-  } else if (kind === 'ObjectLiteralExpression') {
-    return 'object';
-  }
-
-  return 'undefined';
-}
-
-export function generate_types(code: string, cached_entries: Array<EntryTuple> = []) {
-  try {
-    const ast = generate_ast(code);
-    const prop_assignments = ast.c[0].c[0].c[2].c;
-    const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
-    const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
-
-    let events = '';
-    let variables = '';
-    let agent_states = '';
-    let user_functions_and_parameters = '';
-    let event_types: { [key: string]: string } = {};
-
-    for (let assignment of event_functions) {
-      let identifier = assignment.c[0].text;
-      let parameters = [];
-      let tuple_type = '[]';
-
-      events += `| '${identifier}'`;
-
-      // BACKLOG: also add regular function declaration
-      if (assignment.c[1].kind == 'ArrowFunction') {
-        parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
-      } else {
-        parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
-      }
-
-      if (parameters.length == 2) {
-        tuple_type = parameters[1].c[1].text;
-      }
-
-      event_types[identifier] = tuple_type;
-    }
-
-    for (let [key, val] of Object.entries(event_types)) {
-      user_functions_and_parameters += `| ["${key}", ${val}]`;
-    }
-
-    let assets = {
-      agents: `'ERROR: no assets found'`,
-      backgrounds: `'ERROR: no assets found'`
-    };
-
-    let variables_interface = '';
-
-    for (let assignment of variable_assignments) {
-      // console.log(assignment.c[1]);
-      variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
-    }
-
-    if (cached_entries.length) {
-      assets.agents = '';
-      assets.backgrounds = '';
-
-      for (let [key, _, type] of cached_entries) {
-        assets[type] += `| '${key}'`;
-      }
-    }
-
-    assets.agents = assets.agents.replaceAll('agents/', '');
-    assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
-
-    return generate_boilerplate_types({
-      assets,
-      events,
-      variables,
-      agent_states,
-      user_functions_and_parameters
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
 
 export function focus_trap(node: HTMLElement, enabled: boolean) {
   const elemWhitelist =
