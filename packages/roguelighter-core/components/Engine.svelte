@@ -354,7 +354,7 @@ if not exist "${EXPORT_DIR}" (
       <div class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-zinc-800 rounded p-2 pl-12">
         <pre class="absolute top-4 left-12 bg-transparent z-[10] w-full" contenteditable  use:highlight bind:innerText={code_with_errors}></pre>
         {#each { length: line_count} as _, i}
-          <div id="{(i + 1).toString()}" class:is_error_line={error_line == i + 1} class="z-[9] absolute left-2 text-sm mono text-zinc-500 w-full" style="top: {i * 24 + 16}px;">{i + 1}</div>
+          <div id="{(i).toString()}" class:is_error_line={error_line == i} class="z-[9] absolute left-2 text-sm mono text-zinc-500 w-full" style="top: {i * 24 + 16}px;">{i}</div>
         {/each}
       </div>
       
