@@ -19,7 +19,6 @@
     KeyboardEventCode,
     GameData
   } from '../../types/game';
-  import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
   import { exit } from '@tauri-apps/plugin-process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import type {
@@ -56,8 +55,6 @@
   let game_paused = $state(false);
   let special_keys: Array<KeyboardEventCode> = [];
 
-  const DURATION = settings.duration || DEFAULT_DURATION;
-  const EASING = settings.easing || DEFAULT_EASING;
   const f = {
     $open_pause_menu() {
       window.dispatchEvent(new Event('paused'));

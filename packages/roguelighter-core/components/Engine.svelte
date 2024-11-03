@@ -1,18 +1,19 @@
 <script module>
-  import type { RoguelighterProject, UUID } from '../types/engine';
+  import type { ParseErrorObject, RoguelighterProject, UUID } from '../types/engine';
 
   interface Props {
     project: RoguelighterProject;
     document_path: string;
+    on_no_scene_is_selected: Function
+    on_no_player_in_scene: Function
   }
 </script>
 
 <script lang="ts">
+  import JSON5 from 'json5';
   import CodeEditor from './ide/CodeEditor.svelte';
   import SceneEditor from './editor/SceneEditor.svelte';
   import Game from './game/Game.svelte';
-  import Toast from './editor/Toast.svelte';
-  import { errors, notifications, parse_errors } from '../store';
   import {
     debounce,
     get_tailwind_classes,
@@ -30,10 +31,9 @@
   import RunCSS from 'runcss';
   const { processClasses } = RunCSS();
 
-  // BACKLOG: vite includes error
-  // BACKLOG: sometimes editor styles not loading up
+  // BACKLOG: sometimes editor styles not loading
 
-  let { project = $bindable(), document_path }: Props = $props();
+  let { project = $bindable(), document_path, on_no_scene_is_selected, on_no_player_in_scene }: Props = $props();
   let options_open = $state(false);
   let current_scene_id: UUID | undefined = $state();
   let view: View = $state('code');
@@ -44,23 +44,26 @@
   let agents: GameData['agents'] = $state();
   let code_editor: any = $state();
   let initialized = $state(false);
+  let code_with_errors = $state('')
+  let error_line = $state(0)
+  let parse_errors: ParseErrorObject = $state({ code: '', json_string: '', error: ''})
 
   function switch_to_game() {
     // @ts-expect-error
     let current_scene = project.scenes.get(current_scene_id);
     if (view == 'scene') {
       if (!current_scene) {
-        notifications.danger('No scene is selected, cannot start the game');
+        on_no_scene_is_selected()
         return;
       }
 
       if (![...current_scene.agents.values()].includes('player')) {
-        notifications.danger('Player is not in the scene, cannot start the game');
+        on_no_player_in_scene()
         return;
       }
     }
 
-    view = 'game';
+    change_view('game')
   }
 
   function handle(e: KeyboardEvent) {
@@ -87,7 +90,7 @@
   let bg_asset_urls = $state(new Map<string, string>());
   let agent_asset_urls = $state(new Map<string, any>());
 
-  function save_file() {
+  function save_file(code?: string) {
     let scenes = structuredClone(project.scenes);
 
     for (let scene of scenes.values()) {
@@ -97,13 +100,15 @@
       }
     }
 
-    let obj: RoguelighterDataFile = { code: project.code, scenes: Array.from(scenes) };
-    let file_contents = JSON.stringify(obj);
+    let obj: RoguelighterDataFile = { code: code || project.code, scenes: Array.from(scenes) };
+    let file_contents = JSON5.stringify(obj);
   
     writeTextFile(`${PROJECTS_DIR}\\${project.name}\\data.json`, file_contents, {
       baseDir
     });
   }
+
+  // function save_edited
 
   const commands: Array<string> = [
     // BACKLOG:
@@ -162,35 +167,38 @@ if not exist "${EXPORT_DIR}" (
     }
   }
 
-
   async function recalculate() {
     let parsed = code_string_to_json(project.code);
 
-    if (typeof parsed == 'object') {
-      processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      agent_asset_urls = await generate_asset_urls(project.name, 'agents', document_path);
-      bg_asset_urls = await generate_asset_urls(project.name, 'backgrounds', document_path);
+    if ((parsed as ParseErrorObject).error) {
+      parse_errors = parsed as ParseErrorObject;
+      code_with_errors = (parsed as ParseErrorObject).code
+      error_line = parseInt(parse_errors.error.split('at')[1].split(':')[0]) || 0;
+      return;
+    } 
 
-      agents = parsed.agents;
-      initialized = true;
-    }
+    processClasses(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
+    agent_asset_urls = await generate_asset_urls(project.name, 'agents', document_path);
+    bg_asset_urls = await generate_asset_urls(project.name, 'backgrounds', document_path);
+    agents = (parsed as GameData).agents;
+    initialized = true;
   }
 
-  // BACKLOG: keep this as an effect?
-  $effect(() => {
-    if (view) {
-      save_file();
-      recalculate();
-    }
-  });
+  function change_view(v: View) {
+    previousView = view
+    view = v;
+    save_file()
+    recalculate()
+  }
 
   function highlight(pre: HTMLPreElement) {
     const lines = pre.textContent?.split('\n');
 
-    if (!lines || !$parse_errors.error || !$parse_errors.error.includes('at')) return;
-    console.log($parse_errors.error);
+    console.log(parse_errors.error);
+    console.log(parse_errors.json_string);
+    if (!lines || !parse_errors.error || !parse_errors.error.includes('at')) return;
 
-    let line_number = parseInt($parse_errors?.error?.split('at')[1].split(':')[0]) || 0;
+    let line_number = parseInt(parse_errors?.error?.split('at')[1].split(':')[0]) || 0;
 
     const line = lines[line_number - 1];
 
@@ -210,6 +218,8 @@ if not exist "${EXPORT_DIR}" (
   function unfocus_from_scene_editor() {
     scene_button?.focus();
   }
+
+  recalculate()
 </script>
 
 <svelte:window onkeydown={handle} />
@@ -244,7 +254,7 @@ if not exist "${EXPORT_DIR}" (
           class="btn-outline"
           onclick={() => {
             previousView = view;
-            view = 'code';
+            change_view('code')
           }}
           >Code
         </button>
@@ -253,8 +263,7 @@ if not exist "${EXPORT_DIR}" (
           class:btn-primary={view == 'gui'}
           class="btn-outline"
           on:click={() => {
-            previousView = view;
-            view = 'gui';
+            change_view('gui')
           }}
           >GUI
         </button> -->
@@ -263,16 +272,14 @@ if not exist "${EXPORT_DIR}" (
           class:btn-primary={view == 'scene'}
           class="btn-outline"
           onclick={() => {
-            previousView = view;
-            view = 'scene';
+            change_view('scene')
           }}>Scene</button
         >
         <button
           class:btn-primary={view == 'logs'}
           class="btn-outline"
           onclick={() => {
-            previousView = view;
-            view = 'logs';
+            change_view('logs')
           }}
           >Logs
         </button>
@@ -318,7 +325,9 @@ if not exist "${EXPORT_DIR}" (
         {bg_asset_urls}
         {agent_asset_urls}
         {current_scene_id}
-        exit_dev={() => (view = 'scene')}
+        exit_dev={() => {
+          change_view('scene')
+        }}
       />
     {/if}
     <div
@@ -335,20 +344,35 @@ if not exist "${EXPORT_DIR}" (
         save_file={debounce(save_file, 100)}
       ></CodeEditor>
     </div>
-    <Toast />
   </main>
 {:else}
   <!-- BACKLOG: add button to go back -->
   <main class="bg-zinc-700 h-full text-white p-4 flex flex-col gap-2">
-    <p>Engine has not been initialized.</p>
-    {#if $parse_errors.error}
-      <pre class="overflow-auto h-full w-full bg-zinc-800 rounded p-2" use:highlight>
-        {@html $parse_errors.json}
-      </pre>
-      <div class="inline-flex justify-between">
-        <p class="text-red-400">{$parse_errors.error}</p>
-        <a class="btn-outline" href="#error">Show error line </a>
+    <p>Engine has failed no initialize.</p>
+    {#if parse_errors.error}
+      {@const line_count = parse_errors.code.split('\n').length}
+      <div class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-zinc-800 rounded p-2 pl-12">
+        <pre class="absolute top-4 left-12 bg-transparent z-[10] w-full" contenteditable  use:highlight bind:innerText={code_with_errors}></pre>
+        {#each { length: line_count} as _, i}
+          <div id="{(i + 1).toString()}" class:is_error_line={error_line == i + 1} class="z-[9] absolute left-2 text-sm mono text-zinc-500 w-full" style="top: {i * 24 + 16}px;">{i + 1}</div>
+        {/each}
       </div>
+      
+      <div class="inline-flex justify-between">
+        <p class="text-red-400">{parse_errors.error}</p>
+        <a class="btn-outline" href="#{error_line}">Show error line </a>
+      </div>
+      <button onclick={() => {
+        project.code = code_with_errors
+        save_file()
+        recalculate()
+      }}>Save changes</button>
     {/if}
   </main>
 {/if}
+
+<style>
+  .is_error_line {
+    @apply bg-red-400/50
+  }
+</style>

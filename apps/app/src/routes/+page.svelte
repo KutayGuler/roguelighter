@@ -3,14 +3,13 @@
   import {
     ProjectCard,
     Modal,
-    Toast,
     CROSS,
     PROJECTS_DIR,
     baseDir,
-    notifications,
     generate_template_data,
     type DialogController,
-    DEFAULT_DIR
+    DEFAULT_DIR,
+    TOAST_SETTINGS
   } from 'roguelighter-core';
   import {
     readDir,
@@ -21,14 +20,17 @@
     type DirEntry
   } from '@tauri-apps/plugin-fs';
   import { PUBLIC_APP_VERSION } from '$env/static/public';
+  import { createDialog } from 'svelte-headlessui';
+  import toast from '../lib/svelte-french-toast/core/toast';
 
   let projects: Array<DirEntry> = $state([]);
   let current_project_name = $state('');
-  let delete_project_modal: DialogController | undefined = $state();
   let new_project_name = $state('');
-  let new_project_modal: DialogController | undefined = $state();
   let new_project_input_element: HTMLInputElement | undefined = $state();
-  let loading_screen: DialogController | undefined = $state();
+
+  let delete_project_modal = $state(createDialog({ label: '' }));
+  let new_project_modal = $state(createDialog({ label: '' }));
+  let loading_screen = $state(createDialog({ label: '' }));
 
   beforeNavigate(() => {
     if ($loading_screen) {
@@ -71,18 +73,18 @@
       generate_template_data(),
       { baseDir }
     );
-    new_project_modal?.close();
+    new_project_modal.close();
     goto('/projects/' + new_project_name);
   }
 
   async function delete_project() {
-    delete_project_modal?.close();
+    delete_project_modal.close();
     await remove(`${PROJECTS_DIR}\\${current_project_name}`, {
       baseDir,
       recursive: true
     });
     projects = projects.filter(({ name }) => name != current_project_name);
-    notifications.success(`Removed project [${current_project_name}] successfully.`);
+    toast.success(`Removed project [${current_project_name}] successfully.`, TOAST_SETTINGS);
   }
 
   async function get_projects() {
@@ -143,7 +145,7 @@
         </label>
         <button class="btn-primary">Create</button>
       </form>
-      <button class="absolute top-2 right-4" onclick={() => new_project_modal?.close()}
+      <button class="absolute top-2 right-4" onclick={() => new_project_modal.close()}
         >{CROSS}</button
       >
     </Modal>
@@ -151,12 +153,11 @@
     <Modal bind:dialog={delete_project_modal}>
       <h3>Delete project "{current_project_name}"?</h3>
       <div class="flex flex-row gap-2 w-full justify-end pt-4">
-        <button onclick={() => delete_project_modal?.close()} class=" btn-ghost">Cancel</button>
+        <button onclick={() => delete_project_modal.close()} class=" btn-ghost">Cancel</button>
         <button class="btn-primary" onclick={delete_project}>Delete</button>
       </div>
     </Modal>
 
     <Modal bind:dialog={loading_screen} locked>Loading...</Modal>
-    <Toast></Toast>
   </main>
 {/await}

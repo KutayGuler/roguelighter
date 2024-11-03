@@ -114,6 +114,7 @@
   }
 
   function infer_type(kind: string) {
+
   // BACKLOG: cannot infer the types of objects inside variables
   if (kind === 'FirstLiteralToken') {
     return 'number';
@@ -177,14 +178,19 @@
           let optional = ""
 
           for (let c of p.c) {
-            if (c.text == "?") optional = " | null"
+            if (c.text == "?") optional = " | undefined"
           }
 
           let type = p.c.find(({ kind }) => kind.includes('Keyword'))
+          if (!type) continue;
+
           typed_parameters.push(type.text + optional)
         }
 
-        event_types[identifier] = "[" + typed_parameters.join(", ") + "]";
+        console.log(typed_parameters)
+        
+        let filtered_typed_parameters = typed_parameters.filter((t) => !t.includes("undefined"))
+        event_types[identifier] = "[" + typed_parameters.join(", ") + "] | " + "[" + filtered_typed_parameters.join(", ") + "]";
       }
 
       for (let [key, val] of Object.entries(event_types)) {
@@ -199,7 +205,7 @@
       let variables_interface = '';
 
       for (let assignment of variable_assignments) {
-        // console.log(assignment.c[1]);
+        if (!assignment.c[1]) continue
         variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
       }
 
@@ -506,9 +512,10 @@
         e.preventDefault();
         return;
       }
-      if (e.code === 'Escape') {
-        unfocus_from_code_editor()
-      }
+      // TODO: change this
+      // if (e.code === 'Escape') {
+      //   unfocus_from_code_editor()
+      // }
     });
 
     await load_code(project.code);

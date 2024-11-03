@@ -30,6 +30,7 @@
   } from '../../types/engine';
   import tippy from 'tippy.js';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+  import { createDialog } from 'svelte-headlessui';
 
   onMount(() => {
     tippy('[data-tippy-content]');
@@ -57,9 +58,9 @@
   let map_width = $state(DEFAULT_MAP_WIDTH);
   let map_height = $state(DEFAULT_MAP_WIDTH);
 
-  let portal_modal: DialogController | undefined = $state();
-  let new_scene_modal: DialogController | undefined = $state();
-  let delete_scene_modal: DialogController | undefined = $state();
+  let portal_modal = $state(createDialog({ label: '' }))
+  let new_scene_modal = $state(createDialog({ label: '' }))
+  let delete_scene_modal = $state(createDialog({ label: '' }))
 
   // @ts-expect-error
   let current_scene: Scene = $derived(project.scenes.get(current_scene_id));
@@ -362,7 +363,7 @@
       Test Scene</button
     >
     <div
-      class="w-fit relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
+      class="w-full relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
     >
       {#if current_scene_id != undefined}
         {#if agent_asset_urls.size}

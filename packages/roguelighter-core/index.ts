@@ -4,9 +4,6 @@ export * from './types/game';
 // CONSTANTS
 export * from './constants';
 
-// STORES
-export * from './store';
-
 // UTILS
 export * from './utils';
 
@@ -17,7 +14,6 @@ export { default as ProjectCard } from './components/ProjectCard.svelte';
 // EDITOR
 export { default as Modal } from './components/editor/Modal.svelte';
 export { default as Dropdown } from './components/editor/Dropdown.svelte';
-export { default as Toast } from './components/editor/Toast.svelte';
 export { default as SceneEditor } from './components/editor/SceneEditor.svelte';
 
 // GAME

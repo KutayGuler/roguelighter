@@ -35,6 +35,12 @@ export interface RoguelighterProject {
   scenes: SvelteMap<UUID, Scene>;
 }
 
+export interface ParseErrorObject {
+  code: string;
+  json_string: string;
+  error: string;
+}
+
 export interface RoguelighterDataFile {
   code: string;
   scenes: Array<[UUID, Scene]>;

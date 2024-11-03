@@ -6,12 +6,9 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
 import { generate_boilerplate_types } from './generate_boilerplate_types';
 import { GameData, Agents, GUI } from './types/game';
-import { parse_errors } from './store';
-import { EntryTuple } from './types/engine';
+import { EntryTuple, ParseErrorObject } from './types/engine';
 
-export const noop = () => {
-  console.log('Abla');
-};
+export const noop = () => {};
 
 export function generate_id() {
   return (Math.random() + 1).toString(36).substring(7);
@@ -35,8 +32,9 @@ export function debounce(fn: Function, ms: number) {
   };
 }
 
-export function code_string_to_json(code: string): string | GameData {
+export function code_string_to_json(code: string): GameData | ParseErrorObject {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
+  console.log(transpiled);
 
   function find_game_data_declaration(code: string) {
     const regex = new RegExp(`\\b(game_data)\\b\\s*=\\s*([\\[{])`, 'g');
@@ -73,6 +71,7 @@ export function code_string_to_json(code: string): string | GameData {
   });
 
   let t = game_data_declaration as string;
+  console.log(t);
 
   try {
     t = t.replace(/([\w$]+): /g, '"$1": ');
@@ -81,17 +80,27 @@ export function code_string_to_json(code: string): string | GameData {
     t = `{
       ${t}
     }`;
+    const match = t.match(/(?<!\[[^\]]+\]":\s*"function")\bundefined\b/g);
+    console.log(match);
+    // t = t.replaceAll(/(?<!\[[^\]]+\]":\s*"function")\bundefined\b/g, `"$$undefined$$"`);
+    // t = t.replaceAll(/(?<!\[[^\]]+\]":\s*"function")\bnull\b/g, `"$$null$$"`);
 
-    // BACKLOG: cannot parse undefined & null
-    return JSON5.parse(t).game_data;
+    // BACKLOG: support types for nested variables
+    const game_data = JSON5.parse(t, (key, val) => {
+      if (val == '$undefined$') return undefined;
+      if (val == '$null$') return null;
+      return val;
+    }).game_data;
+    console.log(game_data);
+    return game_data;
   } catch (e) {
     console.log(t, e);
-    parse_errors.set({
-      json: t,
+    return {
+      code,
+      json_string: t,
       // @ts-expect-error
       error: e.toString()
-    });
-    return code;
+    };
   }
 }
 
@@ -244,7 +253,7 @@ export const template_json_code: GameData = {
 };
 
 export function generate_template_data() {
-  return JSON.stringify({
+  return JSON5.stringify({
     id: crypto.randomUUID(),
     code: json_to_code_string(template_json_code),
     scenes: new Map()

@@ -9,11 +9,7 @@
 <script lang="ts">
   import { createDialog } from 'svelte-headlessui';
   import Transition from 'svelte-transition';
-  let { dialog = $bindable(), locked = false, children }: Props = $props();
-  
-  $effect(() => {
-    dialog = createDialog({ label: ''})
-  })
+  let { dialog = $bindable(createDialog({ label: ''})), locked = false, children }: Props = $props();
 </script>
 
 {#if $dialog}

@@ -61,11 +61,12 @@
     "@tauri-apps/api": "^2.0.3",
     "@tauri-apps/cli": "^2.0.4",
     "@tauri-apps/plugin-fs": "^2.0.1",
-    "@tauri-apps/plugin-shell": "^2.0.0",
     "@tauri-apps/plugin-process": "^2.0.0",
+    "@tauri-apps/plugin-shell": "^2.0.0",
     "json5": "^2.2.3",
     "monaco-tailwindcss": "^0.6.1",
     "roguelighter-core": "0.1.2",
+    "svelte-writable-derived": "^3.1.1",
     "tippy.js": "^6.3.7"
   }
 }
