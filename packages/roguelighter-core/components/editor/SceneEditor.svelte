@@ -659,9 +659,7 @@
         </select>
       </label>
       {#if typeof portal_to_id === 'number'}
-        {#await project.scenes.get(portal_to_id)}
-          Loading...
-        {:then scene}
+        {@const scene = project.scenes.get(portal_to_id)} 
           {#if scene}
             <label class="flex flex-col w-1/2">
               Position
@@ -674,7 +672,6 @@
               />
             </label>
           {/if}
-        {/await}
       {/if}
     </div>
     <button class="btn-primary">Create</button>
