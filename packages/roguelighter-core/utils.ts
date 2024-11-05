@@ -32,6 +32,9 @@ export function debounce(fn: Function, ms: number) {
   };
 }
 
+const rgx1 = /\[\s*(?:[^\]]*?,\s*)*\s*(undefined)\s*(?=(?:,\s*[^\]]*)*\])/g;
+const rgx2 = /\[\s*(?:[^\]]*?,\s*)*\s*(null)\s*(?=(?:,\s*[^\]]*)*\])/g;
+
 export function code_string_to_json(code: string): GameData | ParseErrorObject {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
   console.log(transpiled);
@@ -74,16 +77,16 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
   console.log(t);
 
   try {
-    t = t.replace(/([\w$]+): /g, '"$1": ');
     t = t.replaceAll("'", '"');
     t = t.replace('},\n\n', '}');
     t = `{
       ${t}
     }`;
-    const match = t.match(/(?<!\[[^\]]+\]":\s*"function")\bundefined\b/g);
-    console.log(match);
-    // t = t.replaceAll(/(?<!\[[^\]]+\]":\s*"function")\bundefined\b/g, `"$$undefined$$"`);
-    // t = t.replaceAll(/(?<!\[[^\]]+\]":\s*"function")\bnull\b/g, `"$$null$$"`);
+
+    // t = t.replaceAll(rgx1, `"$$undefined$$"`);
+    // t = t.replaceAll(rgx2, `"$$null$$"`);
+
+    console.log(t);
 
     // BACKLOG: support types for nested variables
     const game_data = JSON5.parse(t, (key, val) => {

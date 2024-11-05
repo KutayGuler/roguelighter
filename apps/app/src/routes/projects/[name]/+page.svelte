@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { documentDir } from '@tauri-apps/api/path';
   import { Engine } from 'roguelighter-core';
   import toast from '../../../lib/svelte-french-toast/core/toast.js';
+  import { document_path } from '$lib/state.svelte.js';
   let { data } = $props();
 
   function on_no_player_in_scene() {
@@ -13,11 +13,9 @@
   }
 </script>
 
-{#await documentDir() then document_path}
-  <Engine
-    project={data.project}
-    {document_path}
-    {on_no_player_in_scene}
-    {on_no_scene_is_selected}
-  />
-{/await}
+<Engine
+  project={data.project}
+  document_path={document_path.value}
+  {on_no_player_in_scene}
+  {on_no_scene_is_selected}
+/>

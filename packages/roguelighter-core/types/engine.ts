@@ -2,8 +2,6 @@ import { createDialog, createMenu } from 'svelte-headlessui';
 import type { Agent } from './game';
 import { SvelteMap } from 'svelte/reactivity';
 
-// FIXME: dev server closes when types are modified
-
 export interface PlayableAgent extends Agent {
   name: string;
   x: number;

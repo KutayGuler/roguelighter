@@ -34,8 +34,6 @@
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
-  // TODO: get rid of array syntax
-
   let { project = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name, document_path }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
@@ -162,6 +160,8 @@
         let parameters = [];
 
         events += `| '${identifier}'`;
+
+        if (!assignment.c[1]) continue;
 
         // BACKLOG: also add regular function declaration
         if (assignment.c[1].kind == 'ArrowFunction') {

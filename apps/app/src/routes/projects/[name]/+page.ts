@@ -20,6 +20,8 @@ export const load: PageLoad = async ({ params }) => {
     }
   }
 
+  console.log(parsed);
+
   return {
     project: parsed
   };
