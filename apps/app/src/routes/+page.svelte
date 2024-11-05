@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto, invalidateAll } from '$app/navigation';
   import {
     Modal,
     CROSS,
