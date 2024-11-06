@@ -51,7 +51,7 @@
     code_editor.set_code(project.code);
   }
 
-  // TODO LATER: replace
+  // LATER: replace
   // $: {
   //   let parsed = code_string_to_json(project.code);
 

@@ -4,7 +4,7 @@
   export let command: string;
   let copied = false;
 
-  // TODO: tooltip
+  // LATER: tooltip
 
   async function copy() {
     await navigator.clipboard.writeText(`${env} ${command}`);

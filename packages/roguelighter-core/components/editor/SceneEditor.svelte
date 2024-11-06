@@ -20,13 +20,10 @@
   import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
-    DialogController,
     Portal,
     RoguelighterProject,
     Scene,
-
     UUID
-
   } from '../../types/engine';
   import tippy from 'tippy.js';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';

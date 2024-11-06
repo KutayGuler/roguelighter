@@ -1,8 +1,8 @@
 <script lang="ts">
   import { json_to_code_string, template_json_code, Game } from 'roguelighter-core';
   import type { AgentAssetUrls, BackgroundAssetUrls, GameData, Portal } from 'roguelighter-core';
-  // FIXME: zoom settings not working
-  // FIXME: $exit not working
+  // LATER: zoom settings not working
+  // LATER: $exit not working
   const project = {
     code: json_to_code_string({
       settings: {
@@ -68,13 +68,13 @@
             continue: {
               type: 'button',
               tokens: ['bg-amber-200', 'font-bold', 'p-4', 'hover:bg-red-200'],
-              on_click: '$close_pause_menu',
+              onclick: '$close_pause_menu',
               text: 'Continue' // add variable {v.var_name}
             },
             exit: {
               type: 'button',
               tokens: ['bg-amber-200', 'font-bold', 'p-4', 'hover:bg-red-200'],
-              on_click: '$exit',
+              onclick: '$exit',
               text: 'Exitto' // add variable {v.var_name}
             }
           }

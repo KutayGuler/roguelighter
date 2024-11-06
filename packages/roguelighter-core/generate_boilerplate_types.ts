@@ -29,7 +29,7 @@ export function generate_boilerplate_types({
   `;
 
   // @start
-const static_types = `type Prettify<T> = {
+  const static_types = `type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 type AgentAssets = any;
@@ -396,7 +396,7 @@ declare interface GUI_Element {
   /** TODO: Tailwind tokens for styling */
   tokens: Readonly<Array<Tw.Tokens>>;
   /** TODO: Name of the function that will be triggered once the element is clicked on */
-  on_click?: InternalEvents;
+  onclick?: InternalEvents;
   /** TODO: The text that will be displayed inside the element */
   text?: InternalTexts | (string & {});
   /** An array of elements that will be inside this element
@@ -418,7 +418,7 @@ declare interface GUI {
   /**
    * TODO: doc
    */
-  $pause_menu?: Omit<GUI_Element, 'visibility_depends_on' | 'type' | 'on_click'>;
+  $pause_menu?: Omit<GUI_Element, 'visibility_depends_on' | 'type' | 'onclick'>;
   [key: string]: GUI_Element;
 }
 
@@ -700,8 +700,8 @@ declare interface GameEnvironment {
   variables: Variables;
   agents: any;
 }
-`
-// @end
+`;
+  // @end
 
   return generated_types + static_types + variable_declarations;
 }

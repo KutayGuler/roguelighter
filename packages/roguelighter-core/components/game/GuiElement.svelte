@@ -14,8 +14,8 @@
 
   let { variables = $bindable(), events, name, guiElement }: Props = $props();
 
-  let { on_click: on_click_name, text, type, visibility_depends_on, tokens } = $state(guiElement);
-  const onclick = on_click_name ? events[on_click_name] : noop;
+  let { onclick: onclick_name, text, type, visibility_depends_on, tokens } = $state(guiElement);
+  const onclick = onclick_name ? events[onclick_name] : noop;
   const element_transition = guiElement.transition
     ? transitions[guiElement.transition?.type]
     : noop;

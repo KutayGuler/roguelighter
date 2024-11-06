@@ -60,8 +60,6 @@
       all_empty_cells.add(pos)
     }
   }
-
-  console.log(all_empty_cells)
 </script>
 
 <T.PerspectiveCamera />

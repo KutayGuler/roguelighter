@@ -6,9 +6,9 @@
 </script>
 
 <script lang="ts">
-import type { DirEntry } from '@tauri-apps/plugin-fs';
-import { Dropdown } from 'roguelighter-core';
-let { project, delete_project }: Props = $props();
+  import type { DirEntry } from '@tauri-apps/plugin-fs';
+  import { Dropdown } from 'roguelighter-core';
+  let { project, delete_project }: Props = $props();
 </script>
 
 <div class="relative flex flex-row justify-between items-center bg-zinc-800 rounded p-4 shadow-lg">

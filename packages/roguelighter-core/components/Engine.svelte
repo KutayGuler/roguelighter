@@ -193,9 +193,6 @@ if not exist "${EXPORT_DIR}" (
 
   function highlight(pre: HTMLPreElement) {
     const lines = pre.textContent?.split('\n');
-
-    console.log(parse_errors.error);
-    console.log(parse_errors.json_string);
     if (!lines || !parse_errors.error || !parse_errors.error.includes('at')) return;
 
     let line_number = parseInt(parse_errors?.error?.split('at')[1].split(':')[0]) || 0;

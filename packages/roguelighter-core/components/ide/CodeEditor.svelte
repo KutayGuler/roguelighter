@@ -50,9 +50,7 @@
   }
 
   export async function format_document() {
-    // console.log('triggering');
     editor.trigger('anyString', 'editor.action.formatDocument', '');
-    // console.log('triggered');
   }
 
   async function load_code(code: string) {
@@ -186,8 +184,6 @@
 
           typed_parameters.push(type.text + optional)
         }
-
-        console.log(typed_parameters)
         
         let filtered_typed_parameters = typed_parameters.filter((t) => !t.includes("undefined"))
         event_types[identifier] = "[" + typed_parameters.join(", ") + "] | " + "[" + filtered_typed_parameters.join(", ") + "]";

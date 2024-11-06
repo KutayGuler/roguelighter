@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate, goto, invalidateAll } from '$app/navigation';
+  import { beforeNavigate, goto } from '$app/navigation';
   import {
     Modal,
     CROSS,
@@ -13,6 +13,8 @@
   import { createDialog } from 'svelte-headlessui';
   import toast from '$lib/svelte-french-toast/core/toast.js';
   import ProjectCard from '$lib/ProjectCard.svelte';
+
+  // BACKLOG: cannot select any project after returning to home from a project
 
   let { data } = $props();
 

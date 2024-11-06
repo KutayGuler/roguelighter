@@ -4,7 +4,6 @@ import { PROJECTS_DIR, function_regex } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
-import { generate_boilerplate_types } from './generate_boilerplate_types';
 import { GameData, Agents, GUI } from './types/game';
 import { EntryTuple, ParseErrorObject } from './types/engine';
 
@@ -37,7 +36,6 @@ const rgx2 = /\[\s*(?:[^\]]*?,\s*)*\s*(null)\s*(?=(?:,\s*[^\]]*)*\])/g;
 
 export function code_string_to_json(code: string): GameData | ParseErrorObject {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
-  console.log(transpiled);
 
   function find_game_data_declaration(code: string) {
     const regex = new RegExp(`\\b(game_data)\\b\\s*=\\s*([\\[{])`, 'g');
@@ -65,16 +63,19 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
     return game_data_declaration;
   }
 
-  let game_data_declaration = find_game_data_declaration(transpiled);
-
   // turn function declarations into strings
-  game_data_declaration = game_data_declaration?.replace(function_regex, (match) => {
-    let modified = match.replaceAll('\n', ' ').replaceAll('"', '\\"');
-    return `"${modified}"`;
-  });
+  let game_data_declaration = find_game_data_declaration(transpiled)?.replace(
+    function_regex,
+    (match) => {
+      let modified = match
+        .replaceAll('\n', ' ')
+        .replaceAll('"', '\\"')
+        .replaceAll('undefined', '__undefined__');
+      return `"${modified}"`;
+    }
+  );
 
   let t = game_data_declaration as string;
-  console.log(t);
 
   try {
     t = t.replaceAll("'", '"');
@@ -82,19 +83,15 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
     t = `{
       ${t}
     }`;
-
-    // t = t.replaceAll(rgx1, `"$$undefined$$"`);
-    // t = t.replaceAll(rgx2, `"$$null$$"`);
-
-    console.log(t);
+    t = t.replaceAll(/(?<!["'])\bundefined\b(?!["'])/g, `"!undefined!"`);
+    t = t.replaceAll('__undefined__', 'undefined');
 
     // BACKLOG: support types for nested variables
     const game_data = JSON5.parse(t, (key, val) => {
-      if (val == '$undefined$') return undefined;
-      if (val == '$null$') return null;
+      if (val == '!undefined!') return undefined;
+      if (val == '!null!') return null;
       return val;
     }).game_data;
-    console.log(game_data);
     return game_data;
   } catch (e) {
     console.log(t, e);
@@ -233,7 +230,7 @@ export const template_json_code: GameData = {
             'w-1/2',
             'rounded'
           ],
-          on_click: '$close_pause_menu',
+          onclick: '$close_pause_menu',
           text: 'Continue' // add variable {v.var_name}
         },
         exit: {
@@ -247,7 +244,7 @@ export const template_json_code: GameData = {
             'w-1/2',
             'rounded'
           ],
-          on_click: '$exit',
+          onclick: '$exit',
           text: 'Exit' // add variable {v.var_name}
         }
       }
