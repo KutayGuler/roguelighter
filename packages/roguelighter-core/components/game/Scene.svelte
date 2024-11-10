@@ -14,7 +14,7 @@
   import type { Settings } from '../../types/game';
   import { T, useTask } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
-  import { Collider } from '@threlte/rapier'
+  // import { Collider } from '@threlte/rapier'
   import { DEG2RAD } from 'three/src/math/MathUtils.js'
   import Agent from './Agent.svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
@@ -75,8 +75,6 @@
     all_empty_cells.add(i)
     offsets.set(i, [0, 1, 0, -height])
   }
-
-  console.log(width * height, all_empty_cells)
 </script>
 
 <T.PerspectiveCamera />

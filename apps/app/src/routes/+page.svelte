@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { beforeNavigate, goto } from '$app/navigation';
+  import { beforeNavigate, goto, invalidate } from '$app/navigation';
   import {
     Modal,
     CROSS,
@@ -11,6 +11,7 @@
   import { writeTextFile, mkdir, type DirEntry, remove } from '@tauri-apps/plugin-fs';
   import { PUBLIC_APP_VERSION } from '$env/static/public';
   import { createDialog } from 'svelte-headlessui';
+  import { watchImmediate } from '@tauri-apps/plugin-fs';
   import toast from '$lib/svelte-french-toast/core/toast.js';
   import ProjectCard from '$lib/ProjectCard.svelte';
 
@@ -74,6 +75,7 @@
 
   async function delete_project() {
     delete_project_modal.close();
+    // TODO: try catch
     await remove(`${PROJECTS_DIR}\\${current_project_name}`, {
       baseDir,
       recursive: true
@@ -81,6 +83,13 @@
     projects = projects.filter(({ name }) => name != current_project_name);
     toast.success(`Removed project [${current_project_name}] successfully.`, TOAST_SETTINGS);
   }
+
+  watchImmediate(data.projects_dir, async (e) => {
+    if (e.type) {
+      await invalidate('page:projects');
+      projects = data.projects;
+    }
+  });
 </script>
 
 <main class="flex flex-col items-center bg-zinc-700 w-full h-full text-zinc-200">

@@ -534,64 +534,17 @@ export type KeyBindings = {
     | UserFunctionsAndParameters;
 };
 
-type SpriteConfig = {
-  /** TODO: DOCS */
-  source: AgentAssets;
-  /** The total number of frames in the spritesheet. */
-  frame_count?: number;
-  /** The desired frames per second of the animation. */
-  fps?: number;
-  /** The number of columns in the spritesheet. */
-  columns?: number;
-  /** The number of rows in the spritesheet. */
-  rows?: number;
-  /** The start frame of the current animation. */
-  start_frame?: number;
-  /** The end frame of the current animation. */
-  end_frame?: number;
-  /** Delay the start of the animation in ms. */
-  delay?: number;
-  /** The texture filtering applied to the spritesheet. */
-  filter?: 'nearest' | 'linear';
-};
-
 /**
  * TODO: doc
  */
 export interface Agent {
   /**
-   * Different states of the agent
+   * TODO: doc
    */
-  states: {
-    /**
-     * Default state of the agent. You can think this of 'idle' animation.
-     */
-    default: SpriteConfig;
-    /**
-     * TODO: doc
-     */
-    [state_name: string]: SpriteConfig;
-  };
-  /**
-   * Default easing function for agent animations
-   */
-  easing?: Easing;
-  /**
-   * Default duration for agent animations
-   */
-  duration?: number;
   props?: { [key: string]: any };
 }
 
 export type Agents = {
-  /**
-   * TODO: doc
-   */
-  $all?: Agent;
-  /**
-   * Player agent settings
-   */
-  player: Agent;
   /**
    * Non-player agent settings
    */

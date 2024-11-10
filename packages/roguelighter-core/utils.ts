@@ -4,7 +4,7 @@ import { PROJECTS_DIR, function_regex } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
-import { GameData, Agents, GUI } from './types/game';
+import { GameData, GUI } from './types/game';
 import { EntryTuple, ParseErrorObject } from './types/engine';
 
 export const noop = () => {};
@@ -175,27 +175,7 @@ export const template_json_code: GameData = {
     }
   },
   collisions: ['floor_2'],
-  agents: {
-    player: {
-      states: {
-        default: {
-          source: 'elf_idle.png',
-          frame_count: 4
-        },
-        walk: {
-          source: 'elf_run.png',
-          frame_count: 4
-        }
-      }
-    },
-    orc: {
-      states: {
-        default: {
-          source: 'orc.png'
-        }
-      }
-    }
-  },
+  agents: {},
   variables: {
     variable_name: 3
   },

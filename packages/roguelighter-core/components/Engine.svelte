@@ -332,7 +332,7 @@ if not exist "${EXPORT_DIR}" (
     >
       <!-- <GuiEditor></GuiEditor> -->
       <CodeEditor
-      {document_path}
+        {document_path}
         project_name={project.name}
         bind:view
         bind:project

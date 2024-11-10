@@ -1,11 +1,15 @@
 <script module>
   interface Props {
-    project_name: string;
     project: RoguelighterProject
     view: View;
-    unfocus_from_code_editor: Function
+    unfocus_from_code_editor?: Function
     save_file: Function
-    document_path: string
+    document_path?: string,
+    isWeb?: boolean,
+    predefined_entries?: {
+      agents: Array<EntryTuple>,
+      bg: Array<EntryTuple>,
+    }
   }
 </script>
 
@@ -34,14 +38,14 @@
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
-  let { project = $bindable(), view = $bindable(), unfocus_from_code_editor, save_file, project_name, document_path }: Props = $props();
+  let { project = $bindable(), view = $bindable(), isWeb = false, predefined_entries, unfocus_from_code_editor, save_file, document_path }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
-  let agents_cached_entries: Array<EntryTuple> = [];
-  let bg_cached_entries: Array<EntryTuple> = [];
-  let agentsFilePath = ''
-  let bgFilePath = ''
+  let agents_entries: Array<EntryTuple> = predefined_entries?.agents || [];
+  let bg_entries: Array<EntryTuple> =  predefined_entries?.bg || [];
+  let agents_file_path = ''
+  let bg_file_path = ''
   let unwatch: any;
 
   export function set_code(new_code: string) {
@@ -94,16 +98,18 @@
     editor.setModel(model);
     model.setValue(code);
 
+    if (isWeb) return;
+
     async function process_and_update() {
-      bg_cached_entries = await process_entries_recursively(bgFilePath, await readDir(bgFilePath), 'backgrounds');
-      agents_cached_entries = await process_entries_recursively(agentsFilePath, await readDir(agentsFilePath), 'agents');
+      bg_entries = await process_entries_recursively(bg_file_path, await readDir(bg_file_path), 'backgrounds');
+      agents_entries = await process_entries_recursively(agents_file_path, await readDir(agents_file_path), 'agents');
       update_types();
     }
 
     process_and_update()
 
     unwatch = await watchImmediate(
-      [bgFilePath, agentsFilePath],
+      [bg_file_path, agents_file_path],
       process_and_update,
       { recursive: true }
     );
@@ -133,7 +139,7 @@
       const value = model.getValue();
       if (!value) continue;
       if (value.includes('type Easing =')) {
-        model.setValue(generate_types(editor.getValue(), [...agents_cached_entries, ...bg_cached_entries]) || '');
+        model.setValue(generate_types(editor.getValue(), [...agents_entries, ...bg_entries]) || '');
       } else {
         content_id = model.id;
       }
@@ -429,8 +435,10 @@
   onMount(async () => {
     create_custom_tokenizer();
 
-    agentsFilePath = await join(document_path, `${PROJECTS_DIR}/${project_name}/assets/agents`);
-    bgFilePath = await join(document_path, `${PROJECTS_DIR}/${project_name}/assets/backgrounds`);
+    if (!isWeb) {
+      agents_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/agents`);
+      bg_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/backgrounds`);
+    }
 
     self.MonacoEnvironment = {
       getWorker(moduleID, label) {

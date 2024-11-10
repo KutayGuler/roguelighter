@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Engine, TOAST_SETTINGS } from 'roguelighter-core';
   import toast from '../../../lib/svelte-french-toast/core/toast.js';
-  import { document_path } from '$lib/state.svelte.js';
   let { data } = $props();
 
   function on_no_player_in_scene() {
@@ -15,7 +14,7 @@
 
 <Engine
   project={data.project}
-  document_path={document_path.value}
+  document_path={data.document_path}
   {on_no_player_in_scene}
   {on_no_scene_is_selected}
 />

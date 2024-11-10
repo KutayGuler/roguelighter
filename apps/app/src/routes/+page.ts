@@ -1,12 +1,14 @@
 import { exists, mkdir, readDir } from '@tauri-apps/plugin-fs';
 import type { PageLoad } from './$types';
-import { BaseDirectory } from '@tauri-apps/plugin-fs';
+import { DEFAULT_DIR, baseDir, PROJECTS_DIR } from '$lib/constants';
+import { join } from '@tauri-apps/api/path';
 
-const DEFAULT_DIR = 'roguelighter';
-const PROJECTS_DIR = `${DEFAULT_DIR}/projects`;
-const baseDir = BaseDirectory.Document;
+export const load: PageLoad = async ({ parent, depends }) => {
+  console.log('load');
 
-export const load: PageLoad = async () => {
+  depends('page:projects');
+  const parent_data = await parent();
+
   if (!(await exists(DEFAULT_DIR, { baseDir }))) {
     await mkdir(DEFAULT_DIR, { baseDir });
   }
@@ -15,7 +17,10 @@ export const load: PageLoad = async () => {
     await mkdir(PROJECTS_DIR, { baseDir });
   }
 
+  // TODO: check for /assets & data.json
+
   return {
-    projects: await readDir(PROJECTS_DIR, { baseDir })
+    projects_dir: await join(parent_data.document_path, PROJECTS_DIR),
+    projects: (await readDir(PROJECTS_DIR, { baseDir })).filter(({ isDirectory }) => isDirectory)
   };
 };
