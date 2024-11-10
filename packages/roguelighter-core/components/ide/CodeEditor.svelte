@@ -102,7 +102,7 @@
 
     process_and_update()
 
-     unwatch = await watchImmediate(
+    unwatch = await watchImmediate(
       [bgFilePath, agentsFilePath],
       process_and_update,
       { recursive: true }

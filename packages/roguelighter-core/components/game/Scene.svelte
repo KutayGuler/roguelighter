@@ -14,6 +14,8 @@
   import type { Settings } from '../../types/game';
   import { T, useTask } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
+  import { Collider } from '@threlte/rapier'
+  import { DEG2RAD } from 'three/src/math/MathUtils.js'
   import Agent from './Agent.svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
   import type {
@@ -47,19 +49,34 @@
   }
 
   let all_empty_cells = new Set<number>() 
-  const width = scene.width
+  const { width, height } = scene
 
   for (let [pos, val] of scene.backgrounds.entries()) {
     const values = [pos + 1, pos - 1, pos + width , pos - width ]
     const neighbors = values.map((pos) => scene.backgrounds.get(pos) || pos);
 
-    const empty_cells = new Set(neighbors.filter((n) => typeof n == "number")) 
+    const empty_cells = new Set(neighbors.filter((n) => typeof n == "number" && n > 0)) 
+    console.log(empty_cells)
     if (!empty_cells.size) continue
 
     for (let pos of empty_cells.values()) {
       all_empty_cells.add(pos)
     }
   }
+
+  let offsets = new Map<number, [x1: number, y1: number, x2: number, y2: number]>()
+
+  for (let i = 0; i <= width * height; i += width) {
+    all_empty_cells.add(i)
+    offsets.set(i, [-1, 1, width, 1])
+  }
+
+  for (let i = 0; i < width; i++) {
+    all_empty_cells.add(i)
+    offsets.set(i, [0, 1, 0, -height])
+  }
+
+  console.log(width * height, all_empty_cells)
 </script>
 
 <T.PerspectiveCamera />
@@ -75,10 +92,14 @@
 {/each}
 {#each scene.agents.entries() as [pos, agent]}
   <Agent {agent_asset_urls} {agent} {settings} position={calc_pos(pos)} />
-{/each}
+ {/each}
 {#each all_empty_cells as pos}
-  {@const offsetX = pos % width == 0 ? -width : 0}
-  <T.Mesh position={calc_pos(pos, offsetX, 0)}>
+  {@const o = offsets.get(pos)}
+  <T.Mesh position={calc_pos(pos, o?.[0] || 0, o?.[1] || 0)}>
+    <T.BoxGeometry />
+    <T.MeshBasicMaterial />
+  </T.Mesh>
+  <T.Mesh position={calc_pos(pos, o?.[2] || 0 , o?.[3] || 0)}>
     <T.BoxGeometry />
     <T.MeshBasicMaterial />
   </T.Mesh>

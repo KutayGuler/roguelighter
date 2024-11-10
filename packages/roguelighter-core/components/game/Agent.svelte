@@ -73,8 +73,6 @@
     if (e.key === 'e') pause();
   };
 
-  // FIXME: camera position not updating
-
   $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
 
   const sqrtTwo = 1.4;
