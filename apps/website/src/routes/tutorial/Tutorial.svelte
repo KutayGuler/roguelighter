@@ -1,20 +1,13 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { confetti } from '@neoconfetti/svelte';
-  import {
-    Game,
-    CodeEditor,
-    get_tailwind_classes,
-    json_to_code_string,
-    code_string_to_json,
-    processClasses
-  } from 'roguelighter-core';
+  import { Game, CodeEditor, json_to_code_string } from 'roguelighter-core';
   import type { AgentAssetUrls, BackgroundAssetUrls, GameData } from 'roguelighter-core';
   import { tutorials } from './tutorials';
   let tutorial = structuredClone(tutorials[$page.params.name]);
   let { project, solution, header, description, solution_tuple } = tutorial;
   let solved = false;
-  let code_editor: CodeEditor;
+  let code_editor: typeof CodeEditor;
 
   function check(obj: GameData) {
     let val = structuredClone(obj);
@@ -107,11 +100,13 @@
           class="absolute left-[50%] top-12"
         ></div>
       {/if}
-      <CodeEditor bind:code={project.code} bind:this={code_editor}></CodeEditor>
+      <CodeEditor bind:project bind:this={code_editor} view="code" save_file={() => {}}
+      ></CodeEditor>
     </div>
     <div class="h-1/2 w-full">
       {#key project.code}
-        <Game {project} {agent_asset_urls} {bg_asset_urls} current_scene_id={0}></Game>
+        <Game {project} {agent_asset_urls} {bg_asset_urls} current_scene_id={crypto.randomUUID()}
+        ></Game>
       {/key}
     </div>
   </div>
