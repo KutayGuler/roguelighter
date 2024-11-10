@@ -19,7 +19,7 @@
 
   let { data } = $props();
 
-  let projects: Array<DirEntry> = $state(data.projects);
+  let projects: Array<DirEntry> = $derived(data.projects);
   let current_project_name = $state('');
   let new_project_name = $state('');
   let new_project_input_element: HTMLInputElement | undefined = $state();
@@ -75,19 +75,22 @@
 
   async function delete_project() {
     delete_project_modal.close();
-    // TODO: try catch
-    await remove(`${PROJECTS_DIR}\\${current_project_name}`, {
-      baseDir,
-      recursive: true
-    });
-    projects = projects.filter(({ name }) => name != current_project_name);
-    toast.success(`Removed project [${current_project_name}] successfully.`, TOAST_SETTINGS);
+
+    try {
+      await remove(`${PROJECTS_DIR}\\${current_project_name}`, {
+        baseDir,
+        recursive: true
+      });
+      toast.success(`Removed project [${current_project_name}] successfully.`, TOAST_SETTINGS);
+      invalidate('page:projects');
+    } catch (e) {
+      toast.error('Failed to remove the project');
+    }
   }
 
   watchImmediate(data.projects_dir, async (e) => {
     if (e.type) {
       await invalidate('page:projects');
-      projects = data.projects;
     }
   });
 </script>
