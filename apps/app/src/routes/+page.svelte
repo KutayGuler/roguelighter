@@ -11,7 +11,7 @@
   import { writeTextFile, mkdir, type DirEntry, remove } from '@tauri-apps/plugin-fs';
   import { PUBLIC_APP_VERSION } from '$env/static/public';
   import { createDialog } from 'svelte-headlessui';
-  import { watchImmediate } from '@tauri-apps/plugin-fs';
+  import { watch } from '@tauri-apps/plugin-fs';
   import toast from '$lib/svelte-french-toast/core/toast.js';
   import ProjectCard from '$lib/ProjectCard.svelte';
 
@@ -88,11 +88,22 @@
     }
   }
 
-  watchImmediate(data.projects_dir, async (e) => {
-    if (e.type) {
-      await invalidate('page:projects');
+  // BACKLOG: getting VM level TypeError: window["_" + 12312323] is not a function
+  watch(
+    data.projects_dir,
+    async (e) => {
+      try {
+        if (e.type) {
+          await invalidate('page:projects');
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    {
+      delayMs: 200
     }
-  });
+  );
 </script>
 
 <main class="flex flex-col items-center bg-zinc-700 w-full h-full text-zinc-200">

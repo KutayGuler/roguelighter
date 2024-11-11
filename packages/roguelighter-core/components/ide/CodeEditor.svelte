@@ -7,8 +7,8 @@
     document_path?: string,
     isWeb?: boolean,
     predefined_entries?: {
-      agents: Array<EntryTuple>,
-      bg: Array<EntryTuple>,
+      agents: Array<EntryObject>,
+      bg: Array<EntryObject>,
     }
   }
 </script>
@@ -23,7 +23,7 @@
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
   import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-  import { debounce, filters, includes_any, process_entries_recursively } from '../../utils';
+  import { debounce, filters, includes_any, agent_states_obj, process_entries_recursively } from '../../utils';
   import { watchImmediate } from '@tauri-apps/plugin-fs';
   import { join } from '@tauri-apps/api/path';
   import { readDir } from '@tauri-apps/plugin-fs';
@@ -34,7 +34,7 @@
     PROJECTS_DIR,
     variables_regex
   } from '../../constants';
-  import type { EntryTuple, RoguelighterProject, View } from '../../types/engine';
+  import type { EntryObject, EntryTuple, RoguelighterProject, View } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
@@ -42,8 +42,8 @@
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
-  let agents_entries: Array<EntryTuple> = predefined_entries?.agents || [];
-  let bg_entries: Array<EntryTuple> =  predefined_entries?.bg || [];
+  let agents_entries: Array<EntryObject> = predefined_entries?.agents || [];
+  let bg_entries: Array<EntryObject> =  predefined_entries?.bg || [];
   let agents_file_path = ''
   let bg_file_path = ''
   let unwatch: any;
@@ -101,8 +101,10 @@
     if (isWeb) return;
 
     async function process_and_update() {
-      bg_entries = await process_entries_recursively(bg_file_path, await readDir(bg_file_path), 'backgrounds');
-      agents_entries = await process_entries_recursively(agents_file_path, await readDir(agents_file_path), 'agents');
+      [bg_entries, agents_entries] = await Promise.all([
+        process_entries_recursively(bg_file_path, await readDir(bg_file_path), 'backgrounds'),
+        process_entries_recursively(agents_file_path, await readDir(agents_file_path), 'agents')
+      ]);
       update_types();
     }
 
@@ -146,7 +148,7 @@
     }
   }
 
-  export function generate_types(code: string, cached_entries: Array<EntryTuple> = []) {
+  export function generate_types(code: string, cached_entries: Array<EntryObject> = []) {
     try {
       const ast = generate_ast(code);
       const prop_assignments = ast.c[0].c[0].c[2].c;
@@ -204,32 +206,41 @@
         backgrounds: `'ERROR: no assets found'`
       };
 
-      let variables_interface = '';
-
       for (let assignment of variable_assignments) {
         if (!assignment.c[1]) continue
         variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
+      }
+
+      for (let [key, val] of Object.entries(agent_states_obj)) {
+        agent_states += `${key}: `
+        for (let v of val) {
+          agent_states += `| '${v}'`
+        }
+        agent_states += ';\n'
       }
 
       if (cached_entries.length) {
         assets.agents = '';
         assets.backgrounds = '';
 
-        for (let [key, _, type] of cached_entries) {
-          assets[type] += `| '${key}'`;
+        for (let { type, name } of cached_entries) {
+          assets[type] += `| '${name}'`;
         }
       }
 
       assets.agents = assets.agents.replaceAll('agents/', '');
       assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
 
-      return generate_boilerplate_types({
+      const generated_type = generate_boilerplate_types({
         assets,
         events,
         variables,
         agent_states,
         user_functions_and_parameters
       });
+      console.log(generated_type);
+      
+      return generated_type
     } catch (e) {
       console.log(e);
     }

@@ -6,7 +6,7 @@ type BackgroundAssets = any;
 type EventNames = any;
 type Variables = { [key: string]: any };
 type BackgroundNames = any;
-type AgentStates = any;
+type AgentStates = { [key: string]: any };
 type UserFunctionsAndParameters = any;
 
 type Easing =
@@ -537,18 +537,46 @@ export type KeyBindings = {
 /**
  * TODO: doc
  */
-export interface Agent {
+export type SpriteConfig = {
+  /** The total number of frames in the spritesheet. */
+  frame_count?: number;
+  /** The desired frames per second of the animation. */
+  fps?: number;
+  /** The number of columns in the spritesheet. */
+  columns?: number;
+  /** The number of rows in the spritesheet. */
+  rows?: number;
+  /** The start frame of the current animation. */
+  start_frame?: number;
+  /** The end frame of the current animation. */
+  end_frame?: number;
+  /** Delay the start of the animation in ms. */
+  delay?: number;
+  /** The texture filtering applied to the spritesheet. */
+  filter?: 'nearest' | 'linear';
+};
+
+/**
+ * TODO: doc
+ */
+export interface AgentConfig<K extends keyof AgentStates> {
   /**
    * TODO: doc
    */
   props?: { [key: string]: any };
+  /**
+   * TODO: doc
+   */
+  states?: {
+    [key in AgentStates[K]]?: SpriteConfig;
+  };
 }
 
 export type Agents = {
   /**
    * Non-player agent settings
    */
-  [name: string]: Agent;
+  [key in keyof AgentStates]: Prettify<AgentConfig<key>>;
 };
 
 export type XY_Tuple = [x: number, y: number];

@@ -5,7 +5,7 @@ import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
 import { GameData, GUI } from './types/game';
-import { EntryTuple, ParseErrorObject } from './types/engine';
+import { EntryObject, EntryTuple, ParseErrorObject } from './types/engine';
 
 export const noop = () => {};
 
@@ -117,30 +117,37 @@ export function json_to_code_string(json: GameData) {
   `;
 }
 
+export let agent_states_obj = {};
+
 export async function process_entries_recursively(
   parent: string,
   entries: DirEntry[],
   type: 'backgrounds' | 'agents'
 ) {
-  let _entries: Array<EntryTuple> = [];
+  let _entries: Array<EntryObject> = [];
 
   for (const entry of entries) {
+    // if (entry.isFile) continue;
+
     const dir = await join(parent, entry.name);
+
+    const name = entry.name.replace('http://asset.localhost/', '');
+    const simplified_name = name.split('.')[0];
 
     if (entry.isDirectory) {
       const children = await process_entries_recursively(dir, await readDir(dir), type);
       _entries.push(...children);
+      if (type == 'agents') {
+        agent_states_obj[name] = children.map(({ name }) => name);
+      }
       continue;
     }
 
-    const name = entry.name.replace('http://asset.localhost/', '');
-
-    _entries.push([
-      // split gets rid of the file extension
-      name.split('.')[0],
-      parent + '\\' + name,
-      type
-    ]);
+    _entries.push({
+      name: simplified_name,
+      path: parent + '\\' + name,
+      type: type
+    });
   }
 
   return _entries;
@@ -157,9 +164,11 @@ export async function generate_asset_urls(
   const entries = await readDir(file_path);
   let children = await process_entries_recursively(file_path, entries, type);
 
-  for (let [key, path] of children) {
+  console.log(agent_states_obj);
+
+  for (let { name, path } of children) {
     let source = convertFileSrc(path);
-    asset_urls.set(key, source);
+    asset_urls.set(name, source);
   }
 
   return asset_urls;
@@ -303,6 +312,7 @@ export function focus_trap(node: HTMLElement, enabled: boolean) {
   // Get element with smallest focusindex value, or first focusable element
   const getFocusTrapTarget = (elemFirst: HTMLElement) => {
     // Get elements with data-focusindex attribute
+    // @ts-expect-error
     const focusindexElements = [...node.querySelectorAll<FocusindexElement>('[data-focusindex]')];
     if (!focusindexElements || focusindexElements.length === 0) return elemFirst;
     // return smallest focusindex element or elemFirst

@@ -5,12 +5,12 @@
   import { Mesh } from 'three';
   import { noop } from '../../utils';
   import type { AgentAssetUrls, PlayableAgent } from '../../types/engine';
-  import type { Settings } from '../../types/game';
+  import type { Settings, SpriteConfig } from '../../types/game';
   import { SvelteSet } from 'svelte/reactivity';
   const { camera } = useThrelte();
 
   interface Props {
-    agent: PlayableAgent;
+    agent: PlayableAgent<'player'>;
     settings: Settings;
     agent_asset_urls: AgentAssetUrls;
     position: [number, number, number];
@@ -24,16 +24,20 @@
     // @ts-expect-error
     pause: () => void = $state();
 
-  const defaults = agent.states.default;
-  const textureUrl = agent_asset_urls.get(agent.name);
-  const totalFrames = defaults.frame_count || DEFAULT_FRAME_COUNT;
-  const fps = defaults.fps || settings?.fps || DEFAULT_FPS;
-  const columns = defaults.columns;
-  const rows = defaults.rows;
-  const startFrame = defaults.start_frame;
-  const endFrame = defaults.end_frame;
-  const delay = defaults.delay;
-  const filter = defaults.filter || settings.filter || 'nearest';
+  const states = agent.states as SpriteConfig;
+
+  let _state_name = $state('');
+  // @ts-expect-error
+  let _state = $derived(states[_state_name]);
+  let textureUrl = agent_asset_urls.get(agent.name);
+  let totalFrames = $derived(_state.frame_count || DEFAULT_FRAME_COUNT);
+  let fps = $derived(_state.fps || settings?.fps || DEFAULT_FPS);
+  let columns = $derived(_state.columns);
+  let rows = $derived(_state.rows);
+  let startFrame = $derived(_state.start_frame);
+  let endFrame = $derived(_state.end_frame);
+  let delay = $derived(_state.delay);
+  let filter = $derived(_state.filter || settings.filter || 'nearest');
 
   let keyboard = $state({ x: 0, y: 0 });
   const pressed = $state(new SvelteSet<string>());

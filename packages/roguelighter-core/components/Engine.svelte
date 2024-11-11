@@ -178,8 +178,10 @@ if not exist "${EXPORT_DIR}" (
     } 
 
     processClasses(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
-    agent_asset_urls = await generate_asset_urls(project.name, 'agents', document_path);
-    bg_asset_urls = await generate_asset_urls(project.name, 'backgrounds', document_path);
+    [agent_asset_urls, bg_asset_urls] = await Promise.all([
+       generate_asset_urls(project.name, 'agents', document_path),
+       generate_asset_urls(project.name, 'backgrounds', document_path)
+    ])
     agents = (parsed as GameData).agents;
     initialized = true;
   }
