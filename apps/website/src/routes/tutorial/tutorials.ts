@@ -1,5 +1,11 @@
 import { json_to_code_string, template_json_code } from 'roguelighter-core';
-import type { GameData, Portal, RoguelighterProject } from 'roguelighter-core';
+import type {
+  GameData,
+  Portal,
+  RoguelighterProject,
+  AgentAssetUrls,
+  BackgroundAssetUrls,
+} from 'roguelighter-core';
 
 interface Tutorial {
   header: string;
@@ -7,6 +13,8 @@ interface Tutorial {
   project: RoguelighterProject;
   solution: GameData;
   solution_tuple: [string, any];
+  agent_asset_urls: AgentAssetUrls;
+  bg_asset_urls: BackgroundAssetUrls;
 }
 
 export const tutorials: { [key: string]: Tutorial } = {
@@ -19,9 +27,9 @@ export const tutorials: { [key: string]: Tutorial } = {
         easing: 'sineOut',
         duration: 400,
         camera: {
-          zoom: 50
-        }
-      }
+          zoom: 50,
+        },
+      },
     }),
     project: {
       code: json_to_code_string(template_json_code),
@@ -39,16 +47,16 @@ export const tutorials: { [key: string]: Tutorial } = {
               [12, 'floor'],
               [20, 'floor'],
               [21, 'floor'],
-              [22, 'floor']
+              [22, 'floor'],
             ]),
             agents: new Map<number, string>([[0, 'player']]),
             portals: new Map<number, Portal>(),
             width: 10,
-            height: 10
-          }
-        ]
-      ])
+            height: 10,
+          },
+        ],
+      ]),
     },
-    solution_tuple: ['settings.camera.zoom', 50]
-  }
+    solution_tuple: ['settings.camera.zoom', 50],
+  },
 };

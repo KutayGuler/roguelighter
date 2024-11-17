@@ -12,6 +12,11 @@
   src: url('/GeistMono-Regular.otf') format('truetype');
 }
 
+@font-face {
+  font-family: bla;
+  src: url(/GermaniaOne-Regular.ttf) format(truetype);
+}
+
 html,
 body {
   padding: 0;
@@ -24,6 +29,28 @@ body {
   font-family: mono;
 }
 
+.serif {
+  font-family: bla;
+}
+
 .link {
   @apply hover:underline hover:text-emerald-400 duration-150 ease-out;
+}
+
+/* TODO: get rid of redundant classes */
+
+h1 {
+  @apply text-6xl;
+}
+
+h2 {
+  @apply text-4xl;
+}
+
+h3 {
+  @apply text-2xl;
+}
+
+h4 {
+  @apply text-xl;
 }

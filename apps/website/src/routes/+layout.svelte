@@ -1,18 +1,30 @@
 <script lang="ts">
   import 'roguelighter-core/styles.css';
   import '../app.css';
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
+
+  let { children }: Props = $props();
 </script>
 
-<main class="bg-[#1a141f] relative w-full h-full text-white flex flex-col items-center pt-16">
+<main
+  class="bg-[#1a141f] relative w-full h-full text-white flex flex-col items-center pt-16"
+>
   <nav
-    class="young-serif absolute top-0 flex flex-row items-center justify-between w-full mono px-8 p-3 text-zinc-200 z-50 shadow-2xl bg-transparent"
+    class="serif absolute top-0 flex flex-row items-center justify-between w-full mono px-8 p-3 text-zinc-200 z-50 shadow-2xl bg-transparent"
   >
-    <a href="/" class="hover:text-emerald-400 text-4xl ease-out duration-1000">Roguelighter</a>
+    <a href="/" class="hover:text-emerald-400 text-4xl ease-out duration-1000"
+      >Roguelighter</a
+    >
     <div class="flex flex-row gap-4">
       <a class="link" href="/tutorial">Tutorial</a>
       <a class="link" href="/download">Download</a>
       <a class="link" href="/docs">Docs</a>
-      <a class="link" href="https://github.com/KutayGuler/roguelighter" target="_blank"
+      <a
+        class="link"
+        href="https://github.com/KutayGuler/roguelighter"
+        target="_blank"
         ><svg
           class="h-6 w-6 fill-zinc-200 hover:fill-emerald-400 ease-out duration-150"
           width="98"
@@ -29,6 +41,6 @@
     </div>
   </nav>
   <section class="relative flex flex-col w-full h-full p-4 pt-20 text-zinc-200">
-    <slot />
+    {@render children?.()}
   </section>
 </main>

@@ -15,9 +15,9 @@ const config = {
     prerender: {
       // use relative URLs similar to an anchor tag <a href="/test/1"></a>
       // do not include group layout folders in the path such as /(group)/test/1
-      entries: ['/tutorial', '/tutorial/intro', '/', '/docs', '/download', '/test', '/test/project']
-    }
-  }
+      // entries: ['/tutorial', '/tutorial/intro', '/', '/docs', '/download', '/test', '/test/project']
+    },
+  },
 };
 
 export default config;

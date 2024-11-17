@@ -1,5 +1,6 @@
 <script lang="ts">
-  export let type;
+  import Type from './Type.svelte';
+  let { type } = $props();
   const children_types = type.type?.declaration?.children;
 </script>
 
@@ -27,14 +28,14 @@
   {#if type.children}
     <div class="flex flex-col gap-8 pl-8">
       {#each type.children as child_type}
-        <svelte:self type={child_type}></svelte:self>
+        <Type type={child_type}></Type>
       {/each}
     </div>
   {/if}
   {#if children_types}
     <div class="flex flex-col gap-8 pl-8">
       {#each children_types as child_type}
-        <svelte:self type={child_type}></svelte:self>
+        <Type type={child_type}></Type>
       {/each}
     </div>
   {/if}

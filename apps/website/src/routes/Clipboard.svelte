@@ -1,8 +1,12 @@
 <script lang="ts">
   import { fade, scale } from 'svelte/transition';
-  export let env: string;
-  export let command: string;
-  let copied = false;
+  interface Props {
+    env: string;
+    command: string;
+  }
+
+  let { env, command }: Props = $props();
+  let copied = $state(false);
 
   // LATER: tooltip
 
@@ -18,7 +22,7 @@
 >
   <span class="text-emerald-400">{env}</span>
   <span>{command}</span>
-  <button on:click={copy}>
+  <button onclick={copy}>
     {#if copied}
       <svg
         in:scale={{ duration: 150 }}

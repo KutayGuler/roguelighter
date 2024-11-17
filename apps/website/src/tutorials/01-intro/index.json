@@ -1,0 +1,21 @@
+{
+	"solution_tuples": [
+		["bla.bla.bla", 5],
+		["bla.bla.bla", "whatever"]
+	],
+	"solution_object": {
+		"settings": {
+			"fps": 8,
+			"easing": "sineOut",
+			"duration": 400,
+			"camera": {
+				"zoom": 50
+			}
+		}
+	},
+	"next": "outro",
+	"title": "Introduction",
+	"project": {
+		"scenes": []
+	}
+}

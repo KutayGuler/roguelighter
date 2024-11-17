@@ -2,7 +2,7 @@
   const features = [
     ['Single file', 'All your game data in a single file.'],
     ['Low code', 'Write minimal code to create roguelike games.'],
-    ['Typesafe', 'Autocomplete your way through.']
+    ['Typesafe', 'Autocomplete your way through.'],
   ];
 </script>
 
@@ -10,16 +10,18 @@
   <div class="flex flex-col gap-16 max-w-6xl">
     <div class="flex flex-row relative pb-20 pt-12 overflow-visible">
       <div class="z-10">
-        <h1 class="young-serif">
+        <h1 class="serif">
           The game engine <br /> for roguelikes.
         </h1>
         <p class="text-xl pt-4">
-          Roguelighter is a free, open-source, low-code game engine <br /> specifically designed for
-          developing roguelike games.
+          Roguelighter is a free, open-source, low-code game engine <br /> specifically
+          designed for developing roguelike games.
         </p>
         <div class="w-full flex flex-row gap-4 pt-16">
-          <a href="/tutorial" class="btn-success-ghost px-8 py-4">Play with interactive tutorial</a>
-          <button class="btn-success px-8">Download latest version</button>
+          <a href="/tutorial" class="btn-success-ghost px-8 py-4"
+            >Play with interactive tutorial</a
+          >
+          <button class="btn-primary px-8">Download latest version</button>
         </div>
       </div>
       <img
@@ -33,7 +35,7 @@
         <div class="w-1/3 flex flex-col rounded">
           <div class="w-full bg-[#0a0012] h-40 rounded-t"></div>
           <div class="bg-[#1f0037] p-4 flex-grow rounded-b">
-            <h4 class="h4 young-serif">{title}</h4>
+            <h4 class="h4 serif">{title}</h4>
             <p class="text-zinc-400">{description}</p>
           </div>
         </div>

@@ -1,29 +1,29 @@
-<script module>
-  interface Props {
-    tutorial: TutorialJson;
-  }
-</script>
-
 <script lang="ts">
   import { confetti } from '@neoconfetti/svelte';
   import { Game, CodeEditor, json_to_code_string } from 'roguelighter-core';
   import type { GameData } from 'roguelighter-core';
-  import type { TutorialJson } from '$lib/types';
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
+  // import { marked} from 'marked';
 
-  let { tutorial }: Props = $props();
+  let { data } = $props();
+  let tutorial = $derived(data.tutorial);
+  let markdown = $derived(data.markdown);
   const original = structuredClone(tutorial);
 
   let solved = $state(false);
   let code_editor: typeof CodeEditor | undefined = $state();
 
   function check(obj: GameData) {
-    let val = structuredClone(obj);
+    let _val = structuredClone(obj);
 
     for (let i = 0; i < tutorial.solution_tuples.length; i++) {
       let [path, answer] = tutorial.solution_tuples[i];
+
       // @ts-expect-error
-      path.forEach((partial_path) => (val = val[partial_path]));
+      let val = _val[path];
+      console.log(val);
+
+      // path.forEach((partial_path) => (val = val[partial_path]));
       if (val !== answer) return false;
     }
 
@@ -47,12 +47,12 @@
 
   function show_solution() {
     tutorial.project.code = json_to_code_string(tutorial.solution_object);
-    code_editor.set_code(tutorial.project.code);
+    code_editor?.set_code(tutorial.project.code);
   }
 
   function reset() {
     tutorial.project = structuredClone(original.project);
-    code_editor.set_code(original.project.code);
+    code_editor?.set_code(original.project.code);
   }
 
   // LATER: replace
@@ -96,6 +96,8 @@
   <div class="flex flex-col h-full w-1/2 px-4">
     <!-- <h3 class="serif">{tutorial.title}</h3> -->
     <!-- TODO: render markdown -->
+    <!-- {@html marked.parse(data.markdown)} -->
+
     <div class="flex-grow"></div>
     <div class="flex flex-row justify-between gap-2">
       <button onclick={solved ? reset : show_solution} class="btn-amber px-4"
@@ -130,12 +132,12 @@
     </div>
     <div class="h-1/2 w-full">
       <!-- {#key project.code} -->
-      <Game
+      <!-- <Game
         project={tutorial.project}
         agent_asset_urls={tutorial.agent_asset_urls}
         bg_asset_urls={tutorial.bg_asset_urls}
         current_scene_id={crypto.randomUUID()}
-      ></Game>
+      ></Game> -->
       <!-- {/key} -->
     </div>
   </div>
