@@ -6,7 +6,7 @@
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     DEV?: boolean;
-    exit_dev?: Function
+    exit_dev?: Function;
   }
 </script>
 
@@ -15,10 +15,8 @@
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
-  import type {
-    KeyboardEventCode,
-    GameData
-  } from '../../types/game';
+  import type { KeyboardEventCode, GameData } from '../../types/game';
+  // TODO: put this up in state
   import { exit } from '@tauri-apps/plugin-process';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import type {
@@ -27,7 +25,7 @@
     PlayableScene,
     Portal,
     RoguelighterProject,
-    UUID
+    UUID,
   } from '../../types/engine';
 
   // BACKLOG: try catch for user defined functions
@@ -41,11 +39,20 @@
     bg_asset_urls,
     agent_asset_urls,
     DEV = false,
-    exit_dev
+    exit_dev,
   }: Props = $props();
 
   let _ = $state(code_string_to_json(project.code) as GameData);
-  let { variables, agents, settings, events, gui, keybindings, collisions, __dev_only } = $state(_);
+  let {
+    variables,
+    agents,
+    settings,
+    events,
+    gui,
+    keybindings,
+    collisions,
+    __dev_only,
+  } = $state(_);
 
   let unmodified_scenes = structuredClone(project.scenes);
   let scene: PlayableScene = $state() as PlayableScene;
@@ -75,11 +82,11 @@
     },
     $exit: async () => {
       if (DEV && exit_dev) {
-        exit_dev()
+        exit_dev();
       } else {
         await exit();
       }
-    }
+    },
   } as const;
 
   function transform_scenes() {
@@ -95,7 +102,7 @@
           x,
           y,
           states: agents[name].states,
-          state: 'default'
+          state: 'default',
         });
 
         if (name == 'player') {
@@ -131,7 +138,7 @@
     let internal_variables = { $pause_menu: false };
     Object.assign(variables, internal_variables);
     Object.assign(events, f);
-    transform_scenes()
+    transform_scenes();
   }
 
   // for (let [key, fn] of Object.entries(events)) {
@@ -171,7 +178,7 @@
     if (!event_name || game_paused) return;
 
     if (Array.isArray(event_name)) {
-      const [fn_name, args] = [...event_name]
+      const [fn_name, args] = [...event_name];
       events[fn_name](_, ...args);
     } else {
       events[event_name](_);
@@ -189,7 +196,7 @@
     Object.assign(player, {
       name: 'player',
       x,
-      y
+      y,
     });
     scene.agents.set(to_position, player);
     scene_just_changed = true;
