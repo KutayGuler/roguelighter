@@ -1,15 +1,15 @@
 <script module>
   interface Props {
-    project: RoguelighterProject
+    project: RoguelighterProject;
     view: View;
-    unfocus_from_code_editor?: Function
-    save_file: Function
-    document_path?: string,
-    isWeb?: boolean,
+    unfocus_from_code_editor?: Function;
+    save_file: Function;
+    document_path?: string;
+    isWeb?: boolean;
     predefined_entries?: {
-      agents: Array<EntryObject>,
-      bg: Array<EntryObject>,
-    }
+      agents: Array<EntryObject>;
+      bg: Array<EntryObject>;
+    };
   }
 </script>
 
@@ -19,33 +19,55 @@
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
+  // import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
-  import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-  import { debounce, filters, includes_any, agent_states_obj, process_entries_recursively } from '../../utils';
-  import { watchImmediate } from '@tauri-apps/plugin-fs';
-  import { join } from '@tauri-apps/api/path';
-  import { readDir } from '@tauri-apps/plugin-fs';
+  // import {
+  //   configureMonacoTailwindcss,
+  //   tailwindcssData,
+  // } from 'monaco-tailwindcss';
+  import {
+    debounce,
+    filters,
+    includes_any,
+    agent_states_obj,
+    process_entries_recursively,
+  } from '../../utils';
+  // import { watchImmediate } from '@tauri-apps/plugin-fs';
+  // import { join } from '@tauri-apps/api/path';
+  // import { readDir } from '@tauri-apps/plugin-fs';
   import {
     INTERNAL_EVENTS,
     INTERNAL_GUI,
     INTERNAL_TEXTS,
     PROJECTS_DIR,
-    variables_regex
+    variables_regex,
   } from '../../constants';
-  import type { EntryObject, EntryTuple, RoguelighterProject, View } from '../../types/engine';
+  import type {
+    EntryObject,
+    EntryTuple,
+    RoguelighterProject,
+    View,
+  } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
-  let { project = $bindable(), view = $bindable(), isWeb = false, predefined_entries, unfocus_from_code_editor, save_file, document_path }: Props = $props();
+  let {
+    project = $bindable(),
+    view = $bindable(),
+    isWeb = false,
+    predefined_entries,
+    unfocus_from_code_editor,
+    save_file,
+    document_path,
+  }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
   let agents_entries: Array<EntryObject> = predefined_entries?.agents || [];
-  let bg_entries: Array<EntryObject> =  predefined_entries?.bg || [];
-  let agents_file_path = ''
-  let bg_file_path = ''
+  let bg_entries: Array<EntryObject> = predefined_entries?.bg || [];
+  let agents_file_path = '';
+  let bg_file_path = '';
   let unwatch: any;
 
   export function set_code(new_code: string) {
@@ -65,34 +87,34 @@
       rules: [
         {
           token: 'globals',
-          foreground: 'fda4af'
+          foreground: 'fda4af',
         },
         {
           token: 'vardec',
-          foreground: '10b981'
+          foreground: '10b981',
         },
         {
           token: 'kwClass',
-          foreground: 'c084fc'
+          foreground: 'c084fc',
         },
         {
           token: 'kwProps',
-          foreground: 'bae6fd'
+          foreground: 'bae6fd',
         },
         {
           token: 'identifier',
-          foreground: 'bae6fd'
+          foreground: 'bae6fd',
         },
         { token: 'constant', foreground: '2E1065' },
         { token: 'type', foreground: '38bdf8' },
         { token: 'keyword', foreground: '60a5fa' },
         { token: 'comment', foreground: '608B4E' },
         { token: 'number', foreground: 'a3e635' },
-        { token: 'string', foreground: 'fde68a' }
+        { token: 'string', foreground: 'fde68a' },
       ],
       colors: {
-        [editorBackground]: '#18181b'
-      }
+        [editorBackground]: '#18181b',
+      },
     });
     monaco.editor.setTheme('default');
     editor.setModel(model);
@@ -101,37 +123,46 @@
     if (isWeb) return;
 
     async function process_and_update() {
-      [bg_entries, agents_entries] = await Promise.all([
-        process_entries_recursively(bg_file_path, await readDir(bg_file_path), 'backgrounds'),
-        process_entries_recursively(agents_file_path, await readDir(agents_file_path), 'agents')
-      ]);
+      // TODO: move up in state
+      // [bg_entries, agents_entries] = await Promise.all([
+      //   process_entries_recursively(
+      //     bg_file_path,
+      //     await readDir(bg_file_path),
+      //     'backgrounds'
+      //   ),
+      //   process_entries_recursively(
+      //     agents_file_path,
+      //     await readDir(agents_file_path),
+      //     'agents'
+      //   ),
+      // ]);
       update_types();
     }
 
-    process_and_update()
+    process_and_update();
 
-    unwatch = await watchImmediate(
-      [bg_file_path, agents_file_path],
-      process_and_update,
-      { recursive: true }
-    );
+    // TODO: move this up in state
+    // unwatch = await watchImmediate(
+    //   [bg_file_path, agents_file_path],
+    //   process_and_update,
+    //   { recursive: true }
+    // );
   }
 
   function infer_type(kind: string) {
+    // BACKLOG: cannot infer the types of objects inside variables
+    if (kind === 'FirstLiteralToken') {
+      return 'number';
+    } else if (kind === 'StringLiteral') {
+      return 'string';
+    } else if (['TrueKeyword', 'FalseKeyword'].includes(kind)) {
+      return 'boolean';
+    } else if (kind === 'ObjectLiteralExpression') {
+      return 'object';
+    }
 
-  // BACKLOG: cannot infer the types of objects inside variables
-  if (kind === 'FirstLiteralToken') {
-    return 'number';
-  } else if (kind === 'StringLiteral') {
-    return 'string';
-  } else if (['TrueKeyword', 'FalseKeyword'].includes(kind)) {
-    return 'boolean';
-  } else if (kind === 'ObjectLiteralExpression') {
-    return 'object';
+    return 'undefined';
   }
-
-  return 'undefined';
-}
 
   function update_types() {
     const models = monaco.editor.getModels();
@@ -141,19 +172,28 @@
       const value = model.getValue();
       if (!value) continue;
       if (value.includes('type Easing =')) {
-        model.setValue(generate_types(editor.getValue(), [...agents_entries, ...bg_entries]) || '');
+        model.setValue(
+          generate_types(editor.getValue(), [
+            ...agents_entries,
+            ...bg_entries,
+          ]) || ''
+        );
       } else {
         content_id = model.id;
       }
     }
   }
 
-  export function generate_types(code: string, cached_entries: Array<EntryObject> = []) {
+  export function generate_types(
+    code: string,
+    cached_entries: Array<EntryObject> = []
+  ) {
     try {
       const ast = generate_ast(code);
       const prop_assignments = ast.c[0].c[0].c[2].c;
       const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
-      const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+      const variable_assignments = prop_assignments.filter(filters.variables)[0]
+        .c[1].c;
 
       let events = '';
       let variables = '';
@@ -171,30 +211,40 @@
 
         // BACKLOG: also add regular function declaration
         if (assignment.c[1].kind == 'ArrowFunction') {
-          parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
+          parameters = assignment.c[1].c.filter(
+            ({ kind }) => kind == 'Parameter'
+          );
         } else {
           parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
         }
 
-        let typed_parameters = []
+        let typed_parameters = [];
 
         for (let p of parameters) {
-          if (p.text == "_") continue;
+          if (p.text == '_') continue;
 
-          let optional = ""
+          let optional = '';
 
           for (let c of p.c) {
-            if (c.text == "?") optional = " | undefined"
+            if (c.text == '?') optional = ' | undefined';
           }
 
-          let type = p.c.find(({ kind }) => kind.includes('Keyword'))
+          let type = p.c.find(({ kind }) => kind.includes('Keyword'));
           if (!type) continue;
 
-          typed_parameters.push(type.text + optional)
+          typed_parameters.push(type.text + optional);
         }
-        
-        let filtered_typed_parameters = typed_parameters.filter((t) => !t.includes("undefined"))
-        event_types[identifier] = "[" + typed_parameters.join(", ") + "] | " + "[" + filtered_typed_parameters.join(", ") + "]";
+
+        let filtered_typed_parameters = typed_parameters.filter(
+          (t) => !t.includes('undefined')
+        );
+        event_types[identifier] =
+          '[' +
+          typed_parameters.join(', ') +
+          '] | ' +
+          '[' +
+          filtered_typed_parameters.join(', ') +
+          ']';
       }
 
       for (let [key, val] of Object.entries(event_types)) {
@@ -203,20 +253,20 @@
 
       let assets = {
         agents: `'ERROR: no assets found'`,
-        backgrounds: `'ERROR: no assets found'`
+        backgrounds: `'ERROR: no assets found'`,
       };
 
       for (let assignment of variable_assignments) {
-        if (!assignment.c[1]) continue
+        if (!assignment.c[1]) continue;
         variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
       }
 
       for (let [key, val] of Object.entries(agent_states_obj)) {
-        agent_states += `${key}: `
+        agent_states += `${key}: `;
         for (let v of val) {
-          agent_states += `| '${v}'`
+          agent_states += `| '${v}'`;
         }
-        agent_states += ';\n'
+        agent_states += ';\n';
       }
 
       if (cached_entries.length) {
@@ -236,48 +286,49 @@
         events,
         variables,
         agent_states,
-        user_functions_and_parameters
+        user_functions_and_parameters,
       });
       console.log(generated_type);
-      
-      return generated_type
+
+      return generated_type;
     } catch (e) {
       console.log(e);
     }
-}
-
-  function generate_ast(code: string) {
-  const ast = ts.createSourceFile(
-    'code.ts',
-    code,
-    {
-      languageVersion: ts.ScriptTarget.Latest
-    },
-    true,
-    ts.ScriptKind.TS
-  );
-
-  function ast_to_obj(node: ts.Node): any {
-    const result: any = {
-      kind: ts.SyntaxKind[node.kind],
-      text: node.getText(),
-      c: []
-    };
-
-    ts.forEachChild(node, (child) => {
-      result.c.push(ast_to_obj(child));
-    });
-
-    return result;
   }
 
-  return ast_to_obj(ast);
-}
+  function generate_ast(code: string) {
+    const ast = ts.createSourceFile(
+      'code.ts',
+      code,
+      {
+        languageVersion: ts.ScriptTarget.Latest,
+      },
+      true,
+      ts.ScriptKind.TS
+    );
+
+    function ast_to_obj(node: ts.Node): any {
+      const result: any = {
+        kind: ts.SyntaxKind[node.kind],
+        text: node.getText(),
+        c: [],
+      };
+
+      ts.forEachChild(node, (child) => {
+        result.c.push(ast_to_obj(child));
+      });
+
+      return result;
+    }
+
+    return ast_to_obj(ast);
+  }
 
   function validate(model: monaco.editor.ITextModel) {
     const ast = generate_ast(project.code);
     const prop_assignments = ast.c[0].c[0].c[2].c;
-    const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+    const variable_assignments = prop_assignments.filter(filters.variables)[0]
+      .c[1].c;
     let markers = [];
     let variable_keys = [];
 
@@ -290,21 +341,26 @@
         startLineNumber: i,
         startColumn: 1,
         endLineNumber: i,
-        endColumn: model.getLineLength(i) + 1
+        endColumn: model.getLineLength(i) + 1,
       };
       const content = model.getValueInRange(range).trim();
 
       if (
         content[0] == '$' &&
-        !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
+        !includes_any(content, [
+          ...INTERNAL_EVENTS,
+          ...INTERNAL_TEXTS,
+          ...INTERNAL_GUI,
+        ])
       ) {
         markers.push({
-          message: '$ prefix is reserved and cannot be used for custom property names.',
+          message:
+            '$ prefix is reserved and cannot be used for custom property names.',
           severity: monaco.MarkerSeverity.Error,
           startLineNumber: range.startLineNumber,
           startColumn: range.startColumn,
           endLineNumber: range.endLineNumber,
-          endColumn: range.endColumn
+          endColumn: range.endColumn,
         });
       }
 
@@ -322,7 +378,7 @@
               startLineNumber: range.startLineNumber,
               startColumn: startColumn + 2,
               endLineNumber: range.endLineNumber,
-              endColumn: content.length + 2
+              endColumn: content.length + 2,
             });
           }
         }
@@ -391,7 +447,7 @@
       'Period',
       'Comma',
       'Slash',
-      'Escape'
+      'Escape',
     ]) {
       keys.push([k, 'kwProps']);
     }
@@ -405,21 +461,23 @@
           ['type:', 'kwProps'],
           [
             /^(?:game_data|\tsettings|\tcollisions|\tagents|\tvariables|\tevents|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
-            'globals'
+            'globals',
           ],
           [/\b(let|var|const)\b/g, 'vardec'],
           [
             /\b(if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)\b/g,
-            'kwClass'
+            'kwClass',
           ],
-          ...keys
-        ]
-      }
+          ...keys,
+        ],
+      },
     };
 
     const allLangs = monaco.languages.getLanguages();
     // @ts-expect-error
-    const { language: tsLang } = await allLangs.find(({ id }) => id === 'typescript').loader();
+    const { language: tsLang } = await allLangs
+      .find(({ id }) => id === 'typescript')
+      .loader();
 
     for (let key in customTokenizer) {
       // @ts-expect-error
@@ -431,7 +489,10 @@
             tsLang.tokenizer[category] = [];
           }
           if (Array.isArray(tokenDefs)) {
-            tsLang.tokenizer[category].unshift.apply(tsLang.tokenizer[category], tokenDefs);
+            tsLang.tokenizer[category].unshift.apply(
+              tsLang.tokenizer[category],
+              tokenDefs
+            );
           }
         }
       } else if (Array.isArray(value)) {
@@ -446,10 +507,11 @@
   onMount(async () => {
     create_custom_tokenizer();
 
-    if (!isWeb) {
-      agents_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/agents`);
-      bg_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/backgrounds`);
-    }
+    // TODO: move up in state
+    // if (!isWeb) {
+    //   agents_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/agents`);
+    //   bg_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/backgrounds`);
+    // }
 
     self.MonacoEnvironment = {
       getWorker(moduleID, label) {
@@ -469,7 +531,7 @@
         //   default:
         //     return new editorWorker();
         // }
-      }
+      },
     };
 
     monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
@@ -487,7 +549,7 @@
     // compiler options
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true
+      allowNonTsExtensions: true,
     });
 
     monaco.editor.createModel(generate_types(project.code) || '', 'typescript');
@@ -498,11 +560,12 @@
       tabSize: 2,
       autoIndent: 'full',
       formatOnPaste: true,
-      formatOnType: true
+      formatOnType: true,
     });
 
     editor.onDidChangeModelContent(
       debounce(() => {
+        // TODO: dispatch
         update_types();
         try {
           validate(model);
@@ -510,7 +573,7 @@
           console.log(e);
         }
         project.code = editor.getValue();
-        save_file()
+        save_file();
       }, 200)
     );
     editor.onKeyUp((e) => {
@@ -541,7 +604,7 @@
   onDestroy(() => {
     monaco?.editor.getModels().forEach((model) => model.dispose());
     editor?.dispose();
-    unwatch()
+    unwatch();
   });
 </script>
 
