@@ -1,8 +1,10 @@
 <script lang="ts">
   import { confetti } from '@neoconfetti/svelte';
-  import { Game, CodeEditor, json_to_code_string } from 'roguelighter-core';
+  // CodeEditor
+  import { Game, json_to_code_string } from 'roguelighter-core';
   import type { GameData } from 'roguelighter-core';
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
+  import { browser } from '$app/environment';
   // import { marked} from 'marked';
 
   let { data } = $props();
@@ -11,7 +13,7 @@
   const original = structuredClone(tutorial);
 
   let solved = $state(false);
-  let code_editor: typeof CodeEditor | undefined = $state();
+  let code_editor: undefined = $state();
 
   function check(obj: GameData) {
     let _val = structuredClone(obj);
@@ -70,10 +72,7 @@
 <svelte:head>
   <title>{tutorial.title} • Roguelighter Tutorial</title>
 
-  <meta
-    name="twitter:title"
-    content="{tutorial.title} • Roguelighter Tutorial"
-  />
+  <meta name="twitter:title" content="{tutorial.title} • Roguelighter Tutorial" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content={HANDLE} />
   <meta name="twitter:creator" content={HANDLE} />
@@ -82,10 +81,7 @@
   <meta property="twitter:domain" content={DOMAIN} />
   <meta property="twitter:url" content={TUTORIAL_URL} />
 
-  <meta
-    property="og:title"
-    content="{tutorial.title} • Roguelighter Tutorial"
-  />
+  <meta property="og:title" content="{tutorial.title} • Roguelighter Tutorial" />
   <meta property="og:url" content={TUTORIAL_URL} />
   <meta property="og:type" content="website" />
   <!-- LATER: -->
@@ -118,17 +114,19 @@
             particleCount: 50,
             particleSize: 6,
             duration: 2500,
-            stageWidth: 500,
+            stageWidth: 500
           }}
           class="absolute left-[50%] top-12"
         ></div>
       {/if}
-      <CodeEditor
-        bind:project={tutorial.project}
-        bind:this={code_editor}
-        view="code"
-        save_file={() => {}}
-      ></CodeEditor>
+      <!-- {#if browser}
+        <CodeEditor
+          bind:project={tutorial.project}
+          bind:this={code_editor}
+          view="code"
+          save_file={() => {}}
+        ></CodeEditor>
+      {/if} -->
     </div>
     <div class="h-1/2 w-full">
       <!-- {#key project.code} -->

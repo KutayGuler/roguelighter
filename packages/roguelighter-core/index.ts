@@ -18,7 +18,6 @@ export { default as SceneEditor } from './components/editor/SceneEditor.svelte';
 // GAME
 export { default as Agent } from './components/game/Agent.svelte';
 export { default as Game } from './components/game/Game.svelte';
-export { default as GuiElement } from './components/game/GuiElement.svelte';
 export { default as Scene } from './components/game/Scene.svelte';
 
 // IDE

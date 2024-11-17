@@ -4,8 +4,8 @@
   interface Props {
     project: RoguelighterProject;
     document_path: string;
-    on_no_scene_is_selected: Function
-    on_no_player_in_scene: Function
+    on_no_scene_is_selected: Function;
+    on_no_player_in_scene: Function;
   }
 </script>
 
@@ -25,7 +25,6 @@
   import { join } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/plugin-shell';
   import Options from './Options.svelte';
-  import GuiEditor from './ide/GuiEditor.svelte';
   import type { RoguelighterDataFile, View } from '../types/engine';
   import type { GameData } from '../types/game';
   import RunCSS from 'runcss';
@@ -33,7 +32,12 @@
 
   // BACKLOG: sometimes editor styles not loading
 
-  let { project = $bindable(), document_path, on_no_scene_is_selected, on_no_player_in_scene }: Props = $props();
+  let {
+    project = $bindable(),
+    document_path,
+    on_no_scene_is_selected,
+    on_no_player_in_scene
+  }: Props = $props();
   let options_open = $state(false);
   let current_scene_id: UUID | undefined = $state();
   let view: View = $state('code');
@@ -44,26 +48,26 @@
   let agents: GameData['agents'] = $state();
   let code_editor: any = $state();
   let initialized = $state(false);
-  let code_with_errors = $state('')
-  let error_line = $state(0)
-  let parse_errors: ParseErrorObject = $state({ code: '', json_string: '', error: ''})
+  let code_with_errors = $state('');
+  let error_line = $state(0);
+  let parse_errors: ParseErrorObject = $state({ code: '', json_string: '', error: '' });
 
   function switch_to_game() {
     // @ts-expect-error
     let current_scene = project.scenes.get(current_scene_id);
     if (view == 'scene') {
       if (!current_scene) {
-        on_no_scene_is_selected()
+        on_no_scene_is_selected();
         return;
       }
 
       if (![...current_scene.agents.values()].includes('player')) {
-        on_no_player_in_scene()
+        on_no_player_in_scene();
         return;
       }
     }
 
-    change_view('game')
+    change_view('game');
   }
 
   function handle(e: KeyboardEvent) {
@@ -102,7 +106,7 @@
 
     let obj: RoguelighterDataFile = { code: code || project.code, scenes: Array.from(scenes) };
     let file_contents = JSON5.stringify(obj);
-  
+
     writeTextFile(`${PROJECTS_DIR}\\${project.name}\\data.json`, file_contents, {
       baseDir
     });
@@ -172,25 +176,25 @@ if not exist "${EXPORT_DIR}" (
 
     if ((parsed as ParseErrorObject).error) {
       parse_errors = parsed as ParseErrorObject;
-      code_with_errors = (parsed as ParseErrorObject).code
+      code_with_errors = (parsed as ParseErrorObject).code;
       error_line = parseInt(parse_errors.error.split('at')[1].split(':')[0]) || 0;
       return;
-    } 
+    }
 
     processClasses(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
     [agent_asset_urls, bg_asset_urls] = await Promise.all([
-       generate_asset_urls(project.name, 'agents', document_path),
-       generate_asset_urls(project.name, 'backgrounds', document_path)
-    ])
+      generate_asset_urls(project.name, 'agents', document_path),
+      generate_asset_urls(project.name, 'backgrounds', document_path)
+    ]);
     agents = (parsed as GameData).agents;
     initialized = true;
   }
 
   function change_view(v: View) {
-    previousView = view
+    previousView = view;
     view = v;
-    save_file()
-    recalculate()
+    save_file();
+    recalculate();
   }
 
   function highlight(pre: HTMLPreElement) {
@@ -218,7 +222,7 @@ if not exist "${EXPORT_DIR}" (
     scene_button?.focus();
   }
 
-  recalculate()
+  recalculate();
 </script>
 
 <svelte:window onkeydown={handle} />
@@ -253,7 +257,7 @@ if not exist "${EXPORT_DIR}" (
           class="btn-outline"
           onclick={() => {
             previousView = view;
-            change_view('code')
+            change_view('code');
           }}
           >Code
         </button>
@@ -271,14 +275,14 @@ if not exist "${EXPORT_DIR}" (
           class:btn-primary={view == 'scene'}
           class="btn-outline"
           onclick={() => {
-            change_view('scene')
+            change_view('scene');
           }}>Scene</button
         >
         <button
           class:btn-primary={view == 'logs'}
           class="btn-outline"
           onclick={() => {
-            change_view('logs')
+            change_view('logs');
           }}
           >Logs
         </button>
@@ -315,7 +319,6 @@ if not exist "${EXPORT_DIR}" (
         save_file={debounce(save_file, 100)}
         {switch_to_game}
         {unfocus_from_scene_editor}
-        
       />
     {:else if view == 'game'}
       <Game
@@ -325,20 +328,18 @@ if not exist "${EXPORT_DIR}" (
         {agent_asset_urls}
         {current_scene_id}
         exit_dev={() => {
-          change_view('scene')
+          change_view('scene');
         }}
       />
     {/if}
     <div
       class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"
     >
-      <!-- <GuiEditor></GuiEditor> -->
       <CodeEditor
-        {document_path}
-        project_name={project.name}
         bind:view
         bind:project
         bind:this={code_editor}
+        {document_path}
         {unfocus_from_code_editor}
         save_file={debounce(save_file, 100)}
       ></CodeEditor>
@@ -350,28 +351,43 @@ if not exist "${EXPORT_DIR}" (
     <p>Engine has failed no initialize.</p>
     {#if parse_errors.error}
       {@const line_count = parse_errors.code.split('\n').length}
-      <div class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-zinc-800 rounded p-2 pl-12">
-        <pre class="absolute top-4 left-12 bg-transparent z-[10] w-full" contenteditable  use:highlight bind:innerText={code_with_errors}></pre>
-        {#each { length: line_count} as _, i}
-          <div id="{(i).toString()}" class:is_error_line={error_line == i} class="z-[9] absolute left-2 text-sm mono text-zinc-500 w-full" style="top: {i * 24 + 16}px;">{i}</div>
+      <div
+        class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-zinc-800 rounded p-2 pl-12"
+      >
+        <pre
+          class="absolute top-4 left-12 bg-transparent z-[10] w-full"
+          contenteditable
+          use:highlight
+          bind:innerText={code_with_errors}></pre>
+        {#each { length: line_count } as _, i}
+          <div
+            id={i.toString()}
+            class:is_error_line={error_line == i}
+            class="z-[9] absolute left-2 text-sm mono text-zinc-500 w-full"
+            style="top: {i * 24 + 16}px;"
+          >
+            {i}
+          </div>
         {/each}
       </div>
-      
+
       <div class="inline-flex justify-between">
         <p class="text-red-400">{parse_errors.error}</p>
         <a class="btn-outline" href="#{error_line}">Show error line </a>
       </div>
-      <button onclick={() => {
-        project.code = code_with_errors
-        save_file()
-        recalculate()
-      }}>Save changes</button>
+      <button
+        onclick={() => {
+          project.code = code_with_errors;
+          save_file();
+          recalculate();
+        }}>Save changes</button
+      >
     {/if}
   </main>
 {/if}
 
 <style>
   .is_error_line {
-    @apply bg-red-400/50
+    @apply bg-red-400/50;
   }
 </style>
