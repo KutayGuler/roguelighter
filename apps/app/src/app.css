@@ -5,12 +5,12 @@
 
 @font-face {
   font-family: bla;
-  src: url(/GermaniaOne-Regular.ttf) format(truetype);
+  src: url('/GermaniaOne-Regular.ttf') format(truetype);
 }
 
 @font-face {
   font-family: mono;
-  src: url(/GeistMono-Regular.otf) format(truetype);
+  src: url('/GeistMono-Regular.otf') format(truetype);
 }
 
 html,

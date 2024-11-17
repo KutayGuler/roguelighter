@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PUBLIC_APP_VERSION } from '$env/static/public';
+  // import { PUBLIC_APP_VERSION } from '$env/static/public';
   import { CROSS } from '../constants';
   import { focus_trap } from '../utils';
   interface Props {
@@ -54,7 +54,7 @@
     <div class="flex flex-row justify-end">
       <button class="text-2xl" onclick={() => (open = false)}>{CROSS}</button>
     </div>
-    <span class="text-xs">Version: {PUBLIC_APP_VERSION}</span>
+    <!-- <span class="text-xs">Version: {PUBLIC_APP_VERSION}</span> -->
     <h1 class="pt-8 pb-2 text-xl serif">Keybindings</h1>
     <div
       class="flex flex-row gap-2 text-sm bg-zinc-800 items-center p-2 px-4 w-64 justify-between rounded"

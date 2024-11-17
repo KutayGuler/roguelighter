@@ -10,11 +10,11 @@ export const load: PageServerLoad = async ({ params }) => {
 
   const [markdown, tutorial]: [any, TutorialJson] = await Promise.all([
     mdFile.text(),
-    jsonFile.json,
+    jsonFile.json()
   ]);
 
   return {
     markdown,
-    tutorial,
+    tutorial
   };
 };

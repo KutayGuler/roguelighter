@@ -1,16 +1,26 @@
 <script lang="ts">
   import { confetti } from '@neoconfetti/svelte';
-  // CodeEditor
-  import { Game, json_to_code_string } from 'roguelighter-core';
+  import {
+    code_string_to_json,
+    CodeEditor,
+    Game,
+    generate_template_data,
+    get_tailwind_classes,
+    json_to_code_string,
+    template_json_code
+  } from 'roguelighter-core';
+  import { marked } from 'marked';
   import type { GameData } from 'roguelighter-core';
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
-  import { browser } from '$app/environment';
-  // import { marked} from 'marked';
+  import RunCSS from 'runcss';
+  const { processClasses } = RunCSS();
+
+  // TODO: update stuff when page is changed
 
   let { data } = $props();
-  let tutorial = $derived(data.tutorial);
+  let tutorial = $state(data.tutorial);
+  tutorial.project.code = json_to_code_string(template_json_code);
   let markdown = $derived(data.markdown);
-  const original = structuredClone(tutorial);
 
   let solved = $state(false);
   let code_editor: undefined = $state();
@@ -20,16 +30,27 @@
 
     for (let i = 0; i < tutorial.solution_tuples.length; i++) {
       let [path, answer] = tutorial.solution_tuples[i];
+      let path_array = path.split('.');
+      let val = _val[path_array[0]];
 
-      // @ts-expect-error
-      let val = _val[path];
-      console.log(val);
+      for (let i = 1; i < path_array.length; i++) {
+        val = val[path_array[i]];
+        if (val === undefined) return false;
+      }
 
-      // path.forEach((partial_path) => (val = val[partial_path]));
       if (val !== answer) return false;
     }
 
     return true;
+  }
+
+  function on_content_changed() {
+    let parsed = code_string_to_json(tutorial.project.code);
+
+    if (typeof parsed == 'object') {
+      processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
+      solved = check(parsed);
+    }
   }
 
   // const agent_asset_urls: AgentAssetUrls = new Map([
@@ -48,25 +69,16 @@
   // ]);
 
   function show_solution() {
-    tutorial.project.code = json_to_code_string(tutorial.solution_object);
+    tutorial.project.code = json_to_code_string(
+      Object.assign(template_json_code, tutorial.solution_object)
+    );
     code_editor?.set_code(tutorial.project.code);
   }
 
   function reset() {
-    tutorial.project = structuredClone(original.project);
-    code_editor?.set_code(original.project.code);
+    tutorial.project.code = json_to_code_string(template_json_code);
+    code_editor?.set_code(tutorial.project.code);
   }
-
-  // LATER: replace
-  // $: {
-  //   let parsed = code_string_to_json(project.code);
-
-  //   if (typeof parsed == 'object') {
-  //     processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-  //     project.parsed_code = parsed;
-  //     solved = check(project.parsed_code);
-  //   }
-  // }
 </script>
 
 <svelte:head>
@@ -92,14 +104,21 @@
   <div class="flex flex-col h-full w-1/2 px-4">
     <!-- <h3 class="serif">{tutorial.title}</h3> -->
     <!-- TODO: render markdown -->
-    <!-- {@html marked.parse(data.markdown)} -->
+    <div id="markdown">
+      {@html marked.parse(data.markdown)}
+    </div>
 
     <div class="flex-grow"></div>
     <div class="flex flex-row justify-between gap-2">
       <button onclick={solved ? reset : show_solution} class="btn-amber px-4"
         >{solved ? 'Reset' : 'Show solution'}</button
       >
-      <a href="/" class="link p-2 underline">Next</a>
+      {#if tutorial.prev}
+        <a href="/tutorial/{tutorial.prev}" class="link p-2 underline">Prev</a>
+      {/if}
+      {#if tutorial.next}
+        <a href="/tutorial/{tutorial.next}" class="link p-2 underline">Next</a>
+      {/if}
     </div>
   </div>
   <div
@@ -119,14 +138,13 @@
           class="absolute left-[50%] top-12"
         ></div>
       {/if}
-      <!-- {#if browser}
-        <CodeEditor
-          bind:project={tutorial.project}
-          bind:this={code_editor}
-          view="code"
-          save_file={() => {}}
-        ></CodeEditor>
-      {/if} -->
+      <CodeEditor
+        {on_content_changed}
+        bind:project={tutorial.project}
+        bind:this={code_editor}
+        view="code"
+        save_file={() => {}}
+      ></CodeEditor>
     </div>
     <div class="h-1/2 w-full">
       <!-- {#key project.code} -->

@@ -1,21 +1,13 @@
 {
-	"solution_tuples": [
-		["bla.bla.bla", 5],
-		["bla.bla.bla", "whatever"]
-	],
-	"solution_object": {
-		"settings": {
-			"fps": 8,
-			"easing": "sineOut",
-			"duration": 400,
-			"camera": {
-				"zoom": 50
-			}
-		}
-	},
-	"next": "outro",
-	"title": "Introduction",
-	"project": {
-		"scenes": []
-	}
+  "solution_tuples": [["settings.fps", 16]],
+  "solution_object": {
+    "settings": {
+      "fps": 16
+    }
+  },
+  "next": "outro",
+  "title": "Introduction",
+  "project": {
+    "scenes": []
+  }
 }

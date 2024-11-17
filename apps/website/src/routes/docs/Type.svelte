@@ -5,7 +5,7 @@
 </script>
 
 <div>
-  <h3 class="h3" id={type.name}>
+  <h3 id={type.name}>
     {type.name}
     <button
       ><svg

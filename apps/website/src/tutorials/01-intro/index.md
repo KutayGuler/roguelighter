@@ -1,19 +1,19 @@
-# Introduction
+## Introduction
 
 Greetings, traveler! You have stumbled upon the tutorial of a sveltest game engine in the realm,
 namely Roguelighter. This tutorial will teach you everything you need to know to make a simple game
 with this engine. For the time being, you can only publish these games on the Web or Windows.
 
-If you are an impatient fellow and want to get on with tinkering, you can [download the latest version]
-or allow yourself into [Documentation].
+If you are an impatient fellow and want to get on with tinkering, you can [download the latest version](/download)
+or allow yourself into [docs](/docs).
 
-# What is Roguelighter?
+### What is Roguelighter?
 
 Roguelighter is a low code game engine you can use to make simple games for desktop and the web
 
 It uses a single configuration file that is powered by TypeScript to construct your entire game.
 
-You’ll need to have basic familiarity with TypeScript to understand Roguelighter.
+> You’ll need to have basic familiarity with TypeScript to understand Roguelighter.
 
 Roguelighter's configuration file is made up of seven smaller parts:
 Settings

@@ -1,9 +1,12 @@
-<script lang="ts">
-  import { fade, scale } from 'svelte/transition';
+<script module>
   interface Props {
     env: string;
     command: string;
   }
+</script>
+
+<script lang="ts">
+  import { fade, scale } from 'svelte/transition';
 
   let { env, command }: Props = $props();
   let copied = $state(false);

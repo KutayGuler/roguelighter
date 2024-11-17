@@ -4,6 +4,7 @@
     view: View;
     unfocus_from_code_editor?: Function;
     save_file: Function;
+    on_content_changed: Function;
     document_path?: string;
     isWeb?: boolean;
     predefined_entries?: {
@@ -31,7 +32,7 @@
     filters,
     includes_any,
     agent_states_obj,
-    process_entries_recursively,
+    process_entries_recursively
   } from '../../utils';
   // import { watchImmediate } from '@tauri-apps/plugin-fs';
   // import { join } from '@tauri-apps/api/path';
@@ -41,14 +42,9 @@
     INTERNAL_GUI,
     INTERNAL_TEXTS,
     PROJECTS_DIR,
-    variables_regex,
+    variables_regex
   } from '../../constants';
-  import type {
-    EntryObject,
-    EntryTuple,
-    RoguelighterProject,
-    View,
-  } from '../../types/engine';
+  import type { EntryObject, EntryTuple, RoguelighterProject, View } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
@@ -60,6 +56,7 @@
     unfocus_from_code_editor,
     save_file,
     document_path,
+    on_content_changed
   }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
@@ -87,34 +84,34 @@
       rules: [
         {
           token: 'globals',
-          foreground: 'fda4af',
+          foreground: 'fda4af'
         },
         {
           token: 'vardec',
-          foreground: '10b981',
+          foreground: '10b981'
         },
         {
           token: 'kwClass',
-          foreground: 'c084fc',
+          foreground: 'c084fc'
         },
         {
           token: 'kwProps',
-          foreground: 'bae6fd',
+          foreground: 'bae6fd'
         },
         {
           token: 'identifier',
-          foreground: 'bae6fd',
+          foreground: 'bae6fd'
         },
         { token: 'constant', foreground: '2E1065' },
         { token: 'type', foreground: '38bdf8' },
         { token: 'keyword', foreground: '60a5fa' },
         { token: 'comment', foreground: '608B4E' },
         { token: 'number', foreground: 'a3e635' },
-        { token: 'string', foreground: 'fde68a' },
+        { token: 'string', foreground: 'fde68a' }
       ],
       colors: {
-        [editorBackground]: '#18181b',
-      },
+        [editorBackground]: '#18181b'
+      }
     });
     monaco.editor.setTheme('default');
     editor.setModel(model);
@@ -172,28 +169,19 @@
       const value = model.getValue();
       if (!value) continue;
       if (value.includes('type Easing =')) {
-        model.setValue(
-          generate_types(editor.getValue(), [
-            ...agents_entries,
-            ...bg_entries,
-          ]) || ''
-        );
+        model.setValue(generate_types(editor.getValue(), [...agents_entries, ...bg_entries]) || '');
       } else {
         content_id = model.id;
       }
     }
   }
 
-  export function generate_types(
-    code: string,
-    cached_entries: Array<EntryObject> = []
-  ) {
+  export function generate_types(code: string, cached_entries: Array<EntryObject> = []) {
     try {
       const ast = generate_ast(code);
       const prop_assignments = ast.c[0].c[0].c[2].c;
       const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
-      const variable_assignments = prop_assignments.filter(filters.variables)[0]
-        .c[1].c;
+      const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
 
       let events = '';
       let variables = '';
@@ -211,9 +199,7 @@
 
         // BACKLOG: also add regular function declaration
         if (assignment.c[1].kind == 'ArrowFunction') {
-          parameters = assignment.c[1].c.filter(
-            ({ kind }) => kind == 'Parameter'
-          );
+          parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
         } else {
           parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
         }
@@ -235,9 +221,7 @@
           typed_parameters.push(type.text + optional);
         }
 
-        let filtered_typed_parameters = typed_parameters.filter(
-          (t) => !t.includes('undefined')
-        );
+        let filtered_typed_parameters = typed_parameters.filter((t) => !t.includes('undefined'));
         event_types[identifier] =
           '[' +
           typed_parameters.join(', ') +
@@ -253,7 +237,7 @@
 
       let assets = {
         agents: `'ERROR: no assets found'`,
-        backgrounds: `'ERROR: no assets found'`,
+        backgrounds: `'ERROR: no assets found'`
       };
 
       for (let assignment of variable_assignments) {
@@ -286,9 +270,8 @@
         events,
         variables,
         agent_states,
-        user_functions_and_parameters,
+        user_functions_and_parameters
       });
-      console.log(generated_type);
 
       return generated_type;
     } catch (e) {
@@ -301,7 +284,7 @@
       'code.ts',
       code,
       {
-        languageVersion: ts.ScriptTarget.Latest,
+        languageVersion: ts.ScriptTarget.Latest
       },
       true,
       ts.ScriptKind.TS
@@ -311,7 +294,7 @@
       const result: any = {
         kind: ts.SyntaxKind[node.kind],
         text: node.getText(),
-        c: [],
+        c: []
       };
 
       ts.forEachChild(node, (child) => {
@@ -327,8 +310,7 @@
   function validate(model: monaco.editor.ITextModel) {
     const ast = generate_ast(project.code);
     const prop_assignments = ast.c[0].c[0].c[2].c;
-    const variable_assignments = prop_assignments.filter(filters.variables)[0]
-      .c[1].c;
+    const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
     let markers = [];
     let variable_keys = [];
 
@@ -341,26 +323,21 @@
         startLineNumber: i,
         startColumn: 1,
         endLineNumber: i,
-        endColumn: model.getLineLength(i) + 1,
+        endColumn: model.getLineLength(i) + 1
       };
       const content = model.getValueInRange(range).trim();
 
       if (
         content[0] == '$' &&
-        !includes_any(content, [
-          ...INTERNAL_EVENTS,
-          ...INTERNAL_TEXTS,
-          ...INTERNAL_GUI,
-        ])
+        !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
       ) {
         markers.push({
-          message:
-            '$ prefix is reserved and cannot be used for custom property names.',
+          message: '$ prefix is reserved and cannot be used for custom property names.',
           severity: monaco.MarkerSeverity.Error,
           startLineNumber: range.startLineNumber,
           startColumn: range.startColumn,
           endLineNumber: range.endLineNumber,
-          endColumn: range.endColumn,
+          endColumn: range.endColumn
         });
       }
 
@@ -378,7 +355,7 @@
               startLineNumber: range.startLineNumber,
               startColumn: startColumn + 2,
               endLineNumber: range.endLineNumber,
-              endColumn: content.length + 2,
+              endColumn: content.length + 2
             });
           }
         }
@@ -447,7 +424,7 @@
       'Period',
       'Comma',
       'Slash',
-      'Escape',
+      'Escape'
     ]) {
       keys.push([k, 'kwProps']);
     }
@@ -461,23 +438,21 @@
           ['type:', 'kwProps'],
           [
             /^(?:game_data|\tsettings|\tcollisions|\tagents|\tvariables|\tevents|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
-            'globals',
+            'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],
           [
             /\b(if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)\b/g,
-            'kwClass',
+            'kwClass'
           ],
-          ...keys,
-        ],
-      },
+          ...keys
+        ]
+      }
     };
 
     const allLangs = monaco.languages.getLanguages();
     // @ts-expect-error
-    const { language: tsLang } = await allLangs
-      .find(({ id }) => id === 'typescript')
-      .loader();
+    const { language: tsLang } = await allLangs.find(({ id }) => id === 'typescript').loader();
 
     for (let key in customTokenizer) {
       // @ts-expect-error
@@ -489,10 +464,7 @@
             tsLang.tokenizer[category] = [];
           }
           if (Array.isArray(tokenDefs)) {
-            tsLang.tokenizer[category].unshift.apply(
-              tsLang.tokenizer[category],
-              tokenDefs
-            );
+            tsLang.tokenizer[category].unshift.apply(tsLang.tokenizer[category], tokenDefs);
           }
         }
       } else if (Array.isArray(value)) {
@@ -531,7 +503,7 @@
         //   default:
         //     return new editorWorker();
         // }
-      },
+      }
     };
 
     monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
@@ -549,7 +521,7 @@
     // compiler options
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true,
+      allowNonTsExtensions: true
     });
 
     monaco.editor.createModel(generate_types(project.code) || '', 'typescript');
@@ -560,17 +532,18 @@
       tabSize: 2,
       autoIndent: 'full',
       formatOnPaste: true,
-      formatOnType: true,
+      formatOnType: true
     });
 
     editor.onDidChangeModelContent(
       debounce(() => {
-        // TODO: dispatch
+        on_content_changed();
         update_types();
         try {
           validate(model);
         } catch (e) {
-          console.log(e);
+          console.log('error');
+          // console.log(e);
         }
         project.code = editor.getValue();
         save_file();
