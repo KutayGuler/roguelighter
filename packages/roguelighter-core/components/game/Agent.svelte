@@ -26,18 +26,18 @@
 
   const states = agent.states as SpriteConfig;
 
-  let _state_name = $state('');
+  let _state_name = $state('idle');
   // @ts-expect-error
   let _state = $derived(states[_state_name]);
   let textureUrl = agent_asset_urls.get(agent.name);
-  let totalFrames = $derived(_state.frame_count || DEFAULT_FRAME_COUNT);
-  let fps = $derived(_state.fps || settings?.fps || DEFAULT_FPS);
-  let columns = $derived(_state.columns);
-  let rows = $derived(_state.rows);
-  let startFrame = $derived(_state.start_frame);
-  let endFrame = $derived(_state.end_frame);
-  let delay = $derived(_state.delay);
-  let filter = $derived(_state.filter || settings.filter || 'nearest');
+  let totalFrames = $derived(_state?.frame_count || DEFAULT_FRAME_COUNT);
+  let fps = $derived(_state?.fps || settings?.fps || DEFAULT_FPS);
+  let columns = $derived(_state?.columns || 0);
+  let rows = $derived(_state?.rows || 0);
+  let startFrame = $derived(_state?.start_frame || 0);
+  let endFrame = $derived(_state?.end_frame || 0);
+  let delay = $derived(_state?.delay || 0);
+  let filter = $derived(_state?.filter || settings?.filter || 'nearest');
 
   let keyboard = $state({ x: 0, y: 0 });
   const pressed = $state(new SvelteSet<string>());
@@ -90,6 +90,10 @@
     $camera.position.x = position[0];
     $camera.position.y = position[1];
   });
+
+  $inspect(textureUrl);
+
+  // TODO: fix agent rendering
 </script>
 
 <svelte:window
@@ -98,7 +102,23 @@
 />
 
 {#if textureUrl}
-  <T is={mesh}>
+  <T.Sprite {position}>
+    <AnimatedSpriteMaterial
+      {textureUrl}
+      {totalFrames}
+      {fps}
+      {columns}
+      {rows}
+      {startFrame}
+      {endFrame}
+      {filter}
+      {delay}
+      bind:play
+      bind:pause
+    />
+    <T.PlaneGeometry></T.PlaneGeometry>
+  </T.Sprite>
+  <!-- <T is={mesh}>
     <AnimatedSpriteMaterial
       {textureUrl}
       {totalFrames}
@@ -113,5 +133,5 @@
       bind:pause
     />
     <T.PlaneGeometry />
-  </T>
+  </T> -->
 {/if}

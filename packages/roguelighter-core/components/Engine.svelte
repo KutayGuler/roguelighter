@@ -2,6 +2,7 @@
   import type { ParseErrorObject, RoguelighterProject, UUID } from '../types/engine';
 
   interface Props {
+    DEV: boolean;
     project: RoguelighterProject;
     document_path: string;
     on_no_scene_is_selected: Function;
@@ -21,6 +22,7 @@
     generate_asset_urls
   } from '../utils';
   import { EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
+  import { exit } from '@tauri-apps/plugin-process';
   import { writeTextFile } from '@tauri-apps/plugin-fs';
   import { join } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/plugin-shell';
@@ -34,6 +36,7 @@
 
   let {
     project = $bindable(),
+    DEV = true,
     document_path,
     on_no_scene_is_selected,
     on_no_player_in_scene
@@ -327,9 +330,7 @@ if not exist "${EXPORT_DIR}" (
         {bg_asset_urls}
         {agent_asset_urls}
         {current_scene_id}
-        exit_dev={() => {
-          change_view('scene');
-        }}
+        on_exit={DEV ? () => change_view('scene') : exit}
       />
     {/if}
     <div

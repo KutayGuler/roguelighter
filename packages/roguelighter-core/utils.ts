@@ -180,11 +180,19 @@ export const template_json_code: GameData = {
     easing: 'sineOut',
     duration: 400,
     camera: {
-      zoom: 20
+      zoom: 9
     }
   },
   collisions: ['floor_2'],
-  agents: {},
+  agents: {
+    player: {
+      states: {
+        idle: {
+          frame_count: 1
+        }
+      }
+    }
+  },
   variables: {
     variable_name: 3
   },

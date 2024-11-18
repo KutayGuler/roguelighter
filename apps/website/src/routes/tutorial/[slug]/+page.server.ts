@@ -21,6 +21,15 @@ export const load: PageServerLoad = async ({ params }) => {
   });
 
   tutorial.project.code = template_code_string;
+  // @ts-expect-error
+  tutorial.project.scenes = new Map(tutorial.project.scenes);
+  let scene = tutorial.project.scenes.get(0);
+  // @ts-expect-error
+  scene.backgrounds = new Map(scene?.backgrounds);
+  // @ts-expect-error
+  scene.agents = new Map(scene?.agents);
+  // @ts-expect-error
+  scene.portals = new Map();
 
   return {
     markdown,

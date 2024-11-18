@@ -8,6 +8,30 @@
   "next": "outro",
   "title": "Introduction",
   "project": {
-    "scenes": []
-  }
+    "scenes": [
+      [
+        0,
+        {
+          "name": "tutorial",
+          "backgrounds": [
+            [0, "floor"],
+            [1, "floor"],
+            [2, "floor"],
+            [10, "floor"],
+            [11, "floor"],
+            [12, "floor"],
+            [20, "floor"],
+            [21, "floor"],
+            [22, "floor"]
+          ],
+          "portals": [],
+          "agents": [[0, "player"]],
+          "width": 10,
+          "height": 10
+        }
+      ]
+    ]
+  },
+  "agent_asset_urls": [["player", "/floors/floor_1.png"]],
+  "bg_asset_urls": [["floor", "/floors/floor_1.png"]]
 }
