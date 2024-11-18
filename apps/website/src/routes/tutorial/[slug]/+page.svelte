@@ -17,8 +17,17 @@
 
   let { data } = $props();
   let tutorial = $state(data.tutorial);
-  let solved = $state(false);
-  let code_editor: undefined = $state();
+  let code_editor: any = $state();
+  let rerender = $state(0);
+  let parsed = $derived.by(() => code_string_to_json(tutorial.project.code));
+  let cannot_render = $derived.by(() => {
+    if ('error' in parsed) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+  let solved = $derived(cannot_render ? false : check(parsed as GameData));
 
   function check(obj: GameData) {
     let _val = structuredClone(obj);
@@ -40,11 +49,9 @@
   }
 
   function on_content_changed() {
-    let parsed = code_string_to_json(tutorial.project.code);
-
-    if (typeof parsed == 'object') {
+    if (!cannot_render) {
       processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      solved = check(parsed);
+      rerender++;
     }
   }
 
@@ -118,18 +125,20 @@
         save_file={() => {}}
       ></CodeEditor>
     </div>
-    <div class="h-1/2 w-full">
-      <!-- {#key project.code} -->
-      {#if tutorial}
-        <Game
-          on_exit={() => {}}
-          project={tutorial.project}
-          agent_asset_urls={new Map(tutorial.agent_asset_urls)}
-          bg_asset_urls={new Map(tutorial.bg_asset_urls)}
-          current_scene_id={0}
-        ></Game>
+    <div class="h-1/2 w-full border border-black overflow-hidden bg-black">
+      {#if cannot_render}
+        <p>Cannot render</p>
+      {:else}
+        {#key rerender}
+          <Game
+            on_exit={() => {}}
+            project={tutorial.project}
+            agent_asset_urls={new Map(tutorial.agent_asset_urls)}
+            bg_asset_urls={new Map(tutorial.bg_asset_urls)}
+            current_scene_id={0}
+          ></Game>
+        {/key}
       {/if}
-      <!-- {/key} -->
     </div>
   </div>
 </main>

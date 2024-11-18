@@ -5,8 +5,10 @@
     unfocus_from_code_editor?: Function;
     save_file: Function;
     on_content_changed: Function;
-    document_path?: string;
-    isWeb?: boolean;
+    process_and_update: (
+      bg_entries: Array<EntryObject>,
+      agents_entries: Array<EntryObject>
+    ) => void;
     predefined_entries?: {
       agents: Array<EntryObject>;
       bg: Array<EntryObject>;
@@ -27,35 +29,18 @@
   //   configureMonacoTailwindcss,
   //   tailwindcssData,
   // } from 'monaco-tailwindcss';
-  import {
-    debounce,
-    filters,
-    includes_any,
-    agent_states_obj,
-    process_entries_recursively
-  } from '../../utils';
-  // import { watchImmediate } from '@tauri-apps/plugin-fs';
-  // import { join } from '@tauri-apps/api/path';
-  // import { readDir } from '@tauri-apps/plugin-fs';
-  import {
-    INTERNAL_EVENTS,
-    INTERNAL_GUI,
-    INTERNAL_TEXTS,
-    PROJECTS_DIR,
-    variables_regex
-  } from '../../constants';
-  import type { EntryObject, EntryTuple, RoguelighterProject, View } from '../../types/engine';
+  import { debounce, filters, includes_any, agent_states_obj } from '../../utils';
+  import { INTERNAL_EVENTS, INTERNAL_GUI, INTERNAL_TEXTS, variables_regex } from '../../constants';
+  import type { EntryObject, RoguelighterProject, View } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
   let {
     project = $bindable(),
     view = $bindable(),
-    isWeb = false,
     predefined_entries,
     unfocus_from_code_editor,
     save_file,
-    document_path,
     on_content_changed
   }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
@@ -63,9 +48,6 @@
   let model: monaco.editor.ITextModel;
   let agents_entries: Array<EntryObject> = predefined_entries?.agents || [];
   let bg_entries: Array<EntryObject> = predefined_entries?.bg || [];
-  let agents_file_path = '';
-  let bg_file_path = '';
-  let unwatch: any;
 
   export function set_code(new_code: string) {
     project.code = new_code;
@@ -76,7 +58,16 @@
     editor.trigger('anyString', 'editor.action.formatDocument', '');
   }
 
-  async function load_code(code: string) {
+  export function process_and_update(
+    _bg_entries: Array<EntryObject>,
+    _agents_entries: Array<EntryObject>
+  ) {
+    bg_entries = _bg_entries;
+    agents_entries = _agents_entries;
+    update_types();
+  }
+
+  function load_code(code: string) {
     model = monaco.editor.createModel(code, 'typescript');
     monaco.editor.defineTheme('default', {
       base: 'vs-dark',
@@ -116,34 +107,6 @@
     monaco.editor.setTheme('default');
     editor.setModel(model);
     model.setValue(code);
-
-    if (isWeb) return;
-
-    async function process_and_update() {
-      // TODO: move up in state
-      // [bg_entries, agents_entries] = await Promise.all([
-      //   process_entries_recursively(
-      //     bg_file_path,
-      //     await readDir(bg_file_path),
-      //     'backgrounds'
-      //   ),
-      //   process_entries_recursively(
-      //     agents_file_path,
-      //     await readDir(agents_file_path),
-      //     'agents'
-      //   ),
-      // ]);
-      update_types();
-    }
-
-    process_and_update();
-
-    // TODO: move this up in state
-    // unwatch = await watchImmediate(
-    //   [bg_file_path, agents_file_path],
-    //   process_and_update,
-    //   { recursive: true }
-    // );
   }
 
   function infer_type(kind: string) {
@@ -479,12 +442,6 @@
   onMount(async () => {
     create_custom_tokenizer();
 
-    // TODO: move up in state
-    // if (!isWeb) {
-    //   agents_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/agents`);
-    //   bg_file_path = await join(document_path as string, `${PROJECTS_DIR}/${project.name}/assets/backgrounds`);
-    // }
-
     self.MonacoEnvironment = {
       getWorker(moduleID, label) {
         // if (label == 'tailwindcss') {
@@ -569,15 +526,13 @@
       // }
     });
 
-    await load_code(project.code);
-
+    load_code(project.code);
     format_document();
   });
 
   onDestroy(() => {
     monaco?.editor.getModels().forEach((model) => model.dispose());
     editor?.dispose();
-    unwatch();
   });
 </script>
 

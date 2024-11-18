@@ -15,9 +15,9 @@
   // TODO LATER: introduce helpers
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
+  // @ts-expect-error
   import Scene from './Scene.svelte';
   import type { KeyboardEventCode, GameData } from '../../types/game';
-  // TODO: put this up in state
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import type {
     AgentAssetUrls,
@@ -39,7 +39,6 @@
     bg_asset_urls,
     agent_asset_urls,
     DEV = false,
-    exit_dev,
     on_exit
   }: Props = $props();
 
@@ -75,8 +74,6 @@
     $exit: on_exit
   } as const;
 
-  $inspect(_);
-
   function transform_scenes() {
     for (let [id, scene] of unmodified_scenes) {
       // @ts-expect-error
@@ -86,6 +83,7 @@
         let [x, y] = pos_to_xy(pos, scene.width);
 
         transformed_scene.agents.set(pos, {
+          // @ts-expect-error
           name,
           x,
           y,
@@ -194,6 +192,8 @@
 </script>
 
 <svelte:window onkeydown={handle} />
+
+<!-- FIXME: top-12 issue -->
 
 <main class="flex items-center justify-center w-full h-full bg-black">
   <section class="relative flex flex-col w-full h-full top-12">

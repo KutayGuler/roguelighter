@@ -77,6 +77,8 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
 
   let t = game_data_declaration as string;
 
+  let game_data_or_error: GameData | ParseErrorObject;
+
   try {
     t = t.replaceAll("'", '"');
     t = t.replace('},\n\n', '}');
@@ -87,21 +89,22 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
     t = t.replaceAll('__undefined__', 'undefined');
 
     // BACKLOG: support types for nested variables
-    const game_data = JSON5.parse(t, (key, val) => {
+    game_data_or_error = JSON5.parse(t, (key, val) => {
       if (val == '!undefined!') return undefined;
       if (val == '!null!') return null;
       return val;
     }).game_data;
-    return game_data;
   } catch (e) {
-    console.log(t, e);
-    return {
+    game_data_or_error = {
       code,
       json_string: t,
       // @ts-expect-error
       error: e.toString()
     };
   }
+
+  console.log(game_data_or_error);
+  return game_data_or_error;
 }
 
 // BACKLOG: fix indentation

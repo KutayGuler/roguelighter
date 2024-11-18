@@ -3,6 +3,7 @@
 
   interface Props {
     DEV: boolean;
+    isWeb: boolean;
     project: RoguelighterProject;
     document_path: string;
     on_no_scene_is_selected: Function;
@@ -19,17 +20,19 @@
     debounce,
     get_tailwind_classes,
     code_string_to_json,
-    generate_asset_urls
+    generate_asset_urls,
+    process_entries_recursively
   } from '../utils';
   import { EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
   import { exit } from '@tauri-apps/plugin-process';
-  import { writeTextFile } from '@tauri-apps/plugin-fs';
+  import { readDir, watchImmediate, writeTextFile } from '@tauri-apps/plugin-fs';
   import { join } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/plugin-shell';
   import Options from './Options.svelte';
   import type { RoguelighterDataFile, View } from '../types/engine';
   import type { GameData } from '../types/game';
   import RunCSS from 'runcss';
+  import { onDestroy } from 'svelte';
   const { processClasses } = RunCSS();
 
   // BACKLOG: sometimes editor styles not loading
@@ -37,6 +40,7 @@
   let {
     project = $bindable(),
     DEV = true,
+    isWeb = false,
     document_path,
     on_no_scene_is_selected,
     on_no_player_in_scene
@@ -54,6 +58,9 @@
   let code_with_errors = $state('');
   let error_line = $state(0);
   let parse_errors: ParseErrorObject = $state({ code: '', json_string: '', error: '' });
+  let agents_file_path = '';
+  let bg_file_path = '';
+  let bg_entries, agents_entries;
 
   function switch_to_game() {
     // @ts-expect-error
@@ -224,6 +231,39 @@ if not exist "${EXPORT_DIR}" (
   function unfocus_from_scene_editor() {
     scene_button?.focus();
   }
+
+  let unwatch: any;
+
+  (async () => {
+    if (!isWeb) {
+      agents_file_path = await join(
+        document_path as string,
+        `${PROJECTS_DIR}/${project.name}/assets/agents`
+      );
+      bg_file_path = await join(
+        document_path as string,
+        `${PROJECTS_DIR}/${project.name}/assets/backgrounds`
+      );
+    }
+
+    unwatch = await watchImmediate(
+      [bg_file_path, agents_file_path],
+      async () => {
+        if (code_editor) {
+          [bg_entries, agents_entries] = await Promise.all([
+            process_entries_recursively(bg_file_path, await readDir(bg_file_path), 'backgrounds'),
+            process_entries_recursively(agents_file_path, await readDir(agents_file_path), 'agents')
+          ]);
+
+          code_editor.process_and_update(bg_entries, agents_entries);
+        }
+      },
+      {
+        recursive: true
+      }
+    );
+  })();
+  onDestroy(unwatch);
 
   recalculate();
 </script>
