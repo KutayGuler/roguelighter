@@ -74,7 +74,6 @@ export default function useToaster(toastOptions?: ToastOptions) {
 
         if (durationLeft < 0) {
           if (t.visible) {
-            // FIXME: This causes a recursive cycle of updates.
             toast.dismiss(t.id);
           }
           return null;

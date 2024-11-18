@@ -4,8 +4,8 @@
     view: View;
     unfocus_from_code_editor?: Function;
     save_file: Function;
-    on_content_changed: Function;
-    process_and_update: (
+    on_content_changed?: Function;
+    process_and_update?: (
       bg_entries: Array<EntryObject>,
       agents_entries: Array<EntryObject>
     ) => void;
