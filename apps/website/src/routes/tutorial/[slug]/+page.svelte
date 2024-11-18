@@ -1,27 +1,22 @@
 <script lang="ts">
   import { confetti } from '@neoconfetti/svelte';
-  import {
-    code_string_to_json,
-    CodeEditor,
-    Game,
-    generate_template_data,
-    get_tailwind_classes,
-    json_to_code_string,
-    template_json_code
-  } from 'roguelighter-core';
+  import { code_string_to_json, CodeEditor, Game, get_tailwind_classes } from 'roguelighter-core';
   import { marked } from 'marked';
   import type { GameData } from 'roguelighter-core';
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
   import RunCSS from 'runcss';
+  import { afterNavigate } from '$app/navigation';
   const { processClasses } = RunCSS();
 
-  // TODO: update stuff when page is changed
+  afterNavigate((e) => {
+    if (e.type == 'link' && data.tutorial) {
+      tutorial = data.tutorial;
+      set_code('template_code_string');
+    }
+  });
 
   let { data } = $props();
   let tutorial = $state(data.tutorial);
-  tutorial.project.code = json_to_code_string(template_json_code);
-  let markdown = $derived(data.markdown);
-
   let solved = $state(false);
   let code_editor: undefined = $state();
 
@@ -53,30 +48,8 @@
     }
   }
 
-  // const agent_asset_urls: AgentAssetUrls = new Map([
-  //   [
-  //     'player',
-  //     {
-  //       default: '/elf_idle.png',
-  //       walk: '/elf_run.png',
-  //     },
-  //   ],
-  // ]);
-
-  // const bg_asset_urls: BackgroundAssetUrls = new Map([
-  //   ['floor', '/floors/floor_1.png'],
-  //   ['floor_2', '/floors/floor_2.png'],
-  // ]);
-
-  function show_solution() {
-    tutorial.project.code = json_to_code_string(
-      Object.assign(template_json_code, tutorial.solution_object)
-    );
-    code_editor?.set_code(tutorial.project.code);
-  }
-
-  function reset() {
-    tutorial.project.code = json_to_code_string(template_json_code);
+  function set_code(str: 'solution_code_string' | 'template_code_string') {
+    tutorial.project.code = data[str];
     code_editor?.set_code(tutorial.project.code);
   }
 </script>
@@ -102,16 +75,15 @@
 
 <main class="flex flex-row gap-2 h-full overflow-hidden">
   <div class="flex flex-col h-full w-1/2 px-4">
-    <!-- <h3 class="serif">{tutorial.title}</h3> -->
-    <!-- TODO: render markdown -->
     <div id="markdown">
       {@html marked.parse(data.markdown)}
     </div>
 
     <div class="flex-grow"></div>
     <div class="flex flex-row justify-between gap-2">
-      <button onclick={solved ? reset : show_solution} class="btn-amber px-4"
-        >{solved ? 'Reset' : 'Show solution'}</button
+      <button
+        onclick={() => set_code(solved ? 'template_code_string' : 'solution_code_string')}
+        class="btn-secondary px-4">{solved ? 'Reset' : 'Show solution'}</button
       >
       {#if tutorial.prev}
         <a href="/tutorial/{tutorial.prev}" class="link p-2 underline">Prev</a>

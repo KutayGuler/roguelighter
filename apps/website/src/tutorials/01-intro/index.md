@@ -9,9 +9,7 @@ or allow yourself into [docs](/docs).
 
 ### What is Roguelighter?
 
-Roguelighter is a low code game engine you can use to make simple games for desktop and the web
-
-It uses a single configuration file that is powered by TypeScript to construct your entire game.
+Roguelighter is a low code game engine you can use to make simple games for desktop and the web. It uses a single configuration file that is powered by TypeScript to construct your entire game.
 
 > You’ll need to have basic familiarity with TypeScript to understand Roguelighter.
 

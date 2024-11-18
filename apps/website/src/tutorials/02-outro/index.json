@@ -1,14 +1,14 @@
 {
-  "solution_tuples": [
-    [
-      "bla.bla.bla",
-      5
-    ],
-    [
-      "bla.bla.bla",
-      "whatever"
-    ]
-  ],
+  "solution_tuples": [["settings.fps", 16]],
+  "solution_object": {
+    "settings": {
+      "fps": 16
+    }
+  },
   "prev": "intro",
-  "next": "bla"
+  "next": "bla",
+  "title": "Introduction",
+  "project": {
+    "scenes": []
+  }
 }

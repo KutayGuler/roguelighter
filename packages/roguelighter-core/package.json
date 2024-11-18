@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     ".": "./index.ts",
+    "./utils": "./index.utils.ts",
     "./styles.css": "./styles.css"
   },
   "files": [
