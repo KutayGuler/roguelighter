@@ -6,7 +6,8 @@
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
   import RunCSS from 'runcss';
   import { afterNavigate } from '$app/navigation';
-  const { processClasses } = RunCSS();
+  // TODO: move this up in state
+  // const { processClasses } = RunCSS();
 
   afterNavigate((e) => {
     if (e.type == 'link' && data.tutorial) {
@@ -49,10 +50,10 @@
   }
 
   function on_content_changed() {
-    if (!cannot_render) {
-      processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      rerender++;
-    }
+    // if (!cannot_render) {
+    //   processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
+    //   rerender++;
+    // }
   }
 
   function set_code(str: 'solution_code_string' | 'template_code_string') {
@@ -92,12 +93,14 @@
         onclick={() => set_code(solved ? 'template_code_string' : 'solution_code_string')}
         class="btn-secondary px-4">{solved ? 'Reset' : 'Show solution'}</button
       >
-      {#if tutorial.prev}
-        <a href="/tutorial/{tutorial.prev}" class="link p-2 underline">Prev</a>
-      {/if}
-      {#if tutorial.next}
-        <a href="/tutorial/{tutorial.next}" class="link p-2 underline">Next</a>
-      {/if}
+      <div class="flex flex-row gap-1">
+        {#if tutorial.prev}
+          <a href="/tutorial/{tutorial.prev}" class="link p-2 underline serif text-xl">Prev</a>
+        {/if}
+        {#if tutorial.next}
+          <a href="/tutorial/{tutorial.next}" class="link p-2 underline serif text-xl">Next</a>
+        {/if}
+      </div>
     </div>
   </div>
   <div

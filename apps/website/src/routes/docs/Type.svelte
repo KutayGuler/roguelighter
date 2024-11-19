@@ -24,7 +24,7 @@
       </svg>
     </button>
   </h3>
-  <p class="text-zinc-300/90">{type.comment?.summary[0].text}</p>
+  <p class="text-base-300/90">{type.comment?.summary[0].text}</p>
   {#if type.children}
     <div class="flex flex-col gap-8 pl-8">
       {#each type.children as child_type}

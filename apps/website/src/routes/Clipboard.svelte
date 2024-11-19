@@ -21,7 +21,7 @@
 </script>
 
 <span
-  class="bg-zinc-800 border border-zinc-500 rounded px-2 py-1 inline-flex items-center justify-center gap-2"
+  class="bg-base-800 border border-base-500 rounded px-2 py-1 inline-flex items-center justify-center gap-2"
 >
   <span class="text-emerald-400">{env}</span>
   <span>{command}</span>

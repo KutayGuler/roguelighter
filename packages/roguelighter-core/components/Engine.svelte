@@ -2,13 +2,15 @@
   import type { ParseErrorObject, RoguelighterProject, UUID } from '../types/engine';
 
   interface Props {
-    DEV: boolean;
-    isWeb: boolean;
+    DEV?: boolean;
+    isWeb?: boolean;
     project: RoguelighterProject;
     document_path: string;
     on_no_scene_is_selected: Function;
     on_no_player_in_scene: Function;
   }
+
+  const { processClasses } = RunCSS();
 </script>
 
 <script lang="ts">
@@ -33,7 +35,6 @@
   import type { GameData } from '../types/game';
   import RunCSS from 'runcss';
   import { onDestroy } from 'svelte';
-  const { processClasses } = RunCSS();
 
   // BACKLOG: sometimes editor styles not loading
 
@@ -263,7 +264,7 @@ if not exist "${EXPORT_DIR}" (
       }
     );
   })();
-  onDestroy(unwatch);
+  onDestroy(() => unwatch());
 
   recalculate();
 </script>
@@ -274,7 +275,7 @@ if not exist "${EXPORT_DIR}" (
   <main class="relative flex flex-col w-full h-full overflow-hidden select-none">
     <Options bind:open={options_open}></Options>
     <nav
-      class="absolute top-0 z-40 bg-zinc-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-zinc-200"
+      class="absolute top-0 z-40 bg-base-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-base-200"
     >
       <a aria-label="Home" href="/" class=""
         ><svg
@@ -380,7 +381,6 @@ if not exist "${EXPORT_DIR}" (
         bind:view
         bind:project
         bind:this={code_editor}
-        {document_path}
         {unfocus_from_code_editor}
         save_file={debounce(save_file, 100)}
       ></CodeEditor>
@@ -388,12 +388,13 @@ if not exist "${EXPORT_DIR}" (
   </main>
 {:else}
   <!-- BACKLOG: add button to go back -->
-  <main class="bg-zinc-700 h-full text-white p-4 flex flex-col gap-2">
+  <main class="bg-base-700 h-full text-white p-4 flex flex-col gap-2">
     <p>Engine has failed no initialize.</p>
+    <a href="/" class="text-emerald-400 underline">Back to home</a>
     {#if parse_errors.error}
       {@const line_count = parse_errors.code.split('\n').length}
       <div
-        class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-zinc-800 rounded p-2 pl-12"
+        class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-base-800 rounded p-2 pl-12"
       >
         <pre
           class="absolute top-4 left-12 bg-transparent z-[10] w-full"
@@ -404,7 +405,7 @@ if not exist "${EXPORT_DIR}" (
           <div
             id={i.toString()}
             class:is_error_line={error_line == i}
-            class="z-[9] absolute left-2 text-sm mono text-zinc-500 w-full"
+            class="z-[9] absolute left-2 text-sm mono text-base-500 w-full"
             style="top: {i * 24 + 16}px;"
           >
             {i}

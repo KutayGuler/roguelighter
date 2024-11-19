@@ -19,7 +19,7 @@ export default defineConfig({
   plugins: [sveltekit(), viteServerConfig],
   build: {
     commonjsOptions: {
-      include: [/roguelighter-core/, /node_modules/]
+      include: [/roguelighter-core/, /roguelighter-tailwind/, /node_modules/]
     }
     // rollupOptions: {
     //   output: {

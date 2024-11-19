@@ -48,7 +48,7 @@
 
 {#if open}
   <div
-    class="w-full h-full absolute top-0 left-0 bg-zinc-950/90 z-50 text-zinc-200 py-2 px-4"
+    class="w-full h-full absolute top-0 left-0 bg-base-950/90 z-50 text-base-200 py-2 px-4"
     use:focus_trap={true}
   >
     <div class="flex flex-row justify-end">
@@ -57,7 +57,7 @@
     <!-- <span class="text-xs">Version: {PUBLIC_APP_VERSION}</span> -->
     <h1 class="pt-8 pb-2 text-xl serif">Keybindings</h1>
     <div
-      class="flex flex-row gap-2 text-sm bg-zinc-800 items-center p-2 px-4 w-64 justify-between rounded"
+      class="flex flex-row gap-2 text-sm bg-base-800 items-center p-2 px-4 w-64 justify-between rounded"
     >
       <span>Switch view</span>
       <span
@@ -67,8 +67,8 @@
         class="border px-2 rounded py-0.5">{value}</span
       >
       <button
-        class:text-zinc-400={editing}
-        class="bg-zinc-700 shadow-inner py-1 px-2 rounded"
+        class:text-base-400={editing}
+        class="bg-base-700 shadow-inner py-1 px-2 rounded"
         onclick={toggleEdit}
         ><svg
           xmlns="http://www.w3.org/2000/svg"

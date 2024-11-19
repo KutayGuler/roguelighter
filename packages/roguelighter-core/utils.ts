@@ -103,7 +103,6 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
     };
   }
 
-  console.log(game_data_or_error);
   return game_data_or_error;
 }
 
@@ -166,8 +165,6 @@ export async function generate_asset_urls(
   const file_path = await join(document_path, `${PROJECTS_DIR}/${project_dir}/assets/${type}`);
   const entries = await readDir(file_path);
   let children = await process_entries_recursively(file_path, entries, type);
-
-  console.log(agent_states_obj);
 
   for (let { name, path } of children) {
     let source = convertFileSrc(path);

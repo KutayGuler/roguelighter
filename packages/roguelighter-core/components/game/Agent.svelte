@@ -113,8 +113,6 @@
       {endFrame}
       {filter}
       {delay}
-      bind:play
-      bind:pause
     />
     <T.PlaneGeometry></T.PlaneGeometry>
   </T.Sprite>

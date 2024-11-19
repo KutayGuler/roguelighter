@@ -1,3 +1,5 @@
+// export { default } from 'roguelighter-tailwind/tailwind.config.js';
+
 const colors = require('tailwindcss/colors');
 
 /** @type {import('tailwindcss').Config} */
@@ -8,8 +10,11 @@ export default {
   ],
   theme: {
     extend: {
-      primary: colors.emerald,
-      secondary: colors.amber
+      colors: {
+        base: colors.zinc,
+        primary: colors.emerald,
+        secondary: colors.amber
+      }
     }
   },
   plugins: []

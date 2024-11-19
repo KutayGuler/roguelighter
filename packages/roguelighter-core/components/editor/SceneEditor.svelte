@@ -5,9 +5,9 @@
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     agents: GameData['agents'];
-    unfocus_from_scene_editor: Function
-    switch_to_game: Function
-    save_file: Function
+    unfocus_from_scene_editor: Function;
+    switch_to_game: Function;
+    save_file: Function;
   }
 </script>
 
@@ -55,13 +55,13 @@
   let map_width = $state(DEFAULT_MAP_WIDTH);
   let map_height = $state(DEFAULT_MAP_WIDTH);
 
-  let portal_modal = $state(createDialog({ label: '' }))
-  let new_scene_modal = $state(createDialog({ label: '' }))
-  let delete_scene_modal = $state(createDialog({ label: '' }))
+  let portal_modal = $state(createDialog({ label: '' }));
+  let new_scene_modal = $state(createDialog({ label: '' }));
+  let delete_scene_modal = $state(createDialog({ label: '' }));
 
   // @ts-expect-error
   let current_scene: Scene = $derived(project.scenes.get(current_scene_id));
-  let portal_btn_disabled = $derived((project.scenes?.size || 0) <= 1)
+  let portal_btn_disabled = $derived((project.scenes?.size || 0) <= 1);
 
   interface Brushes {
     bg: keyof typeof backgrounds | undefined;
@@ -138,7 +138,7 @@
       to_position: portal_from_pos
     });
     portal_modal?.close();
-    save_file()
+    save_file();
     tippy('[data-tippy-content]');
   }
 
@@ -148,11 +148,11 @@
     current_scene.portals.delete(pos);
     let portalled_scene = project.scenes.get(to_scene_id);
     portalled_scene?.portals.delete(to_position);
-    save_file()
+    save_file();
   }
 
   async function delete_current_scene(e: SubmitEvent) {
-    e.preventDefault()
+    e.preventDefault();
     project.scenes.delete(current_scene_id);
     project.scenes = project.scenes;
     // await project.scenes.delete(current_scene.id as IndexableType);
@@ -282,7 +282,7 @@
           new_scene_modal?.open();
           break;
         case 'KeyT':
-          switch_to_game()
+          switch_to_game();
           break;
         case 'KeyP':
           portal_modal?.open();
@@ -304,7 +304,7 @@
 
 <main
   style:image-rendering={'pixelated'}
-  class="absolute w-full flex flex-row gap-4 bg-zinc-900 px-4 pb-4 pt-16 h-screen"
+  class="absolute w-full flex flex-row gap-4 bg-base-900 px-4 pb-4 pt-16 h-screen"
 >
   <section class="flex flex-col min-w-60 max-w-96">
     <div class="flex flex-row gap-2">
@@ -340,10 +340,7 @@
         </svg>&nbsp; New scene
       </button>
     </div>
-    <button
-      data-tippy-content="Ctrl + T"
-      onclick={() => switch_to_game()}
-      class="btn-primary mt-2"
+    <button data-tippy-content="Ctrl + T" onclick={() => switch_to_game()} class="btn-primary mt-2"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
@@ -360,13 +357,13 @@
       Test Scene</button
     >
     <div
-      class="w-full relative flex flex-col gap-8 mt-2 bg-zinc-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
+      class="w-full relative flex flex-col gap-8 mt-2 bg-base-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
     >
       {#if current_scene_id != undefined}
         {#if agent_asset_urls.size}
           <div>
             <h3 class:text-emerald-400={fill_mode == 'agent'} class="h4 pb-2 serif">
-              Agents <span class="text-zinc-300 text-sm"
+              Agents <span class="text-base-300 text-sm"
                 >{fill_mode == 'bg' ? '(F to switch) ' : ''}</span
               >
             </h3>
@@ -378,27 +375,27 @@
                   class:active={brushes.agent == key}
                   title={key}
                 >
-                <span
+                  <span
                     style:width="64px"
                     style:height="64px"
                     style:background-size="cover"
                     style:background-repeat="no-repeat"
                     style:background-image="url({agent_asset_urls.get(key)})"
-></span>
-                  <span class="text-xs absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
-                    >{i + 1} </span
-                  >
+                  ></span>
+                  <span class="text-xs absolute -bottom-6 bg-base-800 w-6 border border-base-500"
+                    >{i + 1}
+                  </span>
                 </button>
               {/each}
             </div>
           </div>
         {:else}
-          <p class="text-sm text-zinc-300">Agent assets not found.</p>
+          <p class="text-sm text-base-300">Agent assets not found.</p>
         {/if}
         {#if bg_asset_urls.size}
           <div>
             <h3 class:text-emerald-400={fill_mode == 'bg'} class="h4 pb-2 serif">
-              Backgrounds <span class="text-zinc-300 text-sm regular"
+              Backgrounds <span class="text-base-300 text-sm regular"
                 >{fill_mode == 'agent' ? '(F to switch)' : ''}</span
               >
             </h3>
@@ -416,8 +413,8 @@
                     style:background-size="contain"
                     style:background-repeat="no-repeat"
                     style:background-image="url({bg_asset_urls.get(key)})"
-></span>
-                <span class="absolute -bottom-6 bg-zinc-800 w-6 border border-zinc-500"
+                  ></span>
+                  <span class="absolute -bottom-6 bg-base-800 w-6 border border-base-500"
                     >{i + 1}</span
                   >
                 </button>
@@ -425,7 +422,7 @@
             </div>
           </div>
         {:else}
-          <p class="text-sm text-zinc-300">Background assets not found.</p>
+          <p class="text-sm text-base-300">Background assets not found.</p>
         {/if}
         <div class="flex-grow"></div>
         <div>
@@ -458,7 +455,7 @@
   </section>
   <section class="flex flex-col gap-2 w-4/5 h-full group">
     <div
-      class="relative h-11 bg-zinc-700 w-full rounded p-2 px-4 text-white flex flex-row justify-between"
+      class="relative h-11 bg-base-700 w-full rounded p-2 px-4 text-white flex flex-row justify-between"
     >
       <label class="cursor-pointer">
         <input type="checkbox" bind:checked={show_pos} />
@@ -467,8 +464,7 @@
 
       <Dropdown>
         {#snippet button()}
-                <svg
-            
+          <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -482,13 +478,13 @@
               d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
             />
           </svg>
-              {/snippet}
+        {/snippet}
         {#snippet items()}
-                <div  class="bg-zinc-700 rounded p-4 flex flex-col gap-2 items-start">
+          <div class="bg-base-700 rounded p-4 flex flex-col gap-2 items-start">
             <button
               onclick={() => {
-              /** TODO **/
-            }}
+                /** TODO **/
+              }}
               class="hover:text-emerald-400 ease-out duration-150">Set as starting scene</button
             >
             <button
@@ -496,7 +492,7 @@
               class="hover:text-red-400 ease-out duration-150">Delete scene</button
             >
           </div>
-              {/snippet}
+        {/snippet}
       </Dropdown>
     </div>
     <div
@@ -522,7 +518,7 @@
         {/each}
       </div>
     </div>
-    <section class="w-full h-full overflow-auto bg-zinc-500 border">
+    <section class="w-full h-full overflow-auto bg-base-500 border">
       {#if current_scene}
         {#each { length: current_scene.height } as _, i}
           <div class="row flex flex-row w-max">
@@ -535,8 +531,8 @@
               {@const agent_url = agent ? agent_asset_urls.get(agent) : ''}
               <button
                 oncontextmenu={(e) => {
-                  e.preventDefault()
-                  !show_pos && right_clicked(pos)
+                  e.preventDefault();
+                  !show_pos && right_clicked(pos);
                 }}
                 onmouseenter={() => mouse_entered(pos)}
                 onclick={() => cell_clicked(pos)}
@@ -551,7 +547,7 @@
                     class="absolute top-0 border-4 border-purple-600 w-full h-full z-20 {portal_remove_mode
                       ? 'hover:border-red-500'
                       : ''}"
-></button>
+                  ></button>
                 {/if}
                 {#if show_pos}
                   <span>{pos}</span>
@@ -560,10 +556,10 @@
                     <span
                       style:background-image="url({bg_url})"
                       class="sprite absolute w-full h-full z-10"
-></span>
+                    ></span>
                   {:else if bg}
                     <span
-                      class="must-be-replaced-background z-20 bg-zinc-200 px-2 py-0.5 rounded text-xs"
+                      class="must-be-replaced-background z-20 bg-base-200 px-2 py-0.5 rounded text-xs"
                       >{bg}</span
                     >
                   {/if}
@@ -571,10 +567,10 @@
                     <span
                       style:background-image="url({agent_url})"
                       class="sprite absolute w-full h-full z-10"
-></span>
+                    ></span>
                   {:else if agent}
                     <span
-                      class="must-be-replaced-agent z-20 bg-zinc-200 px-2 py-0.5 rounded text-xs"
+                      class="must-be-replaced-agent z-20 bg-base-200 px-2 py-0.5 rounded text-xs"
                       >{agent}</span
                     >
                   {/if}
@@ -611,7 +607,7 @@
       </div>
     </label>
     <label class="flex flex-row gap-2 items-center" for="devonly">
-      <input type="checkbox" name="devonly">
+      <input type="checkbox" name="devonly" />
       Dev only
     </label>
     <button class="btn-primary">Create</button>
@@ -656,19 +652,19 @@
         </select>
       </label>
       {#if typeof portal_to_id === 'number'}
-        {@const scene = project.scenes.get(portal_to_id)} 
-          {#if scene}
-            <label class="flex flex-col w-1/2">
-              Position
-              <input
-                required
-                type="number"
-                min={0}
-                max={scene.width * scene.height - 1}
-                bind:value={portal_to_pos}
-              />
-            </label>
-          {/if}
+        {@const scene = project.scenes.get(portal_to_id)}
+        {#if scene}
+          <label class="flex flex-col w-1/2">
+            Position
+            <input
+              required
+              type="number"
+              min={0}
+              max={scene.width * scene.height - 1}
+              bind:value={portal_to_pos}
+            />
+          </label>
+        {/if}
       {/if}
     </div>
     <button class="btn-primary">Create</button>
@@ -679,10 +675,7 @@
 
 <Modal bind:dialog={delete_scene_modal}>
   <h3 class="h3">Delete scene "{current_scene?.name}"?</h3>
-  <form
-    onsubmit={delete_current_scene}
-    class="flex flex-row gap-2 w-full justify-end pt-4"
-  >
+  <form onsubmit={delete_current_scene} class="flex flex-row gap-2 w-full justify-end pt-4">
     <button type="button" onclick={() => delete_scene_modal?.close()} class=" btn-ghost">
       Cancel
     </button>

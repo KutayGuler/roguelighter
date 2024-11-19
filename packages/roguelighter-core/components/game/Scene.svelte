@@ -35,8 +35,6 @@
     change_scene
   }: Props = $props();
 
-  console.log(scene);
-
   let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
 
   useTask(() => {

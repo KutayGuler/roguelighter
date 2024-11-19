@@ -29,7 +29,7 @@
   //   configureMonacoTailwindcss,
   //   tailwindcssData,
   // } from 'monaco-tailwindcss';
-  import { debounce, filters, includes_any, agent_states_obj } from '../../utils';
+  import { debounce, filters, includes_any, agent_states_obj, noop } from '../../utils';
   import { INTERNAL_EVENTS, INTERNAL_GUI, INTERNAL_TEXTS, variables_regex } from '../../constants';
   import type { EntryObject, RoguelighterProject, View } from '../../types/engine';
   import ts from 'typescript';
@@ -41,7 +41,7 @@
     predefined_entries,
     unfocus_from_code_editor,
     save_file,
-    on_content_changed
+    on_content_changed = noop
   }: Props = $props();
   let editorElement: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;

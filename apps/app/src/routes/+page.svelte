@@ -106,7 +106,7 @@
   );
 </script>
 
-<main class="flex flex-col items-center bg-zinc-700 w-full h-full text-zinc-200">
+<main class="flex flex-col items-center bg-base-700 w-full h-full text-base-200">
   <div class="w-full max-w-xl p-4">
     <div class="flex flex-row items-end justify-between">
       <h3 class="serif">Projects</h3>
