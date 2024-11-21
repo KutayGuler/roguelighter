@@ -259,11 +259,11 @@
   onmousedown={() => (holding = true)}
   onmouseup={() => (holding = false)}
   onkeydown={(e) => {
-    // TODO: change this
-    // if (e.code == 'Escape') {
-    //   unfocus_from_scene_editor()
-    //   return;
-    // }
+    // LATER: prevent triggering OS level shortcut
+    if (e.code == 'Escape' && e.shiftKey) {
+      unfocus_from_scene_editor();
+      return;
+    }
 
     if ($portal_modal?.expanded || $new_scene_modal?.expanded || $delete_scene_modal?.expanded) {
       return;
@@ -367,7 +367,9 @@
                 >{fill_mode == 'bg' ? '(F to switch) ' : ''}</span
               >
             </h3>
-            <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
+            <div
+              class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto shadow-inner px-4 pt-4 pb-8 border border-white/10"
+            >
               {#each Object.entries(agents) as [key, val], i}
                 <button
                   onclick={() => selects.agent(key)}
@@ -399,7 +401,9 @@
                 >{fill_mode == 'agent' ? '(F to switch)' : ''}</span
               >
             </h3>
-            <div class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto">
+            <div
+              class="flex flex-wrap gap-x-8 gap-y-12 h-52 overflow-y-auto shadow-inner px-4 pt-4 pb-8 border border-white/10"
+            >
               {#each Object.entries(backgrounds) as [key, val], i}
                 <button
                   onclick={() => selects.bg(key)}
@@ -496,7 +500,7 @@
       </Dropdown>
     </div>
     <div
-      class="text-sm bg-amber-900 text-amber-50 border border-amber-200 p-2 group-has-[.must-be-replaced-agent,.must-be-replaced-background]:block hidden"
+      class="text-sm bg-purple-900 text-amber-50 border border-purple-600 p-2 group-has-[.must-be-replaced-agent,.must-be-replaced-background]:block hidden"
     >
       Some agents/backgrounds on the map have no asset references. Change them to elements with
       asset references.
@@ -606,8 +610,8 @@
         <input required min="0" max="100" bind:value={map_height} type="number" />
       </div>
     </label>
-    <label class="flex flex-row gap-2 items-center" for="devonly">
-      <input type="checkbox" name="devonly" />
+    <label class="flex flex-row gap-2 items-center">
+      <input type="checkbox" />
       Dev only
     </label>
     <button class="btn-primary">Create</button>

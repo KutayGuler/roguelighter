@@ -31,9 +31,6 @@
   ],
   "license": "MIT",
   "homepage": "roguelighter.vercel.app",
-  "peerDependencies": {
-    "svelte": "^4.0.5"
-  },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.3.0",
     "@sveltejs/adapter-static": "^3.0.5",
@@ -45,7 +42,7 @@
     "monaco-editor": "^0.44.0",
     "postcss": "^8.4.29",
     "publint": "^0.2.5",
-    "svelte": "^5.0.5",
+    "svelte": "^5.2.4",
     "svelte-check": "^4.0.5",
     "tailwindcss": "^3.4.14",
     "tslib": "^2.4.1",

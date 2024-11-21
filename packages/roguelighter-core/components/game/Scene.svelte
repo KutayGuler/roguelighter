@@ -91,7 +91,8 @@
   <Agent {agent_asset_urls} {agent} {settings} position={calc_pos(pos)} />
 {/each}
 <!-- TODO: make this invisible -->
-<!-- {#each all_empty_cells as pos}
+<!-- FIXME: the algorithm -->
+{#each all_empty_cells as pos}
   {@const o = offsets.get(pos)}
   <T.Mesh position={calc_pos(pos, o?.[0] || 0, o?.[1] || 0)}>
     <T.BoxGeometry />
@@ -101,4 +102,4 @@
     <T.BoxGeometry />
     <T.MeshBasicMaterial />
   </T.Mesh>
-{/each} -->
+{/each}

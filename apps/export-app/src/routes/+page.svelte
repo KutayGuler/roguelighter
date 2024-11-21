@@ -1,9 +1,19 @@
 <script lang="ts">
-  import { json_to_code_string, template_json_code, Game } from 'roguelighter-core';
-  import type { AgentAssetUrls, BackgroundAssetUrls, GameData, Portal } from 'roguelighter-core';
+  import { json_to_code_string, Game } from 'roguelighter-core';
+  import type {
+    AgentAssetUrls,
+    BackgroundAssetUrls,
+    Portal,
+    RoguelighterProject
+  } from 'roguelighter-core';
+  import { exit } from '@tauri-apps/plugin-process';
+
   // LATER: zoom settings not working
   // LATER: $exit not working
-  const project = {
+  const id = crypto.randomUUID();
+
+  const project: RoguelighterProject = {
+    name: 'export-app',
     code: json_to_code_string({
       settings: {
         fps: 8,
@@ -17,20 +27,11 @@
       agents: {
         player: {
           states: {
-            default: {
-              source: 'elf_idle.png',
+            idle: {
               frame_count: 4
             },
             walk: {
-              source: 'elf_run.png',
               frame_count: 4
-            }
-          }
-        },
-        orc: {
-          states: {
-            default: {
-              source: 'orc.png'
             }
           }
         }
@@ -38,27 +39,9 @@
       variables: {
         variable_name: 3
       },
-      events: {
-        move_up: [
-          ['move', 'y', 1, 'walk']
-          // ['move', 'x', 1, 'walk']
-          // how to do simulatenous axis movement? using arrays and promise.all
-          // how to check if all the functions are going to work?
-          // skip invalid functions?
-        ],
-        move_down: [['move', 'y', -1, 'walk']],
-        move_right: [['move', 'x', 1, 'walk']],
-        move_left: [['move', 'x', -1, 'walk']]
-      },
+      events: {},
       keybindings: {
-        Escape: '$toggle_pause_menu',
-        ArrowUp: 'move_up',
-        ArrowRight: 'move_right',
-        ArrowDown: 'move_down',
-        ArrowLeft: 'move_left'
-      },
-      conditions: {
-        // something: ['x', '==', 'v.variable_name']
+        Escape: '$toggle_pause_menu'
       },
       gui: {
         $pause_menu: {
@@ -81,10 +64,9 @@
         }
       }
     }),
-    parsed_code: template_json_code as GameData,
     scenes: new Map([
       [
-        0,
+        id,
         {
           name: 'whatever',
           backgrounds: new Map<number, string>([
@@ -103,19 +85,10 @@
     ])
   };
 
-  const agent_asset_urls: AgentAssetUrls = new Map([
-    [
-      'player',
-      {
-        default: '/elf_idle.png',
-        walk: '/elf_run.png'
-      }
-    ]
-  ]);
-
+  const agent_asset_urls: AgentAssetUrls = new Map([]);
   const bg_asset_urls: BackgroundAssetUrls = new Map([['floor', '/floors/floor_1.png']]);
 </script>
 
-<main class="w-screen h-screen">
-  <Game {project} {bg_asset_urls} {agent_asset_urls} current_scene_id={0}></Game>
-</main>
+<!-- <main class="w-screen h-screen"> -->
+<Game {project} {bg_asset_urls} {agent_asset_urls} current_scene_id={id} on_exit={exit}></Game>
+<!-- </main> -->

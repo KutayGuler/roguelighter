@@ -39,7 +39,7 @@
     project = $bindable(),
     view = $bindable(),
     predefined_entries,
-    unfocus_from_code_editor,
+    unfocus_from_code_editor = noop,
     save_file,
     on_content_changed = noop
   }: Props = $props();
@@ -516,14 +516,15 @@
       }
     });
     editor.onKeyDown((e) => {
-      if (view == 'game') {
+      if (view != 'code') {
         e.preventDefault();
         return;
       }
-      // TODO: change this
-      // if (e.code === 'Escape') {
-      //   unfocus_from_code_editor()
-      // }
+      // LATER: prevent triggering OS level shortcut
+      if (e.code === 'Escape' && e.shiftKey) {
+        e.preventDefault();
+        unfocus_from_code_editor();
+      }
     });
 
     load_code(project.code);

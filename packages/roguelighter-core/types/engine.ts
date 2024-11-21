@@ -1,6 +1,5 @@
 import { createDialog, createMenu } from 'svelte-headlessui';
 import type { AgentConfig } from './game';
-import { SvelteMap } from 'svelte/reactivity';
 
 export interface PlayableAgent<N extends string> extends AgentConfig<N> {
   name: N;
@@ -35,7 +34,7 @@ export type UUID = `${string}-${string}-${string}-${string}-${string}`;
 export interface RoguelighterProject {
   name: string;
   code: string;
-  scenes: SvelteMap<UUID, Scene>;
+  scenes: Map<UUID, Scene>;
 }
 
 export interface ParseErrorObject {

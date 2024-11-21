@@ -15,7 +15,6 @@
   // TODO LATER: introduce helpers
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
-  // @ts-expect-error
   import Scene from './Scene.svelte';
   import type { KeyboardEventCode, GameData } from '../../types/game';
   import { code_string_to_json, pos_to_xy } from '../../utils';
@@ -195,23 +194,23 @@
 
 <!-- FIXME: top-12 issue -->
 
-<main class="flex items-center justify-center w-full h-full bg-black">
-  <section class="relative flex flex-col w-full h-full top-12">
-    {#if scene}
-      <Canvas>
-        <Scene
-          {change_scene}
-          {player_pos}
-          {settings}
-          {scene}
-          {scene_just_changed}
-          {bg_asset_urls}
-          {agent_asset_urls}
-        />
-      </Canvas>
-    {/if}
-    {#each Object.entries(gui) as [name, guiElement]}
-      <GuiElement {events} {name} {guiElement} bind:variables />
-    {/each}
-  </section>
-</main>
+<!-- <main class="flex items-center justify-center w-full h-full bg-black"> -->
+<!-- <section class="relative flex flex-col w-full h-full top-12"> -->
+{#if scene}
+  <Canvas>
+    <Scene
+      {change_scene}
+      {player_pos}
+      {settings}
+      {scene}
+      {scene_just_changed}
+      {bg_asset_urls}
+      {agent_asset_urls}
+    />
+  </Canvas>
+{/if}
+{#each Object.entries(gui) as [name, guiElement]}
+  <GuiElement {events} {name} {guiElement} bind:variables />
+{/each}
+<!-- </section> -->
+<!-- </main> -->
