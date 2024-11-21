@@ -1,5 +1,4 @@
 <script lang="ts">
-  import '../app.css';
   import 'roguelighter-core/styles.css';
   import { processClasses } from '$lib/state.svelte';
   import RunCSS from 'runcss';

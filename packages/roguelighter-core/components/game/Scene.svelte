@@ -90,7 +90,9 @@
 {#each scene.agents.entries() as [pos, agent]}
   <Agent {agent_asset_urls} {agent} {settings} position={calc_pos(pos)} />
 {/each}
+<!-- TODO: create an experiment repo -->
 <!-- TODO: make this invisible -->
+<!-- TODO: make this collide with the player -->
 <!-- FIXME: the algorithm -->
 {#each all_empty_cells as pos}
   {@const o = offsets.get(pos)}

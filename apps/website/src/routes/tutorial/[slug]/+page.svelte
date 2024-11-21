@@ -89,7 +89,7 @@
     <div class="flex flex-row justify-between gap-2">
       <button
         onclick={() => set_code(solved ? 'template_code_string' : 'solution_code_string')}
-        class="btn-secondary px-4">{solved ? 'Reset' : 'Show solution'}</button
+        class="btn-secondary !px-4">{solved ? 'Reset' : 'Show solution'}</button
       >
       <div class="flex flex-row gap-1">
         {#if tutorial.prev}

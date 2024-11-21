@@ -19,7 +19,7 @@
         </p>
         <div class="w-full flex flex-row gap-4 pt-16">
           <a href="/tutorial" class="btn-success-ghost px-8 py-4">Play with interactive tutorial</a>
-          <button class="btn-primary px-8">Download latest version</button>
+          <button class="btn-primary !px-8">Download latest version</button>
         </div>
       </div>
       <img
