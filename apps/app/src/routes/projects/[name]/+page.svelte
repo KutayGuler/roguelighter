@@ -1,6 +1,9 @@
 <script lang="ts">
   import { Engine, TOAST_SETTINGS } from 'roguelighter-core';
   import toast from '../../../lib/svelte-french-toast/core/toast.js';
+  import RunCSS from 'runcss';
+  const { processClasses: process_classes } = RunCSS();
+
   let { data } = $props();
 
   function on_no_player_in_scene() {
@@ -17,4 +20,5 @@
   document_path={data.document_path}
   {on_no_player_in_scene}
   {on_no_scene_is_selected}
+  {process_classes}
 />

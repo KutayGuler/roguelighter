@@ -362,7 +362,7 @@
       {#if current_scene_id != undefined}
         {#if agent_asset_urls.size}
           <div>
-            <h3 class:text-emerald-400={fill_mode == 'agent'} class="h4 pb-2 serif">
+            <h3 class:text-emerald-400={fill_mode == 'agent'}>
               Agents <span class="text-base-300 text-sm"
                 >{fill_mode == 'bg' ? '(F to switch) ' : ''}</span
               >
@@ -396,7 +396,7 @@
         {/if}
         {#if bg_asset_urls.size}
           <div>
-            <h3 class:text-emerald-400={fill_mode == 'bg'} class="h4 pb-2 serif">
+            <h3 class:text-emerald-400={fill_mode == 'bg'}>
               Backgrounds <span class="text-base-300 text-sm regular"
                 >{fill_mode == 'agent' ? '(F to switch)' : ''}</span
               >
@@ -430,7 +430,7 @@
         {/if}
         <div class="flex-grow"></div>
         <div>
-          <h3 class="h4 serif">Portals</h3>
+          <h3>Portals</h3>
           <div class="flex flex-row gap-2 pt-2">
             <button
               disabled={current_scene?.portals?.size == 0}

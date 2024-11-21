@@ -4,7 +4,8 @@
   "private": true,
   "exports": {
     ".": "./index.ts",
-    "./utils": "./index.utils.ts"
+    "./utils": "./index.utils.ts",
+    "./styles.css": "./styles.css"
   },
   "description": "A type-safe game engine for roguelikes.",
   "author": {
@@ -42,7 +43,6 @@
   },
   "type": "module",
   "dependencies": {
-    "roguelighter-tailwind": "0.0.0",
     "@tauri-apps/api": "^2.0.3",
     "@tauri-apps/plugin-fs": "^2.0.1",
     "@threlte/core": "^8.0.0-next.21",

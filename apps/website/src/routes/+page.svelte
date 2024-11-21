@@ -10,7 +10,7 @@
   <div class="flex flex-col gap-16 max-w-6xl">
     <div class="flex flex-row relative pb-20 pt-12 overflow-visible">
       <div class="z-10">
-        <h1 class="serif">
+        <h1>
           The game engine <br /> for roguelikes.
         </h1>
         <p class="text-xl pt-4">
@@ -33,7 +33,7 @@
         <div class="w-1/3 flex flex-col rounded">
           <div class="w-full bg-[#0a0012] h-40 rounded-t"></div>
           <div class="bg-[#1f0037] p-4 flex-grow rounded-b">
-            <h4 class="h4 serif">{title}</h4>
+            <h4 class="h4">{title}</h4>
             <p class="text-base-400">{description}</p>
           </div>
         </div>

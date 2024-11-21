@@ -1,5 +1,5 @@
 <script>
-  import 'roguelighter-tailwind/styles.css';
+  import 'roguelighter-core/styles.css';
   import 'tippy.js/dist/tippy.css';
   import 'tippy.js/themes/light.css';
   import Toaster from '$lib/svelte-french-toast/components/Toaster.svelte';

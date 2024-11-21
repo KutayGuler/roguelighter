@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "roguelighter-core": "0.1.2",
-    "roguelighter-tailwind": "0.0.0"
   },
   "type": "module"
 }

@@ -1,5 +1,3 @@
-// export { default } from 'roguelighter-tailwind/tailwind.config.js';
-
 const colors = require('tailwindcss/colors');
 
 /** @type {import('tailwindcss').Config} */

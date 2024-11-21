@@ -37,7 +37,6 @@
   "dependencies": {
     "@neoconfetti/svelte": "^2.2.1",
     "marked": "^15.0.0",
-    "roguelighter-core": "0.1.2",
-    "roguelighter-tailwind": "0.0.0"
+    "roguelighter-core": "0.1.2"
   }
 }

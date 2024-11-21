@@ -1,10 +1,22 @@
 <script lang="ts">
-  import 'roguelighter-tailwind/styles.css';
+  import '../app.css';
+  import 'roguelighter-core/styles.css';
+  import { processClasses } from '$lib/state.svelte';
+  import RunCSS from 'runcss';
+  let runCSSinitialized = $state(false);
+
   interface Props {
     children?: import('svelte').Snippet;
   }
 
   let { children }: Props = $props();
+
+  $effect(() => {
+    if (runCSSinitialized) return;
+    const { processClasses: pc } = RunCSS();
+    processClasses.fn = pc;
+    runCSSinitialized = true;
+  });
 </script>
 
 <main class="bg-[#1a141f] relative w-full h-full text-white flex flex-col items-center pt-16">

@@ -8,9 +8,8 @@
     document_path: string;
     on_no_scene_is_selected: Function;
     on_no_player_in_scene: Function;
+    process_classes: Function;
   }
-
-  const { processClasses } = RunCSS();
 </script>
 
 <script lang="ts">
@@ -33,7 +32,6 @@
   import Options from './Options.svelte';
   import type { RoguelighterDataFile, View } from '../types/engine';
   import type { GameData } from '../types/game';
-  import RunCSS from 'runcss';
   import { onDestroy } from 'svelte';
 
   // BACKLOG: sometimes editor styles not loading
@@ -44,7 +42,8 @@
     isWeb = false,
     document_path,
     on_no_scene_is_selected,
-    on_no_player_in_scene
+    on_no_player_in_scene,
+    process_classes
   }: Props = $props();
   let options_open = $state(false);
   let current_scene_id: UUID | undefined = $state();
@@ -192,7 +191,7 @@ if not exist "${EXPORT_DIR}" (
       return;
     }
 
-    processClasses(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
+    process_classes(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
     [agent_asset_urls, bg_asset_urls] = await Promise.all([
       generate_asset_urls(project.name, 'agents', document_path),
       generate_asset_urls(project.name, 'backgrounds', document_path)

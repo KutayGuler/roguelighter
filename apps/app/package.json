@@ -63,7 +63,6 @@
     "json5": "^2.2.3",
     "monaco-tailwindcss": "^0.6.1",
     "roguelighter-core": "0.1.2",
-    "roguelighter-tailwind": "0.0.0",
     "svelte-writable-derived": "^3.1.1",
     "tippy.js": "^6.3.7"
   }

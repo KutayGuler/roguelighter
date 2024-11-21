@@ -4,10 +4,8 @@
   import { marked } from 'marked';
   import type { GameData } from 'roguelighter-core';
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
-  import RunCSS from 'runcss';
   import { afterNavigate } from '$app/navigation';
-  // TODO: move this up in state
-  // const { processClasses } = RunCSS();
+  import { processClasses } from '$lib/state.svelte.js';
 
   afterNavigate((e) => {
     if (e.type == 'link' && data.tutorial) {
@@ -50,10 +48,10 @@
   }
 
   function on_content_changed() {
-    // if (!cannot_render) {
-    //   processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-    //   rerender++;
-    // }
+    if (!cannot_render) {
+      processClasses.fn(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
+      rerender++;
+    }
   }
 
   function set_code(str: 'solution_code_string' | 'template_code_string') {
