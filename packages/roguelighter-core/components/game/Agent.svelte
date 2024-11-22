@@ -1,6 +1,7 @@
 <script lang="ts">
   import { T, useTask, useThrelte } from '@threlte/core';
-  import { AnimatedSpriteMaterial } from '@threlte/extras';
+  // import { AnimatedSpriteMaterial } from '@threlte/extras';
+  import AnimatedSpriteMaterial from './AnimatedSpriteMaterial.svelte';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
   import { Mesh } from 'three';
   import { noop } from '../../utils';
@@ -33,9 +34,9 @@
   let totalFrames = $derived(_state?.frame_count || DEFAULT_FRAME_COUNT);
   let fps = $derived(_state?.fps || settings?.fps || DEFAULT_FPS);
   let columns = $derived(_state?.columns || 0);
-  let rows = $derived(_state?.rows || 0);
+  let rows = $derived(_state?.rows || 1);
   let startFrame = $derived(_state?.start_frame || 0);
-  let endFrame = $derived(_state?.end_frame || 0);
+  let endFrame = $derived(_state?.end_frame || totalFrames - 1);
   let delay = $derived(_state?.delay || 0);
   let filter = $derived(_state?.filter || settings?.filter || 'nearest');
 
@@ -90,10 +91,6 @@
     $camera.position.x = position[0];
     $camera.position.y = position[1];
   });
-
-  $inspect(textureUrl);
-
-  // TODO: fix agent rendering
 </script>
 
 <svelte:window
@@ -102,34 +99,17 @@
 />
 
 {#if textureUrl}
-  <T.Sprite {position}>
+  <T is={mesh}>
     <AnimatedSpriteMaterial
       {textureUrl}
       {totalFrames}
       {fps}
-      {columns}
       {rows}
       {startFrame}
       {endFrame}
       {filter}
       {delay}
-    />
-    <T.PlaneGeometry></T.PlaneGeometry>
-  </T.Sprite>
-  <!-- <T is={mesh}>
-    <AnimatedSpriteMaterial
-      {textureUrl}
-      {totalFrames}
-      {fps}
-      {columns}
-      {rows}
-      {startFrame}
-      {endFrame}
-      {filter}
-      {delay}
-      bind:play
-      bind:pause
     />
     <T.PlaneGeometry />
-  </T> -->
+  </T>
 {/if}

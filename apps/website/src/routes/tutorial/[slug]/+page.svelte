@@ -134,8 +134,8 @@
           <Game
             on_exit={() => {}}
             project={tutorial.project}
-            agent_asset_urls={new Map(tutorial.agent_asset_urls)}
-            bg_asset_urls={new Map(tutorial.bg_asset_urls)}
+            agent_asset_urls={tutorial.agent_asset_urls}
+            bg_asset_urls={tutorial.bg_asset_urls}
             current_scene_id={0}
           ></Game>
         {/key}

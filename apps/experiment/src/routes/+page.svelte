@@ -26,7 +26,7 @@
 				}
 			]
 		],
-		agent_asset_urls: [['player', '/floors/floor_1.png']],
+		agent_asset_urls: [['player', 'run2.png']],
 		bg_asset_urls: [['floor', '/floors/floor_1.png']]
 	};
 
@@ -38,7 +38,16 @@
 				easing: 'sineOut',
 				duration: 400,
 				camera: {
-					zoom: 7
+					zoom: 8
+				}
+			},
+			agents: {
+				player: {
+					states: {
+						idle: {
+							frame_count: 8
+						}
+					}
 				}
 			}
 		}
@@ -53,12 +62,16 @@
 	scene.backgrounds = new Map(scene?.backgrounds);
 	scene.agents = new Map(scene?.agents);
 	scene.portals = new Map();
+	// @ts-expect-error
+	project.agent_asset_urls = new Map(project.agent_asset_urls);
+	// @ts-expect-error
+	project.bg_asset_urls = new Map(project.bg_asset_urls);
 </script>
 
 <Game
 	{project}
 	on_exit={() => {}}
-	agent_asset_urls={new Map(project.agent_asset_urls)}
-	bg_asset_urls={new Map(project.bg_asset_urls)}
+	agent_asset_urls={project.agent_asset_urls}
+	bg_asset_urls={project.bg_asset_urls}
 	current_scene_id={0}
 ></Game>

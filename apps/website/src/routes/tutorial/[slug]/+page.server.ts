@@ -27,6 +27,10 @@ export const load: PageServerLoad = async ({ params }) => {
   scene.backgrounds = new Map(scene?.backgrounds);
   scene.agents = new Map(scene?.agents);
   scene.portals = new Map();
+  // @ts-expect-error
+  tutorial.project.agent_asset_urls = new Map(tutorial.project.agent_asset_urls);
+  // @ts-expect-error
+  tutorial.project.bg_asset_urls = new Map(tutorial.project.bg_asset_urls);
 
   return {
     markdown,

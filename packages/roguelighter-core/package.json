@@ -45,8 +45,8 @@
   "dependencies": {
     "@tauri-apps/api": "^2.0.3",
     "@tauri-apps/plugin-fs": "^2.0.1",
-    "@threlte/core": "^8.0.0-next.21",
-    "@threlte/extras": "^9.0.0-next.28",
+    "@threlte/core": "^8.0.0-next.31",
+    "@threlte/extras": "^9.0.0-next.39",
     "@threlte/rapier": "^2.0.1",
     "json5": "^2.2.3",
     "runcss": "^0.1.5",
