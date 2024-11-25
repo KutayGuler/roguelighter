@@ -14,7 +14,7 @@
   import type { Settings } from '../../types/game';
   import { T, useTask } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
-  // import { Collider } from '@threlte/rapier'
+  import { Collider, AutoColliders, useRapier, RigidBody } from '@threlte/rapier';
   import { DEG2RAD } from 'three/src/math/MathUtils.js';
   import Agent from './Agent.svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
@@ -24,6 +24,9 @@
     PlayableScene,
     Portal
   } from '../../types/engine';
+
+  const { world } = useRapier();
+  world.gravity = { x: 0, y: 0, z: 0 };
 
   let {
     bg_asset_urls,
@@ -45,7 +48,7 @@
   });
 
   function calc_pos(pos: number, offsetX = 0, offsetY = 0): [number, number, number] {
-    return [(pos % scene.width) + offsetX, -Math.floor(pos / scene.width) + offsetY, zoom];
+    return [(pos % scene.width) + offsetX, -Math.floor(pos / scene.width) + offsetY, 0];
   }
 
   let all_empty_cells = new Set<number>();
@@ -88,20 +91,31 @@
   {/if}
 {/each}
 {#each scene.agents.entries() as [pos, agent]}
-  <Agent {agent_asset_urls} {agent} {settings} position={calc_pos(pos)} />
+  <Agent {scene} {agent_asset_urls} {agent} {settings} position={calc_pos(pos)} />
 {/each}
-<!-- TODO: create an experiment repo -->
-<!-- TODO: make this invisible -->
-<!-- TODO: make this collide with the player -->
-<!-- FIXME: the algorithm -->
-{#each all_empty_cells as pos}
+<!-- LATER: make this invisible -->
+<!-- LATER: make this collide with the player -->
+<!-- LATER: fix the algorithm -->
+<!-- {#each all_empty_cells as pos}
   {@const o = offsets.get(pos)}
-  <T.Mesh position={calc_pos(pos, o?.[0] || 0, o?.[1] || 0)}>
-    <T.BoxGeometry />
-    <T.MeshBasicMaterial />
-  </T.Mesh>
-  <T.Mesh position={calc_pos(pos, o?.[2] || 0, o?.[3] || 0)}>
-    <T.BoxGeometry />
-    <T.MeshBasicMaterial />
-  </T.Mesh>
-{/each}
+  <T.Group position={calc_pos(pos, o?.[0] || 0, o?.[1] || 0)}>
+    <Collider sensor shape="cuboid" args={[0.5, 0.5, 0.5]} onsensorenter={(e) => console.log(e)}
+    ></Collider>
+    <RigidBody>
+      <T.Mesh>
+        <T.BoxGeometry />
+        <T.MeshBasicMaterial />
+      </T.Mesh>
+    </RigidBody>
+  </T.Group>
+  <T.Group position={calc_pos(pos, o?.[2] || 0, o?.[3] || 0)}>
+    <Collider sensor shape="cuboid" args={[0.5, 0.5, 0.5]} onsensorenter={(e) => console.log(e)}
+    ></Collider>
+    <RigidBody>
+      <T.Mesh>
+        <T.BoxGeometry />
+        <T.MeshBasicMaterial />
+      </T.Mesh>
+    </RigidBody>
+  </T.Group>
+{/each} -->

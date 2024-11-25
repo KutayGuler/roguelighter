@@ -16,6 +16,7 @@
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
+  import { World, Debug } from '@threlte/rapier';
   import type { KeyboardEventCode, GameData } from '../../types/game';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import type {
@@ -198,15 +199,19 @@
 <!-- <section class="relative flex flex-col w-full h-full top-12"> -->
 {#if scene}
   <Canvas>
-    <Scene
-      {change_scene}
-      {player_pos}
-      {settings}
-      {scene}
-      {scene_just_changed}
-      {bg_asset_urls}
-      {agent_asset_urls}
-    />
+    <World>
+      <Debug />
+
+      <Scene
+        {change_scene}
+        {player_pos}
+        {settings}
+        {scene}
+        {scene_just_changed}
+        {bg_asset_urls}
+        {agent_asset_urls}
+      />
+    </World>
   </Canvas>
 {/if}
 {#each Object.entries(gui) as [name, guiElement]}
