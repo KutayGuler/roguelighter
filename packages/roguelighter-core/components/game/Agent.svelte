@@ -95,7 +95,6 @@
 
   useTask((delta) => {
     let makeHalf = keyboard.x && keyboard.y;
-    console.log(position);
 
     let xDiff = (-keyboard.x * (delta * 5)) / (makeHalf ? sqrtTwo : 1);
     let yDiff = (-keyboard.y * (delta * 5)) / (makeHalf ? sqrtTwo : 1);

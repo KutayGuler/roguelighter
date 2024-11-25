@@ -556,6 +556,9 @@ declare interface Settings {
      */
     zoom?: number;
   };
+  scene?: {
+    background?: string;
+  };
 }
 
 declare type KeyBindings = {

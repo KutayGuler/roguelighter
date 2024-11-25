@@ -525,6 +525,9 @@ export interface Settings {
      */
     zoom?: number;
   };
+  scene?: {
+    background?: string;
+  };
 }
 
 export type KeyBindings = {

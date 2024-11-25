@@ -189,6 +189,9 @@
   }
 
   instantiate();
+
+  // TODO: add new component (Collider or CollisionBox)
+  // TODO: should fire events (on_contact, on_bla)
 </script>
 
 <svelte:window onkeydown={handle} />
@@ -198,21 +201,23 @@
 <!-- <main class="flex items-center justify-center w-full h-full bg-black"> -->
 <!-- <section class="relative flex flex-col w-full h-full top-12"> -->
 {#if scene}
-  <Canvas>
-    <World>
-      <Debug />
+  <main class="w-full h-full" style:background={settings.scene?.background}>
+    <Canvas>
+      <World>
+        <Debug />
 
-      <Scene
-        {change_scene}
-        {player_pos}
-        {settings}
-        {scene}
-        {scene_just_changed}
-        {bg_asset_urls}
-        {agent_asset_urls}
-      />
-    </World>
-  </Canvas>
+        <Scene
+          {change_scene}
+          {player_pos}
+          {settings}
+          {scene}
+          {scene_just_changed}
+          {bg_asset_urls}
+          {agent_asset_urls}
+        />
+      </World>
+    </Canvas>
+  </main>
 {/if}
 {#each Object.entries(gui) as [name, guiElement]}
   <GuiElement {events} {name} {guiElement} bind:variables />

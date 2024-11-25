@@ -1,6 +1,13 @@
 <script lang="ts">
-	import { json_to_code_string, template_json_code } from 'roguelighter-core/utils';
+	import {
+		get_tailwind_classes,
+		json_to_code_string,
+		template_json_code
+	} from 'roguelighter-core/utils';
 	import { Game } from 'roguelighter-core';
+	import RunCSS from 'runcss';
+	const { processClasses: process_classes } = RunCSS();
+	// process_classes(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
 
 	let project = {
 		scenes: [
@@ -30,27 +37,38 @@
 		bg_asset_urls: [['floor', '/floors/floor_1.png']]
 	};
 
-	const template_code_string = json_to_code_string({
-		...template_json_code,
-		...{
-			settings: {
-				fps: 8,
-				easing: 'sineOut',
-				duration: 400,
-				camera: {
-					zoom: 8
-				}
+	const overrides = {
+		settings: {
+			fps: 8,
+			easing: 'sineOut',
+			duration: 400,
+			camera: {
+				zoom: 8
 			},
-			agents: {
-				player: {
-					states: {
-						idle: {
-							frame_count: 8
-						}
+			scene: {
+				background: 'black'
+			}
+		},
+		agents: {
+			player: {
+				states: {
+					idle: {
+						frame_count: 8
 					}
 				}
 			}
 		}
+	} as const;
+
+	process_classes(Array.from(get_tailwind_classes(template_json_code.gui).values()).join(' '));
+	// @ts-expect-error
+	if (overrides.gui) {
+		process_classes(Array.from(get_tailwind_classes(overrides.gui).values()).join(' '));
+	}
+
+	const template_code_string = json_to_code_string({
+		...template_json_code,
+		...overrides
 	});
 
 	// @ts-expect-error

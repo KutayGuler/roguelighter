@@ -321,14 +321,14 @@ if not exist "${EXPORT_DIR}" (
             change_view('scene');
           }}>Scene</button
         >
-        <button
+        <!-- <button
           class:btn-primary={view == 'logs'}
           class="btn-outline"
           onclick={() => {
             change_view('logs');
           }}
           >Logs
-        </button>
+        </button> -->
       </div>
       <button aria-label="Options" onclick={() => (options_open = true)}>
         <svg

@@ -30,7 +30,9 @@
   import { createDialog } from 'svelte-headlessui';
 
   onMount(() => {
-    tippy('[data-tippy-content]');
+    setTimeout(() => {
+      tippy('[data-tippy-content]');
+    }, 100);
   });
 
   let {
@@ -153,11 +155,11 @@
 
   async function delete_current_scene(e: SubmitEvent) {
     e.preventDefault();
+    // @ts-expect-error
     project.scenes.delete(current_scene_id);
     project.scenes = project.scenes;
     // await project.scenes.delete(current_scene.id as IndexableType);
     // current_scene = undefined;
-    // @ts-expect-error
     current_scene_id = undefined;
     // current_scene_name = '';
     delete_scene_modal?.close();
@@ -340,7 +342,10 @@
         </svg>&nbsp; New scene
       </button>
     </div>
-    <button data-tippy-content="Ctrl + T" onclick={() => switch_to_game()} class="btn-primary mt-2"
+    <button
+      data-tippy-content="Ctrl + T"
+      onclick={() => switch_to_game()}
+      class="btn-primary mt-2 group-has-[.must-be-replaced-agent,.must-be-replaced-background]:disabled"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
