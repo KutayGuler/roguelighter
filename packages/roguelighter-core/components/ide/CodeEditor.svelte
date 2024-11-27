@@ -22,6 +22,7 @@
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+  import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
   // import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
@@ -447,8 +448,12 @@
         // if (label == 'tailwindcss') {
         //   return new twWorker();
         // }
+        if (label == 'typescript' || label == 'editorWorkerService') {
+          return new tsWorker();
+        } else if (label == 'html') {
+          // return new HtmlWorker()
+        }
 
-        return new tsWorker();
         // console.log(moduleID, label);
         // switch (label) {
         //   case 'typescript':
@@ -537,4 +542,4 @@
   });
 </script>
 
-<div class="h-full" bind:this={editorElement}></div>
+<div class="h-screen" bind:this={editorElement}></div>

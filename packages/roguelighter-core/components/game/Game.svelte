@@ -53,7 +53,7 @@
   let game_paused = $state(false);
   let special_keys: Array<KeyboardEventCode> = [];
 
-  const f = {
+  const internal_events = {
     $open_pause_menu() {
       window.dispatchEvent(new Event('paused'));
       variables.$pause_menu = true;
@@ -66,9 +66,9 @@
     },
     $toggle_pause_menu() {
       if (game_paused) {
-        f.$close_pause_menu();
+        internal_events.$close_pause_menu();
       } else {
-        f.$open_pause_menu();
+        internal_events.$open_pause_menu();
       }
     },
     $exit: on_exit
@@ -123,26 +123,9 @@
 
     let internal_variables = { $pause_menu: false };
     Object.assign(variables, internal_variables);
-    Object.assign(events, f);
+    Object.assign(events, internal_events);
     transform_scenes();
   }
-
-  // for (let [key, fn] of Object.entries(events)) {
-  //   if (key[0] == '$') {
-  //     _.e[key] = events[key];
-  //     continue;
-  //   }
-
-  //   // binding keys to events
-  //   _.e[key] = async () => {
-  //     const [str, _args] = fn;
-  //     const split = str.split(' ');
-  //     const type = split[0];
-  //     split.shift();
-  //     // @ts-expect-error
-  //     await f[type](...split, _args);
-  //   };
-  // }
 
   function handle(kbd_event: KeyboardEvent) {
     let event_code = kbd_event.code;
@@ -161,10 +144,11 @@
       event_name = __dev_only?.keybindings[event_code as KeyboardEventCode];
     }
 
-    if (!event_name || game_paused) return;
+    if (!event_name || (game_paused && !event_name.includes('pause_menu'))) return;
 
     if (Array.isArray(event_name)) {
       const [fn_name, args] = [...event_name];
+      console.log(fn_name, args);
       events[fn_name](_, ...args);
     } else {
       events[event_name](_);

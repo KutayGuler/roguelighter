@@ -42,12 +42,9 @@
   {/if}
 {:else if name == '$pause_menu'}
   {#if variables.$pause_menu}
-    <div
-      transition:element_transition
-      onintrostart={events.$open_pause_menu}
-      onoutrostart={events.$close_pause_menu}
-      class={joined_tokens}
-    >
+    <!--       onintrostart={events.$open_pause_menu}
+      onoutrostart={events.$close_pause_menu} -->
+    <div transition:element_transition class={joined_tokens}>
       {#if text}
         <GuiText {text} bind:variables></GuiText>
       {/if}

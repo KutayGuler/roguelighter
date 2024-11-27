@@ -2,12 +2,15 @@
 	import {
 		get_tailwind_classes,
 		json_to_code_string,
-		template_json_code
+		template_json_code,
+		type GameData
 	} from 'roguelighter-core/utils';
 	import { Game } from 'roguelighter-core';
+	import type { Scene } from 'roguelighter-core';
 	import RunCSS from 'runcss';
 	const { processClasses: process_classes } = RunCSS();
 	// process_classes(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
+	// TODO: get monaco-tailwind working
 
 	let project = {
 		scenes: [
@@ -37,7 +40,7 @@
 		bg_asset_urls: [['floor', '/floors/floor_1.png']]
 	};
 
-	const overrides = {
+	const overrides: Partial<GameData> = {
 		settings: {
 			fps: 8,
 			easing: 'sineOut',
@@ -57,11 +60,20 @@
 					}
 				}
 			}
+		},
+		variables: {
+			count: 0,
+			count_smaller_than_five: '$var(count) < 5'
+		},
+		gui: {
+			$pause_menu: template_json_code.gui.$pause_menu,
+			inventory: {
+				tokens: ['absolute', 'bottom-0', 'w-1/2', 'max-w-xl', 'h-24', 'bg-gray-500']
+			}
 		}
 	} as const;
 
 	process_classes(Array.from(get_tailwind_classes(template_json_code.gui).values()).join(' '));
-	// @ts-expect-error
 	if (overrides.gui) {
 		process_classes(Array.from(get_tailwind_classes(overrides.gui).values()).join(' '));
 	}
@@ -75,7 +87,6 @@
 	project.code = template_code_string;
 	// @ts-expect-error
 	project.scenes = new Map(project.scenes);
-	// @ts-expect-error
 	let scene = project.scenes.get(0) as Scene;
 	scene.backgrounds = new Map(scene?.backgrounds);
 	scene.agents = new Map(scene?.agents);
