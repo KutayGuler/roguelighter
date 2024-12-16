@@ -1,11 +1,17 @@
 import JSON5 from 'json5';
 import ts from 'typescript';
-import { PROJECTS_DIR, function_regex } from './constants';
+import { PROJECTS_DIR, TEMPLATE_IF_STATEMENT, function_regex } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
 import { GameData, GUI } from './types/game';
 import { EntryObject, EntryTuple, ParseErrorObject } from './types/engine';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export const noop = () => {};
 
@@ -265,6 +271,18 @@ export function get_tailwind_classes(gui: GUI) {
       set.add(token);
     }
 
+    let if_keys = Object.keys(child).filter((key) => key.startsWith(TEMPLATE_IF_STATEMENT));
+
+    for (let key of if_keys) {
+      // @ts-expect-error
+      if (Array.isArray(child[key])) {
+        // @ts-expect-error
+        for (let token of child[key]) {
+          set.add(token);
+        }
+      }
+    }
+
     if (child.children) {
       let returned_set = get_tailwind_classes(child.children);
       for (let val of returned_set.values()) {
@@ -309,8 +327,10 @@ export function focus_trap(node: HTMLElement, enabled: boolean) {
     return focusableElems
       .filter((elem) => elem.tabIndex >= 0)
       .sort((a, b) => {
-        if (a.tabIndex === 0 && b.tabIndex > 0) return 1; // Move 0 to end of array
-        else if (a.tabIndex > 0 && b.tabIndex === 0) return -1; // Move 0 to end of array
+        if (a.tabIndex === 0 && b.tabIndex > 0)
+          return 1; // Move 0 to end of array
+        else if (a.tabIndex > 0 && b.tabIndex === 0)
+          return -1; // Move 0 to end of array
         else return a.tabIndex - b.tabIndex; // Sort non-zero values in ascending order
       });
   };

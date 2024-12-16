@@ -22,7 +22,7 @@
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
+  // import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
   // import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
@@ -31,7 +31,13 @@
   //   tailwindcssData,
   // } from 'monaco-tailwindcss';
   import { debounce, filters, includes_any, agent_states_obj, noop } from '../../utils';
-  import { INTERNAL_EVENTS, INTERNAL_GUI, INTERNAL_TEXTS, variables_regex } from '../../constants';
+  import {
+    INTERNAL_EVENTS,
+    INTERNAL_GUI,
+    INTERNAL_GUI_STARTS_WITH,
+    INTERNAL_TEXTS,
+    variables_regex
+  } from '../../constants';
   import type { EntryObject, RoguelighterProject, View } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
@@ -291,18 +297,28 @@
       };
       const content = model.getValueInRange(range).trim();
 
-      if (
-        content[0] == '$' &&
-        !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
-      ) {
-        markers.push({
-          message: '$ prefix is reserved and cannot be used for custom property names.',
-          severity: monaco.MarkerSeverity.Error,
-          startLineNumber: range.startLineNumber,
-          startColumn: range.startColumn,
-          endLineNumber: range.endLineNumber,
-          endColumn: range.endColumn
-        });
+      let starts_with_statements = false;
+
+      for (let str of INTERNAL_GUI_STARTS_WITH) {
+        starts_with_statements = content.startsWith(str);
+        if (starts_with_statements) break;
+      }
+
+      if (!starts_with_statements) {
+        if (
+          content[0] == '$' &&
+          !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
+        ) {
+          markers.push({
+            message: '$ prefix is reserved and cannot be used for custom property names.',
+            severity: monaco.MarkerSeverity.Error,
+            startLineNumber: range.startLineNumber,
+            startColumn: range.startColumn,
+            endLineNumber: range.endLineNumber,
+            endColumn: range.endColumn
+          });
+        }
+        break;
       }
 
       const variables_matches = content.match(variables_regex);

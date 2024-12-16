@@ -245,7 +245,6 @@
         value.premultiplyAlpha = false;
         value.wrapS = value.wrapT = RepeatWrapping;
         value.magFilter = value.minFilter = filter === 'nearest' ? NearestFilter : LinearFilter;
-        console.log(value);
         return value;
       }
     })

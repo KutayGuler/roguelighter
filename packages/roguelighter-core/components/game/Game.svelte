@@ -148,11 +148,13 @@
 
     if (Array.isArray(event_name)) {
       const [fn_name, args] = [...event_name];
-      console.log(fn_name, args);
       events[fn_name](_, ...args);
     } else {
       events[event_name](_);
     }
+
+    // BACKLOG: could be optimized by checking which variables are being updated
+    window.dispatchEvent(new Event('fired_event'));
   }
 
   function change_scene(portal_info: Portal) {

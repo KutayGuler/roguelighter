@@ -32,10 +32,12 @@ export function generate_boilerplate_types({
 const static_types = `type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
+type DerivedFunction = (_: GameEnvironment, ...args: any) => any;
+
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
-type Variables = { [key: string]: any };
+type Variables = { [key: string]: any | DerivedFunction };
 type BackgroundNames = any;
 type AgentStates = { [key: string]: any };
 type UserFunctionsAndParameters = any;
@@ -403,7 +405,13 @@ declare interface GUI_Element {
    *
    * @example TODO
    */
-  children?: { [name: string]: GUI_Element };
+  children?: {
+    [name: string]: GUI_Element;
+    /** TODO: turn string into typesafe var names, typecheck the variable it should be a number */
+    [for_loop: \`$for_\${string}\`]: GUI_Element;
+    /** TODO: turn string into typesafe var names, should be boolean */
+    [if_statement: \`$if_\${string}\`]: GUI_Element;
+  };
   /** TODO: Documentation */
   transition?: {
     type: Transition;

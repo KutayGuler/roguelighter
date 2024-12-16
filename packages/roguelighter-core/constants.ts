@@ -22,6 +22,9 @@ export const INTERNAL_EVENTS = [
 ];
 export const INTERNAL_TEXTS = ['$agent_avatar', '$agent_name', '$agent_text'];
 export const INTERNAL_GUI = ['$pause_menu'];
+export const TEMPLATE_FOR_LOOP = '$for_$';
+export const TEMPLATE_IF_STATEMENT = '$if_$';
+export const INTERNAL_GUI_STARTS_WITH = [TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT];
 
 export const variables_regex = /\$var\(([^)]+)\)/g;
 export const function_regex = /s*function\s*\([^)]*\)\s*\{[\s\S]*?\}/g;
