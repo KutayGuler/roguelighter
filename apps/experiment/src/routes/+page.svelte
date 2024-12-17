@@ -10,7 +10,6 @@
 	import RunCSS from 'runcss';
 	const { processClasses: process_classes } = RunCSS();
 	// process_classes(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
-	// TODO: get monaco-tailwind working
 
 	let project = {
 		scenes: [

@@ -264,11 +264,13 @@ export function generate_template_data() {
 }
 
 export function get_tailwind_classes(gui: GUI) {
-  let set = new Set();
+  let classes = new Set();
 
   for (let child of Object.values(gui)) {
-    for (let token of child.tokens) {
-      set.add(token);
+    if (child.tokens) {
+      for (let token of child.tokens) {
+        classes.add(token);
+      }
     }
 
     let if_keys = Object.keys(child).filter((key) => key.startsWith(TEMPLATE_IF_STATEMENT));
@@ -278,7 +280,7 @@ export function get_tailwind_classes(gui: GUI) {
       if (Array.isArray(child[key])) {
         // @ts-expect-error
         for (let token of child[key]) {
-          set.add(token);
+          classes.add(token);
         }
       }
     }
@@ -286,12 +288,12 @@ export function get_tailwind_classes(gui: GUI) {
     if (child.children) {
       let returned_set = get_tailwind_classes(child.children);
       for (let val of returned_set.values()) {
-        set.add(val);
+        classes.add(val);
       }
     }
   }
 
-  return set;
+  return classes;
 }
 
 export const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {

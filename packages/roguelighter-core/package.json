@@ -33,7 +33,7 @@
     "monaco-editor": "^0.44.0",
     "postcss": "^8.4.29",
     "publint": "^0.2.5",
-    "svelte": "^5.2.4",
+    "svelte": "^5.14.1",
     "svelte-check": "^4.0.5",
     "tailwindcss": "^3.3.3",
     "tslib": "^2.4.1",
