@@ -116,6 +116,8 @@
     model.setValue(code);
   }
 
+  console.log('xdee');
+
   function infer_type(kind: string) {
     // BACKLOG: cannot infer the types of objects inside variables
     if (kind === 'FirstLiteralToken') {
@@ -128,7 +130,7 @@
       return 'object';
     }
 
-    return 'undefined';
+    return 'any';
   }
 
   function update_types() {
@@ -422,7 +424,7 @@
           ],
           [/\b(let|var|const)\b/g, 'vardec'],
           [
-            /\b(if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)\b/g,
+            /(^|[^a-zA-Z0-9_])(\$if_\w*|\$for_\w*|if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)(?=$|[^a-zA-Z0-9_])/g,
             'kwClass'
           ],
           ...keys

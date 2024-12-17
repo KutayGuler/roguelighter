@@ -1,7 +1,6 @@
 <script lang="ts">
 	// import *
 	import { CodeEditor, json_to_code_string, template_json_code } from 'roguelighter-core';
-	import GuiEditor from './GuiEditor.svelte';
 
 	let project = {
 		name: 'whatever',
@@ -48,5 +47,4 @@
 
 <main class="flex w-1/2 flex-row gap-2">
 	<CodeEditor {project} view="code" save_file={() => {}}></CodeEditor>
-	<GuiEditor></GuiEditor>
 </main>
