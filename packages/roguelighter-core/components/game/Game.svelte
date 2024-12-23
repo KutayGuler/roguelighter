@@ -17,7 +17,7 @@
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
   import { World, Debug } from '@threlte/rapier';
-  import type { KeyboardEventCode, GameData } from '../../types/game';
+  import type { KeyboardEventCode, GameData, GUI_Element, GUI } from '../../types/game';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import type {
     AgentAssetUrls,
@@ -27,6 +27,8 @@
     RoguelighterProject,
     UUID
   } from '../../types/engine';
+  import { TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
+  import { SvelteSet } from 'svelte/reactivity';
 
   // BACKLOG: try catch for user defined functions
   // BACKLOG: introduce objects
@@ -106,6 +108,9 @@
     scene = scenes.get(current_scene_id as UUID) as PlayableScene;
   }
 
+  let computed_variables = {};
+  let computed_variable_names = new SvelteSet();
+
   function instantiate() {
     for (let [key, event_name] of Object.entries(keybindings)) {
       if ((event_name as string)[0] == '$') {
@@ -118,6 +123,18 @@
         const fn_str = val;
         const fn = new Function('return ' + fn_str)();
         events[key] = fn;
+      }
+    }
+
+    for (let variable_name of Object.keys(variables)) {
+      const fn_str_or_other = variables[variable_name];
+
+      if (typeof fn_str_or_other == 'string' && fn_str_or_other.startsWith('function (_)')) {
+        const modified_fn_str = fn_str_or_other.replace('(_)', '(variables)').replace('_.', ''); // will not work if "_.variables" is destructured
+        const fn = new Function('return ' + modified_fn_str)(variables);
+        // @ts-expect-error
+        computed_variables[variable_name] = fn;
+        computed_variable_names.add(variable_name);
       }
     }
 
@@ -174,39 +191,114 @@
     scene_just_changed = true;
   }
 
+  function get_variable_value(variable_name: string) {
+    if (variable_name in computed_variables) {
+      // @ts-expect-error
+      return computed_variables[variable_name](variables);
+    } else {
+      return variables[variable_name];
+    }
+  }
+
   instantiate();
 
   // TODO: add new component (Collider or CollisionBox)
   // TODO: should fire events (on_contact, on_bla)
+  $inspect(variables);
 </script>
 
 <svelte:window onkeydown={handle} />
 
-<!-- FIXME: top-12 issue -->
+<!-- FIXME: top-12 issue (could show/hide the top bar with a key)-->
 
-<!-- <main class="flex items-center justify-center w-full h-full bg-black"> -->
-<!-- <section class="relative flex flex-col w-full h-full top-12"> -->
-{#if scene}
-  <main class="w-full h-full" style:background={settings.scene?.background}>
-    <Canvas>
-      <World>
-        <Debug />
+<svelte:boundary>
+  {#if scene}
+    <main class="w-full h-full" style:background={settings.scene?.background}>
+      <Canvas>
+        <World>
+          <Debug />
 
-        <Scene
-          {change_scene}
-          {player_pos}
-          {settings}
-          {scene}
-          {scene_just_changed}
-          {bg_asset_urls}
-          {agent_asset_urls}
+          <Scene
+            {change_scene}
+            {player_pos}
+            {settings}
+            {scene}
+            {scene_just_changed}
+            {bg_asset_urls}
+            {agent_asset_urls}
+          />
+        </World>
+      </Canvas>
+    </main>
+  {/if}
+
+  {#snippet failed(error, reset)}
+    <div class="pl-4 pt-16">
+      <p>An error occured while rendering the canvas</p>
+      <pre class="text-xs">{error}</pre>
+      <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
+    </div>
+  {/snippet}
+</svelte:boundary>
+<!-- <svelte:boundary> -->
+
+{#snippet children_handler(nested_obj: GUI | GUI_Element)}
+  {#each Object.entries(nested_obj) as [name, element_or_if_or_for]}
+    {#if name == TEMPLATE_IF_STATEMENT}
+      {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
+        <GuiElement
+          {get_variable_value}
+          {children_handler}
+          is_in_if_block
+          {events}
+          {name}
+          {gui_element}
         />
-      </World>
-    </Canvas>
-  </main>
-{/if}
-{#each Object.entries(gui) as [name, guiElement]}
-  <GuiElement {events} {name} {guiElement} bind:variables />
-{/each}
-<!-- </section> -->
-<!-- </main> -->
+      {/each}
+    {:else if name == TEMPLATE_FOR_LOOP}
+      {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
+        <GuiElement
+          {get_variable_value}
+          {children_handler}
+          is_in_for_block
+          {events}
+          {name}
+          {gui_element}
+        />
+      {/each}
+    {:else}
+      <GuiElement
+        {get_variable_value}
+        {children_handler}
+        {events}
+        {name}
+        gui_element={element_or_if_or_for}
+      />
+    {/if}
+  {/each}
+{/snippet}
+
+{@render children_handler(gui)}
+
+<!-- {#each Object.entries(gui) as [name, element_or_if_or_for]}
+  {#if name == TEMPLATE_IF_STATEMENT}
+    {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
+      <GuiElement is_in_if_block {events} {name} {gui_element} bind:variables />
+    {/each}
+  {:else if name == TEMPLATE_FOR_LOOP}
+    {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
+      <GuiElement is_in_for_block {events} {name} {gui_element} bind:variables />
+    {/each}
+  {:else}
+    <GuiElement {events} {name} gui_element={element_or_if_or_for} bind:variables />
+  {/if}
+{/each} -->
+
+<!-- {#snippet failed(error, reset)}
+    <div class="pl-4 pt-16">
+      <p>An error occured while rendering the GUI</p>
+      <pre class="text-xs">{error}</pre>
+      <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
+    </div>
+  {/snippet} -->
+<!-- </svelte:boundary> -->

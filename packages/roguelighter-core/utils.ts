@@ -1,11 +1,11 @@
 import JSON5 from 'json5';
 import ts from 'typescript';
-import { PROJECTS_DIR, TEMPLATE_IF_STATEMENT, function_regex } from './constants';
+import { PROJECTS_DIR, function_regex } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
-import { GameData, GUI } from './types/game';
-import { EntryObject, EntryTuple, ParseErrorObject } from './types/engine';
+import { GameData } from './types/game';
+import { EntryObject, ParseErrorObject } from './types/engine';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -263,42 +263,48 @@ export function generate_template_data() {
   });
 }
 
-export function get_tailwind_classes(gui: GUI) {
-  let classes = new Set();
+const array_regex = /\[([^\]]*)\]/g;
+const token_regex = /"([^"]+)"/g;
 
-  for (let child of Object.values(gui)) {
-    if (child.tokens) {
-      for (let token of child.tokens) {
-        classes.add(token);
-      }
-    }
+export function extract_tailwind_classes(stringified_gui) {
+  let tokens = new Set();
+  let match;
 
-    let if_keys = Object.keys(child).filter((key) => key.startsWith(TEMPLATE_IF_STATEMENT));
+  const modifiers_regex = /"modifiers":\s*{([^}]*)}/;
+  const modifiers_match = modifiers_regex.exec(stringified_gui);
 
-    for (let key of if_keys) {
-      // @ts-expect-error
-      if (Array.isArray(child[key])) {
-        // @ts-expect-error
-        for (let token of child[key]) {
-          classes.add(token);
-        }
-      }
-    }
+  if (modifiers_match) {
+    const modifiers_content = modifiers_match[1];
+    const key_value_regex = /"([^"]+)":\s*\[([^\]]*)\]/g;
+    let key_value_match;
 
-    if (child.children) {
-      let returned_set = get_tailwind_classes(child.children);
-      for (let val of returned_set.values()) {
-        classes.add(val);
+    while ((key_value_match = key_value_regex.exec(modifiers_content)) !== null) {
+      const key = key_value_match[1];
+      const array_content = key_value_match[2];
+      let token_match;
+
+      while ((token_match = token_regex.exec(array_content)) !== null) {
+        tokens.add(`${key}:${token_match[1]}`);
       }
     }
   }
 
-  return classes;
+  while ((match = array_regex.exec(stringified_gui)) !== null) {
+    const array_content = match[0].slice(1, -1);
+    let token_match;
+
+    while ((token_match = token_regex.exec(array_content)) !== null) {
+      tokens.add(token_match[1]);
+    }
+  }
+
+  return Array.from(tokens.values()).join(' ');
 }
 
 export const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {
   events: ({ text }) => text.startsWith('events:'),
-  variables: ({ text }) => text.startsWith('variables:')
+  variables: ({ text }) => text.startsWith('variables:'),
+  gui: ({ text }) => text.startsWith('gui:')
   // agent_states: ({ text }) => text.startsWith('variables:'),
 };
 
@@ -399,4 +405,29 @@ export function focus_trap(node: HTMLElement, enabled: boolean) {
       observer.disconnect();
     }
   };
+}
+
+export function replace_content_in_range(
+  str: string,
+  start_marker: string,
+  end_marker: string,
+  new_content: string
+) {
+  const startIdx = str.indexOf(start_marker);
+  const endIdx = str.indexOf(end_marker);
+
+  if (startIdx === -1 || endIdx === -1) {
+    return str; // Markers not found, return the original string
+  }
+
+  // Calculate the range between the markers
+  const rangeStart = startIdx + start_marker.length;
+  const rangeEnd = endIdx;
+
+  // Replace the content in the range
+  return str.slice(0, rangeStart) + new_content + str.slice(rangeEnd);
+  // return str.replace(
+  //   new RegExp(`(${start_marker})(.*?)(${end_marker})`, 's'),
+  //   `$1${new_content}$3`
+  // );
 }

@@ -1,118 +1,111 @@
 <script module>
   interface Props {
+    get_variable_value: (variable_name: string) => any;
+    children_handler: (obj: GUI | GUI_Element) => Snippet;
     variables: { [key: string]: any };
     events: any;
     name: string;
-    guiElement: GUI_Element;
+    gui_element: GUI_Element;
+    is_in_if_block?: boolean;
+    is_in_for_block?: boolean;
+  }
+
+  interface VariableGetter {
+    vanilla: {
+      [variable_name: string]: {
+        style_obj: StyleObject;
+      };
+    };
+    computed: {
+      [variable_name: string]: {
+        fn: (variables: any) => boolean;
+        style_obj: StyleObject;
+      };
+    };
   }
 </script>
 
 <script lang="ts">
   import GuiElement from './GuiElement.svelte';
-  import { noop, cn } from '../../utils';
-  import type { GUI_Element } from '../../types/game';
+  import { cn, noop } from '../../utils';
+  import type { GUI, GUI_Element, StyleObject } from '../../types/game';
+  import type { Snippet } from 'svelte';
   import * as transitions from 'svelte/transition';
   import GuiText from './GuiText.svelte';
-  import { onMount } from 'svelte';
-  import { TEMPLATE_IF_STATEMENT } from '../../constants';
 
-  let { variables = $bindable(), events, name, guiElement }: Props = $props();
-  let iteration_count = $derived.by(() => {
-    if (!name.startsWith('$for_')) return 1;
+  function stringify_modifiers(modifiers: StyleObject['modifiers']) {
+    if (!modifiers) return '';
 
-    let variable_name = name.replace('$for_', '');
-    let variable = variables[variable_name.substring(1)];
-    if (variable === undefined) return 1;
-    return variable;
-  });
+    let modifier_tokens = '';
+    for (let [modifier, _tokens] of Object.entries(modifiers)) {
+      modifier_tokens += _tokens.map((t) => `${modifier}:${t} `) + ' ';
+    }
+    return modifier_tokens;
+  }
 
   let {
-    onclick: onclick_name,
-    text,
-    type,
-    visibility_depends_on,
-    tokens,
-    transition,
-    children,
-    ...if_statements
-  } = $state(guiElement);
+    children_handler,
+    get_variable_value,
+    events,
+    name,
+    gui_element,
+    is_in_if_block = false,
+    is_in_for_block = false
+  }: Props = $props();
+  let { onclick: onclick_name, text, type, style, transition, children } = $state(gui_element);
   const onclick = onclick_name ? events[onclick_name] : noop;
   const element_transition = transition ? transitions[transition?.type] : noop;
 
-  let joined_tokens = $state(tokens.join(' '));
-  let fns: Array<[fn: Function, _tokens: Array<string>]> = [];
+  // TODO: implement $index
+  let iteration_count = $derived.by(() => {
+    if (!is_in_for_block) return 1;
 
-  function execute_fns() {
-    joined_tokens = tokens.join(' ');
-    for (let [fn, _tokens] of fns) {
-      if (fn(variables)) {
-        joined_tokens = cn(joined_tokens, _tokens.join(' '));
+    let variable = get_variable_value(name);
+    if (variable === undefined || typeof variable != 'number') return 1;
+    return variable || 0;
+  });
+
+  let is_visible = $derived.by(() => {
+    if (!is_in_if_block) return true;
+    return get_variable_value(name);
+  });
+
+  let if_object = $derived(style?.$if || ({} as { [name: string]: StyleObject }));
+  let default_tokens = $state(style?.default?.join(' ') || '');
+  let modifier_tokens = $state(stringify_modifiers(style?.modifiers));
+  const original_tokens = default_tokens + ' ' + modifier_tokens;
+  let all_tokens = $state(default_tokens + ' ' + modifier_tokens);
+
+  window.addEventListener('fired_event', () => {
+    all_tokens = original_tokens;
+
+    for (let [variable_name, style_obj] of Object.entries(if_object)) {
+      if (get_variable_value(variable_name)) {
+        const { default: d, modifiers } = style_obj as StyleObject;
+        const all_conditionals = d + ' ' + stringify_modifiers(modifiers);
+        all_tokens = cn(original_tokens, all_conditionals);
       }
     }
-  }
 
-  onMount(() => {
-    for (let [if_statement, _tokens] of Object.entries(if_statements)) {
-      let fn_str = variables[if_statement.replace(TEMPLATE_IF_STATEMENT, '')];
-
-      if (fn_str && fn_str.startsWith('function (_)')) {
-        let modified_fn_str = fn_str.replace('(_)', '(variables)').replace('_.', '');
-        const fn = new Function('return ' + modified_fn_str)(variables);
-        fns.push([fn, _tokens]);
-      }
-    }
-
-    window.addEventListener('fired_event', (e) => {
-      execute_fns();
-    });
+    console.log('original: ', original_tokens);
+    console.log('all: ', all_tokens);
   });
 </script>
 
-{#if visibility_depends_on}
-  {#if variables[visibility_depends_on.split('.')[1]]}
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <svelte:element
-      this={type || 'div'}
-      transition:element_transition
-      {onclick}
-      class={joined_tokens}
-    >
-      {#if text}
-        <GuiText {text} bind:variables></GuiText>
-      {/if}
-      {#each Object.entries(guiElement?.children || []) as [name, child]}
-        <GuiElement guiElement={child} {events} {name} bind:variables />
-      {/each}
-    </svelte:element>
-  {/if}
-{:else if name == '$pause_menu'}
-  {#if variables.$pause_menu}
-    <!--       onintrostart={events.$open_pause_menu}
-      onoutrostart={events.$close_pause_menu} -->
-    <div transition:element_transition class={joined_tokens}>
-      {#if text}
-        <GuiText {text} bind:variables></GuiText>
-      {/if}
-      {#each Object.entries(guiElement?.children || []) as [name, child]}
-        <GuiElement guiElement={child} {events} {name} bind:variables />
-      {/each}
-    </div>
-  {/if}
-{:else}
+{#snippet gui_component()}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  {#each { length: iteration_count } as item, index}
-    <svelte:element
-      this={type || 'div'}
-      class={joined_tokens}
-      transition:element_transition
-      {onclick}
-    >
+  {#each { length: iteration_count }}
+    <svelte:element this={type || 'div'} class={all_tokens} {onclick} transition:element_transition>
       {#if text}
-        <GuiText {text} bind:variables></GuiText>
+        <GuiText {text} {get_variable_value}></GuiText>
       {/if}
-      {#each Object.entries(guiElement?.children || []) as [name, child]}
-        <GuiElement guiElement={child} {events} {name} bind:variables />
-      {/each}
+      {#if Object.keys(children || {}).length}
+        {@render children_handler(children)}
+      {/if}
     </svelte:element>
   {/each}
+{/snippet}
+
+{#if is_visible}
+  {@render gui_component()}
 {/if}

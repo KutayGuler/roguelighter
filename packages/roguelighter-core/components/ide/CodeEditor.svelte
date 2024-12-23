@@ -19,6 +19,8 @@
 <script lang="ts">
   // BACKLOG: save folding information on code
   import { onDestroy, onMount } from 'svelte';
+  import JSON5 from 'json5';
+
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
@@ -33,14 +35,16 @@
   import { debounce, filters, includes_any, agent_states_obj, noop } from '../../utils';
   import {
     INTERNAL_EVENTS,
-    INTERNAL_GUI,
-    INTERNAL_GUI_STARTS_WITH,
+    TEMPLATE_LOGIC,
     INTERNAL_TEXTS,
-    variables_regex
+    variables_regex,
+    DEFAULT_GUI_TYPE
   } from '../../constants';
   import type { EntryObject, RoguelighterProject, View } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
+
+  // TODO: add manually restarting the ts server
 
   let {
     project = $bindable(),
@@ -116,8 +120,6 @@
     model.setValue(code);
   }
 
-  console.log('xdee');
-
   function infer_type(kind: string) {
     // BACKLOG: cannot infer the types of objects inside variables
     if (kind === 'FirstLiteralToken') {
@@ -149,11 +151,34 @@
   }
 
   export function generate_types(code: string, cached_entries: Array<EntryObject> = []) {
+    // TODO: infer function types cuz computed variables cannot be reassigned
+
     try {
       const ast = generate_ast(code);
       const prop_assignments = ast.c[0].c[0].c[2].c;
       const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
       const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+      const gui_assignments = prop_assignments.filter(filters.gui)[0].c[1].c;
+
+      let gui_keys = [];
+
+      for (let assignment of gui_assignments) {
+        gui_keys.push(assignment.text.split(':')[0]);
+      }
+
+      let gui_interface = ``;
+
+      for (let key of gui_keys) {
+        if (key == '$if') {
+          gui_interface += `\t$if: { [name in keyof Variables]?: GUI_Element; };\n`;
+        } else {
+          gui_interface += `\t${key}: DetermineGuiChildType<'${key}'>;\n`;
+        }
+      }
+
+      if (!gui_interface.length) {
+        gui_interface = DEFAULT_GUI_TYPE;
+      }
 
       let events = '';
       let variables = '';
@@ -242,7 +267,8 @@
         events,
         variables,
         agent_states,
-        user_functions_and_parameters
+        user_functions_and_parameters,
+        gui_interface
       });
 
       return generated_type;
@@ -301,16 +327,13 @@
 
       let starts_with_statements = false;
 
-      for (let str of INTERNAL_GUI_STARTS_WITH) {
+      for (let str of TEMPLATE_LOGIC) {
         starts_with_statements = content.startsWith(str);
         if (starts_with_statements) break;
       }
 
       if (!starts_with_statements) {
-        if (
-          content[0] == '$' &&
-          !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
-        ) {
+        if (content[0] == '$' && !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS])) {
           markers.push({
             message: '$ prefix is reserved and cannot be used for custom property names.',
             severity: monaco.MarkerSeverity.Error,

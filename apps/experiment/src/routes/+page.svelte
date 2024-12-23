@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {
-		get_tailwind_classes,
+		extract_tailwind_classes,
 		json_to_code_string,
 		template_json_code,
 		type GameData
@@ -9,7 +9,6 @@
 	import type { Scene } from 'roguelighter-core';
 	import RunCSS from 'runcss';
 	const { processClasses: process_classes } = RunCSS();
-	// process_classes(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
 
 	let project = {
 		scenes: [
@@ -72,9 +71,9 @@
 		}
 	} as const;
 
-	process_classes(Array.from(get_tailwind_classes(template_json_code.gui).values()).join(' '));
+	process_classes(extract_tailwind_classes(JSON.stringify(template_json_code.gui)));
 	if (overrides.gui) {
-		process_classes(Array.from(get_tailwind_classes(overrides.gui).values()).join(' '));
+		process_classes(extract_tailwind_classes(JSON.stringify(overrides.gui)));
 	}
 
 	const template_code_string = json_to_code_string({

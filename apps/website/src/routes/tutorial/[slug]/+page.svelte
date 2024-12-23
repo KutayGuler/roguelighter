@@ -1,6 +1,11 @@
 <script lang="ts">
   import { confetti } from '@neoconfetti/svelte';
-  import { code_string_to_json, CodeEditor, Game, get_tailwind_classes } from 'roguelighter-core';
+  import {
+    code_string_to_json,
+    CodeEditor,
+    extract_tailwind_classes,
+    Game
+  } from 'roguelighter-core';
   import { marked } from 'marked';
   import type { GameData } from 'roguelighter-core';
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
@@ -49,7 +54,7 @@
 
   function on_content_changed() {
     if (!cannot_render) {
-      processClasses.fn(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
+      processClasses.fn(extract_tailwind_classes(JSON.stringify((parsed as GameData).gui)));
       rerender++;
     }
   }

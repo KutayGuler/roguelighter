@@ -9,6 +9,7 @@
     on_no_scene_is_selected: Function;
     on_no_player_in_scene: Function;
     process_classes: Function;
+    exportCSS: Function;
   }
 </script>
 
@@ -19,10 +20,10 @@
   import Game from './game/Game.svelte';
   import {
     debounce,
-    get_tailwind_classes,
     code_string_to_json,
     generate_asset_urls,
-    process_entries_recursively
+    process_entries_recursively,
+    extract_tailwind_classes
   } from '../utils';
   import { EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
   import { exit } from '@tauri-apps/plugin-process';
@@ -42,7 +43,8 @@
     document_path,
     on_no_scene_is_selected,
     on_no_player_in_scene,
-    process_classes
+    process_classes,
+    exportCSS
   }: Props = $props();
   let current_scene_id: UUID | undefined = $state();
   let view: View = $state('code');
@@ -189,7 +191,11 @@ if not exist "${EXPORT_DIR}" (
       return;
     }
 
-    process_classes(Array.from(get_tailwind_classes((parsed as GameData).gui).values()).join(' '));
+    const extracted_classes = extract_tailwind_classes(JSON.stringify((parsed as GameData).gui));
+    // console.log(extracted_classes);
+    process_classes(extracted_classes);
+    console.log(exportCSS());
+
     [agent_asset_urls, bg_asset_urls] = await Promise.all([
       generate_asset_urls(project.name, 'agents', document_path),
       generate_asset_urls(project.name, 'backgrounds', document_path)
@@ -341,7 +347,6 @@ if not exist "${EXPORT_DIR}" (
         {unfocus_from_scene_editor}
       />
     {:else if view == 'game'}
-      <!-- <svelte:boundary> -->
       <Game
         DEV
         {project}
@@ -350,15 +355,6 @@ if not exist "${EXPORT_DIR}" (
         {current_scene_id}
         on_exit={DEV ? () => change_view('scene') : exit}
       />
-
-      <!-- {#snippet failed(error, reset)}
-        <div class="pl-4 pt-16">
-          <p>An error occured</p>
-          <pre class="text-xs">{error}</pre>
-          <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
-        </div>
-      {/snippet} -->
-      <!-- </svelte:boundary> -->
     {/if}
     <div
       class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"
