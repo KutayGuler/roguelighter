@@ -194,7 +194,7 @@ if not exist "${EXPORT_DIR}" (
     const extracted_classes = extract_tailwind_classes(JSON.stringify((parsed as GameData).gui));
     // console.log(extracted_classes);
     process_classes(extracted_classes);
-    console.log(exportCSS());
+    // console.log(exportCSS());
 
     [agent_asset_urls, bg_asset_urls] = await Promise.all([
       generate_asset_urls(project.name, 'agents', document_path),

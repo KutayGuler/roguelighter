@@ -203,9 +203,7 @@ export const template_json_code: GameData = {
     variable_name: 3
   },
   events: {},
-  keybindings: {
-    Escape: '$toggle_pause_menu'
-  },
+  keybindings: {},
   gui: {
     $pause_menu: {
       tokens: [

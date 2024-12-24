@@ -40,9 +40,7 @@
         variable_name: 3
       },
       events: {},
-      keybindings: {
-        Escape: '$toggle_pause_menu'
-      },
+      keybindings: {},
       gui: {
         $pause_menu: {
           tokens: ['absolute', 'bottom-0', 'w-full', 'h-full', 'bg-black/50'],

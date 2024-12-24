@@ -26,7 +26,6 @@
 </script>
 
 <script lang="ts">
-  import GuiElement from './GuiElement.svelte';
   import { cn, noop } from '../../utils';
   import type { GUI, GUI_Element, StyleObject } from '../../types/game';
   import type { Snippet } from 'svelte';
@@ -52,25 +51,20 @@
     is_in_if_block = false,
     is_in_for_block = false
   }: Props = $props();
-  let { onclick: onclick_name, text, type, style, transition, children } = $state(gui_element);
-  const onclick = onclick_name ? events[onclick_name] : noop;
+  let { text, type, style, transition, children, ...attrs } = $state(gui_element);
   const element_transition = transition ? transitions[transition?.type] : noop;
 
-  // TODO: implement $index
   let iteration_count = $derived.by(() => {
     if (!is_in_for_block) return 1;
 
     let variable = get_variable_value(name);
-    if (variable === undefined || typeof variable != 'number') return 1;
+    if (typeof variable !== 'number') return 1;
     return variable || 0;
   });
 
-  let is_visible = $derived.by(() => {
-    if (!is_in_if_block) return true;
-    return get_variable_value(name);
-  });
-
+  let is_visible = $derived(!is_in_if_block ? true : get_variable_value(name));
   let if_object = $derived(style?.$if || ({} as { [name: string]: StyleObject }));
+
   let default_tokens = $state(style?.default?.join(' ') || '');
   let modifier_tokens = $state(stringify_modifiers(style?.modifiers));
   const original_tokens = default_tokens + ' ' + modifier_tokens;
@@ -86,18 +80,20 @@
         all_tokens = cn(original_tokens, all_conditionals);
       }
     }
-
-    console.log('original: ', original_tokens);
-    console.log('all: ', all_tokens);
   });
 </script>
 
 {#snippet gui_component()}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  {#each { length: iteration_count }}
-    <svelte:element this={type || 'div'} class={all_tokens} {onclick} transition:element_transition>
+  {#each { length: iteration_count }, index}
+    <svelte:element
+      this={type || 'div'}
+      class={all_tokens}
+      {...attrs}
+      transition:element_transition
+    >
       {#if text}
-        <GuiText {text} {get_variable_value}></GuiText>
+        <GuiText {index} {text} {get_variable_value}></GuiText>
       {/if}
       {#if Object.keys(children || {}).length}
         {@render children_handler(children)}

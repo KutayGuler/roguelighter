@@ -19,8 +19,6 @@
 <script lang="ts">
   // BACKLOG: save folding information on code
   import { onDestroy, onMount } from 'svelte';
-  import JSON5 from 'json5';
-
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
@@ -44,8 +42,6 @@
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
 
-  // TODO: add manually restarting the ts server
-
   let {
     project = $bindable(),
     view = $bindable(),
@@ -54,7 +50,7 @@
     save_file,
     on_content_changed = noop
   }: Props = $props();
-  let editorElement: HTMLDivElement | undefined = $state();
+  let editor_element: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
   let agents_entries: Array<EntryObject> = predefined_entries?.agents || [];
@@ -169,11 +165,12 @@
       let gui_interface = ``;
 
       for (let key of gui_keys) {
-        if (key == '$if') {
-          gui_interface += `\t$if: { [name in keyof Variables]?: GUI_Element; };\n`;
-        } else {
-          gui_interface += `\t${key}: DetermineGuiChildType<'${key}'>;\n`;
-        }
+        if (TEMPLATE_LOGIC.includes(key)) continue;
+        gui_interface += `\t${key}?: GUI_Element;\n`;
+      }
+
+      for (let template_logic of TEMPLATE_LOGIC) {
+        gui_interface += `\t${template_logic}?: { [name in keyof Variables]?: GUI_Element; };\n`;
       }
 
       if (!gui_interface.length) {
@@ -481,6 +478,86 @@
     }
   }
 
+  function set_language_settings() {
+    monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+
+    // monaco.languages.css.cssDefaults.setOptions({
+    //   data: {
+    //     dataProviders: {
+    //       tailwindcssData
+    //     }
+    //   }
+    // });
+
+    // configureMonacoTailwindcss(monaco);
+
+    // compiler options
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.Latest,
+      allowNonTsExtensions: true
+    });
+
+    monaco.editor.createModel(generate_types(project.code) || '', 'typescript');
+  }
+
+  function set_editor_element_settings() {
+    editor = monaco.editor.create(editor_element as HTMLDivElement, {
+      automaticLayout: true,
+      theme: 'vs-dark',
+      tabSize: 2,
+      autoIndent: 'full',
+      formatOnPaste: true,
+      formatOnType: true
+    });
+
+    editor.onDidChangeModelContent(
+      debounce(() => {
+        on_content_changed();
+        update_types();
+        try {
+          validate(model);
+        } catch (e) {
+          console.log('code validation error', e);
+        }
+        project.code = editor.getValue();
+        save_file();
+      }, 200)
+    );
+    editor.onKeyUp((e) => {
+      if (view == 'game') {
+        e.preventDefault();
+        return;
+      }
+      if (e.keyCode === monaco.KeyCode.Quote) {
+        editor.trigger('', 'editor.action.triggerSuggest', '');
+      }
+    });
+    editor.onKeyDown((e) => {
+      if (view != 'code') {
+        e.preventDefault();
+        return;
+      }
+      // LATER: prevent triggering OS level shortcut
+      if (e.code === 'Escape' && e.shiftKey) {
+        e.preventDefault();
+        unfocus_from_code_editor();
+      }
+    });
+  }
+
+  function dispose() {
+    monaco?.editor.getModels().forEach((model) => model.dispose());
+    editor?.dispose();
+  }
+
+  function restart_ide() {
+    dispose();
+    set_language_settings();
+    set_editor_element_settings();
+    load_code(project.code);
+    format_document();
+  }
+
   onMount(async () => {
     create_custom_tokenizer();
 
@@ -509,78 +586,18 @@
       }
     };
 
-    monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
-
-    // monaco.languages.css.cssDefaults.setOptions({
-    //   data: {
-    //     dataProviders: {
-    //       tailwindcssData
-    //     }
-    //   }
-    // });
-
-    // configureMonacoTailwindcss(monaco);
-
-    // compiler options
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true
-    });
-
-    monaco.editor.createModel(generate_types(project.code) || '', 'typescript');
-
-    editor = monaco.editor.create(editorElement as HTMLDivElement, {
-      automaticLayout: true,
-      theme: 'vs-dark',
-      tabSize: 2,
-      autoIndent: 'full',
-      formatOnPaste: true,
-      formatOnType: true
-    });
-
-    editor.onDidChangeModelContent(
-      debounce(() => {
-        on_content_changed();
-        update_types();
-        try {
-          validate(model);
-        } catch (e) {
-          console.log('error');
-          // console.log(e);
-        }
-        project.code = editor.getValue();
-        save_file();
-      }, 200)
-    );
-    editor.onKeyUp((e) => {
-      if (view == 'game') {
-        e.preventDefault();
-        return;
-      }
-      if (e.keyCode === monaco.KeyCode.Quote) {
-        editor.trigger('', 'editor.action.triggerSuggest', '');
-      }
-    });
-    editor.onKeyDown((e) => {
-      if (view != 'code') {
-        e.preventDefault();
-        return;
-      }
-      // LATER: prevent triggering OS level shortcut
-      if (e.code === 'Escape' && e.shiftKey) {
-        e.preventDefault();
-        unfocus_from_code_editor();
-      }
-    });
-
+    set_language_settings();
+    set_editor_element_settings();
     load_code(project.code);
     format_document();
   });
 
-  onDestroy(() => {
-    monaco?.editor.getModels().forEach((model) => model.dispose());
-    editor?.dispose();
-  });
+  onDestroy(dispose);
 </script>
 
-<div class="h-screen" bind:this={editorElement}></div>
+<div class="h-screen" bind:this={editor_element}></div>
+<div
+  class="absolute bottom-12 bg-base-900 w-full h-fit flex flex-row items-end justify-end px-1 mono"
+>
+  <button onclick={restart_ide} class="btn-base z-10 !text-base-300 !text-xs">restart</button>
+</div>

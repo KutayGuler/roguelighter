@@ -12,7 +12,7 @@
 </script>
 
 <script lang="ts">
-  // TODO LATER: introduce helpers
+  // LATER: introduce helpers
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
@@ -56,23 +56,6 @@
   let special_keys: Array<KeyboardEventCode> = [];
 
   const internal_events = {
-    $open_pause_menu() {
-      window.dispatchEvent(new Event('paused'));
-      variables.$pause_menu = true;
-      game_paused = true;
-    },
-    $close_pause_menu() {
-      window.dispatchEvent(new Event('unpaused'));
-      variables.$pause_menu = false;
-      game_paused = false;
-    },
-    $toggle_pause_menu() {
-      if (game_paused) {
-        internal_events.$close_pause_menu();
-      } else {
-        internal_events.$open_pause_menu();
-      }
-    },
     $exit: on_exit
   } as const;
 
@@ -240,7 +223,6 @@
     </div>
   {/snippet}
 </svelte:boundary>
-<!-- <svelte:boundary> -->
 
 {#snippet children_handler(nested_obj: GUI | GUI_Element)}
   {#each Object.entries(nested_obj) as [name, element_or_if_or_for]}
@@ -280,25 +262,12 @@
 
 {@render children_handler(gui)}
 
-<!-- {#each Object.entries(gui) as [name, element_or_if_or_for]}
-  {#if name == TEMPLATE_IF_STATEMENT}
-    {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
-      <GuiElement is_in_if_block {events} {name} {gui_element} bind:variables />
-    {/each}
-  {:else if name == TEMPLATE_FOR_LOOP}
-    {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
-      <GuiElement is_in_for_block {events} {name} {gui_element} bind:variables />
-    {/each}
-  {:else}
-    <GuiElement {events} {name} gui_element={element_or_if_or_for} bind:variables />
-  {/if}
-{/each} -->
-
-<!-- {#snippet failed(error, reset)}
+<!-- <svelte:boundary>
+ {#snippet failed(error, reset)}
     <div class="pl-4 pt-16">
       <p>An error occured while rendering the GUI</p>
       <pre class="text-xs">{error}</pre>
       <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
     </div>
-  {/snippet} -->
-<!-- </svelte:boundary> -->
+  {/snippet}
+</svelte:boundary> -->
