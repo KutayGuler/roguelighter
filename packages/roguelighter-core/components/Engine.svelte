@@ -31,7 +31,7 @@
   import { join } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/plugin-shell';
   import type { RoguelighterDataFile, View } from '../types/engine';
-  import type { GameData } from '../types/game';
+  import type { Setup } from '../types/game';
   import { onDestroy } from 'svelte';
 
   // BACKLOG: sometimes editor styles not loading
@@ -52,7 +52,7 @@
   let code_button: HTMLButtonElement | undefined = $state();
   let scene_button: HTMLButtonElement | undefined = $state();
   // @ts-expect-error
-  let agents: GameData['agents'] = $state();
+  let agents: Setup['agents'] = $state();
   let code_editor: any = $state();
   let initialized = $state(false);
   let code_with_errors = $state('');
@@ -183,15 +183,16 @@ if not exist "${EXPORT_DIR}" (
 
   async function recalculate() {
     let parsed = code_string_to_json(project.code);
+    if (!parsed) throw new Error('Parsing result is undefined');
 
     if ((parsed as ParseErrorObject).error) {
       parse_errors = parsed as ParseErrorObject;
       code_with_errors = (parsed as ParseErrorObject).code;
-      error_line = parseInt(parse_errors.error.split('at')[1].split(':')[0]) || 0;
+      error_line = parseInt(parse_errors.error?.split('at')[1]?.split(':')[0]) || 0;
       return;
     }
 
-    const extracted_classes = extract_tailwind_classes(JSON.stringify((parsed as GameData).gui));
+    const extracted_classes = extract_tailwind_classes(JSON.stringify((parsed as Setup).gui));
     // console.log(extracted_classes);
     process_classes(extracted_classes);
     // console.log(exportCSS());
@@ -200,7 +201,7 @@ if not exist "${EXPORT_DIR}" (
       generate_asset_urls(project.name, 'agents', document_path),
       generate_asset_urls(project.name, 'backgrounds', document_path)
     ]);
-    agents = (parsed as GameData).agents;
+    agents = (parsed as Setup).agents;
     initialized = true;
   }
 
@@ -369,7 +370,6 @@ if not exist "${EXPORT_DIR}" (
     </div>
   </main>
 {:else}
-  <!-- BACKLOG: add button to go back -->
   <main class="bg-base-700 h-full text-white p-4 flex flex-col gap-2">
     <p>Engine has failed no initialize.</p>
     <a href="/" class="text-emerald-400 underline">Back to home</a>

@@ -1,12 +1,14 @@
 type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
-type ComputedVariable = (_: GameEnvironment, ...args: any) => any;
+type ComputedVariable = () => string | number | boolean | null | undefined | object;
 
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
-type Variables = { [key: string]: any | ComputedVariable };
+type Variables = {
+  [key: string]: string | number | boolean | null | undefined | object | ComputedVariable;
+};
 type BackgroundNames = any;
 type AgentStates = { [key: string]: any };
 type UserFunctionsAndParameters = any;
@@ -1787,17 +1789,26 @@ declare namespace Tw {
 export type PlayerPositions = 'x' | 'y';
 export type WritableProps = PlayerPositions;
 
-type UserFunction = (_: GameEnvironment, ...args: any) => void;
+type HandlerFunction = (...args: any) => void;
+type CustomFunctionNames = 'custom'; // @replace
 
 /**
  * TODO: docs
  */
-declare interface Events {
-  [function_name: string]: UserFunction;
-}
+/**
+ * TODO: docs
+ */
+type Handlers = {
+  [function_name in CustomFunctionNames]?: HandlerFunction;
+} & {
+  window?: {
+    [key in `on${keyof WindowEventMap}`]?: HandlerFunction;
+  };
+};
 
 // TODO: implement this
-type InternalEvents = '$exit' | WindowEventMap;
+type SystemExitFunction = '$SEF';
+type InternalEvents = SystemExitFunction | WindowEventMap;
 type InternalTexts = '$agent_avatar' | '$agent_name' | '$agent_text';
 type TemplateLogicKeywords = '$if' | '$for';
 
@@ -1821,7 +1832,10 @@ export type StyleObjectWithIf = StyleObject & {
 
 // TODO: implement this
 export type GUI_Element = {
-  [event in keyof HTMLElementEventMap]?: EventNames | InternalEvents | UserFunctionsAndParameters;
+  [event in `on${keyof HTMLElementEventMap}`]?:
+    | EventNames
+    | InternalEvents
+    | UserFunctionsAndParameters;
 } & {
   /** The type of HTML element */
   type?: keyof HTMLElementTagNameMap;
@@ -1836,6 +1850,7 @@ export type GUI_Element = {
   children?: {
     [key: string]: DetermineGuiChildType<string>;
   };
+
   /** TODO: Documentation */
   transition?: {
     type: Transition;
@@ -1854,7 +1869,7 @@ export interface GUI {
   /**
    * TODO: doc
    */
-  [key: string]: DetermineGuiChildType<string>;
+  [key: string]: DetermineGuiChildType<string>; // @replace
 }
 
 type ArrowKeys = 'ArrowRight' | 'ArrowLeft' | 'ArrowUp' | 'ArrowDown';
@@ -1996,14 +2011,6 @@ export interface Settings {
   };
 }
 
-// TODO: remove keybindings
-export type KeyBindings = {
-  [key in KeyboardEventCode | KeyboardCombinations]?:
-    | EventNames
-    | InternalEvents
-    | UserFunctionsAndParameters;
-};
-
 /**
  * TODO: doc
  */
@@ -2050,9 +2057,8 @@ export type Agents = {
 };
 
 export type XY_Tuple = [x: number, y: number];
-export type Collisions = Array<BackgroundNames>;
 
-export interface GameData {
+export interface Setup {
   /**
    * TODO: doc
    */
@@ -2068,19 +2074,11 @@ export interface GameData {
   /**
    * TODO: doc
    */
-  events: Prettify<Events>;
+  handlers: Prettify<Handlers>;
   /**
    * The object that contains all the GUI elements that will be in the game
    */
   gui: Prettify<Partial<GUI>>;
-  /**
-   * TODO: doc
-   */
-  keybindings: Prettify<KeyBindings>;
-  /**
-   * TODO: doc
-   */
-  collisions: Prettify<Collisions>;
   /**
    * TODO: doc
    */
@@ -2100,23 +2098,15 @@ export interface GameData {
     /**
      * TODO: doc
      */
-    events?: Prettify<Events>;
+    handlers?: Prettify<Handlers>;
     /**
      * The object that contains all the GUI elements that will be in the game
      */
     gui?: Prettify<Partial<GUI>>;
-    /**
-     * TODO: doc
-     */
-    keybindings?: Prettify<KeyBindings>;
-    /**
-     * TODO: doc
-     */
-    collisions?: Prettify<Collisions>;
   };
 }
 
-export interface GameEnvironment {
-  variables: Variables;
-  agents: any;
-}
+// export interface GameEnvironment {
+//   variables: Variables;
+//   agents: any;
+// }

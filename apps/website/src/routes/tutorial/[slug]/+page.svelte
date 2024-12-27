@@ -7,7 +7,7 @@
     Game
   } from 'roguelighter-core';
   import { marked } from 'marked';
-  import type { GameData } from 'roguelighter-core';
+  import type { Setup } from 'roguelighter-core';
   import { HANDLE, DOMAIN, TUTORIAL_URL } from '$lib/constants';
   import { afterNavigate } from '$app/navigation';
   import { processClasses } from '$lib/state.svelte.js';
@@ -31,9 +31,9 @@
       return false;
     }
   });
-  let solved = $derived(cannot_render ? false : check(parsed as GameData));
+  let solved = $derived(cannot_render ? false : check(parsed as Setup));
 
-  function check(obj: GameData) {
+  function check(obj: Setup) {
     let _val = structuredClone(obj);
 
     for (let i = 0; i < tutorial.solution_tuples.length; i++) {
@@ -54,7 +54,7 @@
 
   function on_content_changed() {
     if (!cannot_render) {
-      processClasses.fn(extract_tailwind_classes(JSON.stringify((parsed as GameData).gui)));
+      processClasses.fn(extract_tailwind_classes(JSON.stringify((parsed as Setup).gui)));
       rerender++;
     }
   }

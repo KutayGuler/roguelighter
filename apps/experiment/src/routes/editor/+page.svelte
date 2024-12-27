@@ -45,6 +45,4 @@
 	project.bg_asset_urls = new Map(project.bg_asset_urls);
 </script>
 
-<main class="flex w-1/2 flex-row gap-2">
-	<CodeEditor {project} view="code" save_file={() => {}}></CodeEditor>
-</main>
+<CodeEditor {project} view="code" save_file={() => {}}></CodeEditor>

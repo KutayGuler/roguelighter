@@ -4,7 +4,7 @@
     current_scene_id: UUID | undefined;
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
-    agents: GameData['agents'];
+    agents: Setup['agents'];
     unfocus_from_scene_editor: Function;
     switch_to_game: Function;
     save_file: Function;
@@ -13,7 +13,7 @@
 
 <script lang="ts">
   import Modal from './Modal.svelte';
-  import type { GameData } from '../../types/game';
+  import type { Setup } from '../../types/game';
   import { CROSS, DEFAULT_MAP_WIDTH } from '../../constants';
   import { onMount } from 'svelte';
   import Dropdown from './Dropdown.svelte';
@@ -688,7 +688,7 @@
     <button type="button" onclick={() => delete_scene_modal?.close()} class=" btn-ghost">
       Cancel
     </button>
-    <button type="submit" class="btn-alert">Delete</button>
+    <button type="submit" class="btn-danger">Delete</button>
   </form>
 </Modal>
 

@@ -179,7 +179,7 @@
     <h3>Delete project "{current_project_name}"?</h3>
     <div class="flex flex-row gap-2 w-full justify-end pt-4">
       <button onclick={() => delete_project_modal.close()} class=" btn-ghost">Cancel</button>
-      <button class="btn-primary" onclick={delete_project}>Delete</button>
+      <button class="btn-danger" onclick={delete_project}>Delete</button>
     </div>
   </Modal>
 

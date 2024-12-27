@@ -2,8 +2,7 @@
 	import {
 		extract_tailwind_classes,
 		json_to_code_string,
-		template_json_code,
-		type GameData
+		type Setup
 	} from 'roguelighter-core/utils';
 	import { Game } from 'roguelighter-core';
 	import type { Scene } from 'roguelighter-core';
@@ -38,7 +37,7 @@
 		bg_asset_urls: [['floor', '/floors/floor_1.png']]
 	};
 
-	const overrides: Partial<GameData> = {
+	const overrides: Partial<Setup> = {
 		settings: {
 			fps: 8,
 			easing: 'sineOut',

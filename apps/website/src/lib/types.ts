@@ -1,14 +1,14 @@
 import type {
   AgentAssetUrls,
   BackgroundAssetUrls,
-  GameData,
+  Setup,
   RoguelighterProject
 } from 'roguelighter-core';
 
 export interface TutorialJson {
   title: string;
   solution_tuples: Array<[key: string, answer: string]>;
-  solution_object: GameData;
+  solution_object: Setup;
   project: RoguelighterProject;
   agent_asset_urls: AgentAssetUrls;
   bg_asset_urls: BackgroundAssetUrls;
@@ -20,7 +20,7 @@ export interface TutorialJson {
 //   header: string;
 //   description: string;
 //   project: RoguelighterProject;
-//   solution: GameData;
+//   solution: Setup;
 //   solution_tuple: [string, any];
 //   agent_asset_urls: AgentAssetUrls;
 //   bg_asset_urls: BackgroundAssetUrls;

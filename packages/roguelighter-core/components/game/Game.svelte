@@ -17,7 +17,7 @@
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
   import { World, Debug } from '@threlte/rapier';
-  import type { KeyboardEventCode, GameData, GUI_Element, GUI } from '../../types/game';
+  import type { KeyboardEventCode, Setup, GUI_Element, GUI } from '../../types/game';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import type {
     AgentAssetUrls,
@@ -44,8 +44,8 @@
     on_exit
   }: Props = $props();
 
-  let _ = $state(code_string_to_json(project.code) as GameData);
-  let { variables, agents, settings, events, gui, keybindings, collisions, __dev_only } = $state(_);
+  let _$_ = $state(code_string_to_json(project.code) as Setup);
+  let { variables, agents, settings, handlers, gui, __dev_only } = $state(_$_);
 
   let unmodified_scenes = structuredClone(project.scenes);
   let scene: PlayableScene = $state() as PlayableScene;
@@ -53,7 +53,6 @@
   let scene_just_changed = $state(false);
   let player_pos = $state(0);
   let game_paused = $state(false);
-  let special_keys: Array<KeyboardEventCode> = [];
 
   const internal_events = {
     $exit: on_exit
@@ -95,17 +94,11 @@
   let computed_variable_names = new SvelteSet();
 
   function instantiate() {
-    for (let [key, event_name] of Object.entries(keybindings)) {
-      if ((event_name as string)[0] == '$') {
-        special_keys.push(key as KeyboardEventCode);
-      }
-    }
-
-    for (let [key, val] of Object.entries(events)) {
+    for (let [key, val] of Object.entries(handlers)) {
       if (typeof val === 'string') {
         const fn_str = val;
         const fn = new Function('return ' + fn_str)();
-        events[key] = fn;
+        handlers[key] = fn;
       }
     }
 
@@ -121,9 +114,9 @@
       }
     }
 
-    let internal_variables = { $pause_menu: false };
+    let internal_variables = {};
     Object.assign(variables, internal_variables);
-    Object.assign(events, internal_events);
+    Object.assign(handlers, internal_events);
     transform_scenes();
   }
 
@@ -136,21 +129,6 @@
       event_code = 'Shift_' + kbd_event.code;
     } else if (kbd_event.altKey) {
       event_code = 'Alt_' + kbd_event.code;
-    }
-
-    let event_name = keybindings[event_code as KeyboardEventCode];
-
-    if (DEV && __dev_only?.keybindings && !event_name) {
-      event_name = __dev_only?.keybindings[event_code as KeyboardEventCode];
-    }
-
-    if (!event_name || (game_paused && !event_name.includes('pause_menu'))) return;
-
-    if (Array.isArray(event_name)) {
-      const [fn_name, args] = [...event_name];
-      events[fn_name](_, ...args);
-    } else {
-      events[event_name](_);
     }
 
     // BACKLOG: could be optimized by checking which variables are being updated
@@ -186,7 +164,7 @@
   instantiate();
 
   // TODO: add new component (Collider or CollisionBox)
-  // TODO: should fire events (on_contact, on_bla)
+  // TODO: should fire handlers (on_contact, on_bla)
   $inspect(variables);
 </script>
 
@@ -232,7 +210,7 @@
           {get_variable_value}
           {children_handler}
           is_in_if_block
-          {events}
+          {handlers}
           {name}
           {gui_element}
         />
@@ -243,7 +221,7 @@
           {get_variable_value}
           {children_handler}
           is_in_for_block
-          {events}
+          {handlers}
           {name}
           {gui_element}
         />
@@ -252,7 +230,7 @@
       <GuiElement
         {get_variable_value}
         {children_handler}
-        {events}
+        {handlers}
         {name}
         gui_element={element_or_if_or_for}
       />

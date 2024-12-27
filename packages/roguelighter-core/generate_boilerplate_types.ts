@@ -1,47 +1,64 @@
-import { DEFAULT_GUI_TYPE } from './constants';
+import { DEFAULT_GUI_TYPE, SETUP_NAME } from './constants';
 
 export function generate_boilerplate_types({
   assets,
-  events,
+  handlers,
   variables,
+  variables_map,
   agent_states,
+  custom_handler_names,
   user_functions_and_parameters,
   gui_interface
 }: {
   assets: { agents: string; backgrounds: string };
-  events: string;
+  handlers: string;
   variables: string;
+  variables_map: Map<string, [value: string, type: string]>;
   agent_states: string;
+  custom_handler_names: string;
   user_functions_and_parameters: string;
   gui_interface: string;
 }) {
-  const variable_declarations = `
-  let game_data: GameData = {} 
+  let variable_declarations = '';
+
+  for (let [key, [value, type]] of variables_map.entries()) {
+    let keyword = type == 'ComputedVariable' ? 'const' : 'let';
+    variable_declarations += `${keyword} _${key} = ${value};\n`;
+  }
+
+  const setup_declarations = `
+  interface GameEnvironment {
+    system: { exit: SystemExitFunction };
+  }
+  let $: GameEnvironment = {}
+  ${variable_declarations}
+
+  let ${SETUP_NAME}: Setup = {} 
   `;
 
   const generated_types = `
-  type Prettify<T> = {
-    [K in keyof T]: T[K];
-  } & {};
   type AgentAssets = ${assets.agents};
   type BackgroundAssets = ${assets.backgrounds};
-  type EventNames = ${events};
+  type EventNames = ${handlers};
   type Variables = { ${variables} };
   type BackgroundNames = ${assets.backgrounds};
   type AgentStates = { ${agent_states} };
   type UserFunctionsAndParameters = ${user_functions_and_parameters};
+  type CustomFunctionNames = ${custom_handler_names}
   `;
 
   // @start
-const static_types = `type Prettify<T> = {
+  const static_types = `type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
-type ComputedVariable = (_: GameEnvironment, ...args: any) => any;
+type ComputedVariable = () => string | number | boolean | null | undefined | object;
 
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
-type Variables = { [key: string]: any | ComputedVariable };
+type Variables = {
+  [key: string]: string | number | boolean | null | undefined | object | ComputedVariable;
+};
 type BackgroundNames = any;
 type AgentStates = { [key: string]: any };
 type UserFunctionsAndParameters = any;
@@ -1822,17 +1839,26 @@ declare namespace Tw {
 declare type PlayerPositions = 'x' | 'y';
 declare type WritableProps = PlayerPositions;
 
-type UserFunction = (_: GameEnvironment, ...args: any) => void;
+type HandlerFunction = (...args: any) => void;
+type CustomFunctionNames = 'custom'; // @replace
 
 /**
  * TODO: docs
  */
-declare interface Events {
-  [function_name: string]: UserFunction;
-}
+/**
+ * TODO: docs
+ */
+type Handlers = {
+  [function_name in CustomFunctionNames]?: HandlerFunction;
+} & {
+  window?: {
+    [key in \`on\${keyof WindowEventMap}\`]?: HandlerFunction;
+  };
+};
 
 // TODO: implement this
-type InternalEvents = '$exit' | WindowEventMap;
+type SystemExitFunction = '$SEF';
+type InternalEvents = SystemExitFunction | WindowEventMap;
 type InternalTexts = '$agent_avatar' | '$agent_name' | '$agent_text';
 type TemplateLogicKeywords = '$if' | '$for';
 
@@ -1856,7 +1882,10 @@ declare type StyleObjectWithIf = StyleObject & {
 
 // TODO: implement this
 declare type GUI_Element = {
-  [event in keyof HTMLElementEventMap]?: EventNames | InternalEvents | UserFunctionsAndParameters;
+  [event in \`on\${keyof HTMLElementEventMap}\`]?:
+    | EventNames
+    | InternalEvents
+    | UserFunctionsAndParameters;
 } & {
   /** The type of HTML element */
   type?: keyof HTMLElementTagNameMap;
@@ -1871,6 +1900,7 @@ declare type GUI_Element = {
   children?: {
     [key: string]: DetermineGuiChildType<string>;
   };
+
   /** TODO: Documentation */
   transition?: {
     type: Transition;
@@ -1889,7 +1919,7 @@ declare interface GUI {
   /**
    * TODO: doc
    */
-  [key: string]: DetermineGuiChildType<string>;
+  [key: string]: DetermineGuiChildType<string>; // @replace
 }
 
 type ArrowKeys = 'ArrowRight' | 'ArrowLeft' | 'ArrowUp' | 'ArrowDown';
@@ -2031,14 +2061,6 @@ declare interface Settings {
   };
 }
 
-// TODO: remove keybindings
-declare type KeyBindings = {
-  [key in KeyboardEventCode | KeyboardCombinations]?:
-    | EventNames
-    | InternalEvents
-    | UserFunctionsAndParameters;
-};
-
 /**
  * TODO: doc
  */
@@ -2085,9 +2107,8 @@ declare type Agents = {
 };
 
 declare type XY_Tuple = [x: number, y: number];
-declare type Collisions = Array<BackgroundNames>;
 
-declare interface GameData {
+declare interface Setup {
   /**
    * TODO: doc
    */
@@ -2103,19 +2124,11 @@ declare interface GameData {
   /**
    * TODO: doc
    */
-  events: Prettify<Events>;
+  handlers: Prettify<Handlers>;
   /**
    * The object that contains all the GUI elements that will be in the game
    */
   gui: Prettify<Partial<GUI>>;
-  /**
-   * TODO: doc
-   */
-  keybindings: Prettify<KeyBindings>;
-  /**
-   * TODO: doc
-   */
-  collisions: Prettify<Collisions>;
   /**
    * TODO: doc
    */
@@ -2135,32 +2148,22 @@ declare interface GameData {
     /**
      * TODO: doc
      */
-    events?: Prettify<Events>;
+    handlers?: Prettify<Handlers>;
     /**
      * The object that contains all the GUI elements that will be in the game
      */
     gui?: Prettify<Partial<GUI>>;
-    /**
-     * TODO: doc
-     */
-    keybindings?: Prettify<KeyBindings>;
-    /**
-     * TODO: doc
-     */
-    collisions?: Prettify<Collisions>;
   };
 }
 
-declare interface GameEnvironment {
-  variables: Variables;
-  agents: any;
-}
-`
-// @end
+// declare interface GameEnvironment {
+//   variables: Variables;
+//   agents: any;
+// }
+`;
+  // @end
 
   return (
-    generated_types +
-    static_types.replaceAll(DEFAULT_GUI_TYPE, gui_interface) +
-    variable_declarations
+    generated_types + setup_declarations + static_types.replaceAll(DEFAULT_GUI_TYPE, gui_interface)
   );
 }

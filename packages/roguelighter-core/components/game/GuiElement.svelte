@@ -52,6 +52,7 @@
     is_in_for_block = false
   }: Props = $props();
   let { text, type, style, transition, children, ...attrs } = $state(gui_element);
+  console.log(attrs);
   const element_transition = transition ? transitions[transition?.type] : noop;
 
   let iteration_count = $derived.by(() => {

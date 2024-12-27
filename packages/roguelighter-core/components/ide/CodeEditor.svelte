@@ -126,9 +126,15 @@
       return 'boolean';
     } else if (kind === 'ObjectLiteralExpression') {
       return 'object';
+    } else if (kind === 'NullKeyword') {
+      return 'null';
+    } else if (kind === 'UndefinedKeyword') {
+      return 'undefined';
+    } else if (kind === 'FunctionExpression' || kind === 'ArrowFunction') {
+      return 'ComputedVariable';
     }
 
-    return 'any';
+    return 'unknown';
   }
 
   function update_types() {
@@ -152,7 +158,7 @@
     try {
       const ast = generate_ast(code);
       const prop_assignments = ast.c[0].c[0].c[2].c;
-      const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
+      const handler_functions = prop_assignments.filter(filters.handlers)[0].c[1].c;
       const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
       const gui_assignments = prop_assignments.filter(filters.gui)[0].c[1].c;
 
@@ -177,17 +183,20 @@
         gui_interface = DEFAULT_GUI_TYPE;
       }
 
-      let events = '';
+      let handlers = '';
       let variables = '';
       let agent_states = '';
       let user_functions_and_parameters = '';
-      let event_types: { [key: string]: string } = {};
+      let handler_types: { [key: string]: string } = {};
 
-      for (let assignment of event_functions) {
+      for (let assignment of handler_functions) {
         let identifier = assignment.c[0].text;
+
+        if (identifier == 'window') continue;
+
         let parameters = [];
 
-        events += `| '${identifier}'`;
+        handlers += `| '${identifier}'`;
 
         if (!assignment.c[1]) continue;
 
@@ -216,7 +225,7 @@
         }
 
         let filtered_typed_parameters = typed_parameters.filter((t) => !t.includes('undefined'));
-        event_types[identifier] =
+        handler_types[identifier] =
           '[' +
           typed_parameters.join(', ') +
           '] | ' +
@@ -225,7 +234,7 @@
           ']';
       }
 
-      for (let [key, val] of Object.entries(event_types)) {
+      for (let [key, val] of Object.entries(handler_types)) {
         user_functions_and_parameters += `| ["${key}", ${val}]`;
       }
 
@@ -234,10 +243,18 @@
         backgrounds: `'ERROR: no assets found'`
       };
 
+      let variables_map = new Map();
+
       for (let assignment of variable_assignments) {
         if (!assignment.c[1]) continue;
         variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
+        variables_map.set(assignment.c[0].text, [
+          assignment.c[1].text,
+          infer_type(assignment.c[1].kind)
+        ]);
       }
+
+      console.log(variables_map);
 
       for (let [key, val] of Object.entries(agent_states_obj)) {
         agent_states += `${key}: `;
@@ -261,9 +278,13 @@
 
       const generated_type = generate_boilerplate_types({
         assets,
-        events,
+        handlers,
         variables,
         agent_states,
+        variables_map,
+        custom_handler_names: Object.keys(handler_types)
+          .map((str) => `| '${str}'`)
+          .join(' '),
         user_functions_and_parameters,
         gui_interface
       });
@@ -329,35 +350,53 @@
         if (starts_with_statements) break;
       }
 
-      if (!starts_with_statements) {
-        if (content[0] == '$' && !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS])) {
-          markers.push({
-            message: '$ prefix is reserved and cannot be used for custom property names.',
-            severity: monaco.MarkerSeverity.Error,
-            startLineNumber: range.startLineNumber,
-            startColumn: range.startColumn,
-            endLineNumber: range.endLineNumber,
-            endColumn: range.endColumn
-          });
-        }
-        break;
-      }
-
       const variables_matches = content.match(variables_regex);
 
       if (variables_matches) {
         for (let match of variables_matches) {
           const startColumn = content.indexOf(match);
-          const variable_name = match.replace('$var(', '').replace(')', '');
+          const variable_name = match.replace('{', '').replace('}', '');
 
-          if (!variable_keys.includes(variable_name)) {
+          console.log(variable_name);
+
+          let message = '';
+
+          if (variable_name == '') {
+            message = 'Expecting variable name inside curly brackets.';
+          } else if (
+            includes_any(variable_name, [
+              ' ',
+              '+',
+              '-',
+              '*',
+              '/',
+              '%',
+              '&',
+              '|',
+              '?',
+              '!',
+              '>',
+              '<',
+              '^',
+              '[',
+              ']',
+              '{',
+              '}'
+            ])
+          ) {
+            message = `Cannot use empty space or operators inside curly brackets.`;
+          } else if (!variable_keys.includes(variable_name)) {
+            message = `Variable "${variable_name}" does not exist.`;
+          }
+
+          if (message) {
             markers.push({
-              message: `Variable "${variable_name}" does not exist.`,
-              severity: monaco.MarkerSeverity.Warning,
+              message,
+              severity: monaco.MarkerSeverity.Error,
               startLineNumber: range.startLineNumber,
-              startColumn: startColumn + 2,
+              startColumn: content.indexOf(variable_name),
               endLineNumber: range.endLineNumber,
-              endColumn: content.length + 2
+              endColumn: range.endColumn
             });
           }
         }
@@ -439,7 +478,8 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            /^(?:game_data|\tsettings|\tcollisions|\tagents|\tvariables|\tevents|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
+            // TODO: USE SETUP_NAME HERE
+            /^(?:\$|\tsettings|\tcollisions|\tagents|\tvariables|\thandlers|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],

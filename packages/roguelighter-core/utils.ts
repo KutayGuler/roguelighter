@@ -1,10 +1,16 @@
 import JSON5 from 'json5';
 import ts from 'typescript';
-import { PROJECTS_DIR, function_regex } from './constants';
+import {
+  SETUP_DECLARATION,
+  SETUP_NAME,
+  PROJECTS_DIR,
+  function_regex,
+  template_json_code
+} from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
-import { GameData } from './types/game';
+import { Setup } from './types/game';
 import { EntryObject, ParseErrorObject } from './types/engine';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -37,55 +43,22 @@ export function debounce(fn: Function, ms: number) {
   };
 }
 
-const rgx1 = /\[\s*(?:[^\]]*?,\s*)*\s*(undefined)\s*(?=(?:,\s*[^\]]*)*\])/g;
-const rgx2 = /\[\s*(?:[^\]]*?,\s*)*\s*(null)\s*(?=(?:,\s*[^\]]*)*\])/g;
-
-export function code_string_to_json(code: string): GameData | ParseErrorObject {
+export function code_string_to_json(code: string): Setup | ParseErrorObject {
   const transpiled = ts.transpile(code, { removeComments: true, strict: false });
 
-  function find_game_data_declaration(code: string) {
-    const regex = new RegExp(`\\b(game_data)\\b\\s*=\\s*([\\[{])`, 'g');
-    let game_data_declaration;
-    let match;
-
-    while ((match = regex.exec(code)) !== null) {
-      const start = match.index + match[0].length - 1;
-      const startChar = match[2];
-      const endChar = startChar === '{' ? '}' : ']';
-      let depth = 1;
-      let end = start;
-
-      while (depth > 0 && end < code.length) {
-        end++;
-        if (code[end] === startChar) depth++;
-        else if (code[end] === endChar) depth--;
-      }
-
-      if (depth === 0) {
-        game_data_declaration = `${match[1]}: ${code.substring(start, end + 1).trim()},\n`;
-      }
-    }
-
-    return game_data_declaration;
-  }
-
   // turn function declarations into strings
-  let game_data_declaration = find_game_data_declaration(transpiled)?.replace(
-    function_regex,
-    (match) => {
-      let modified = match
-        .replaceAll('\n', ' ')
-        .replaceAll('"', '\\"')
-        .replaceAll('undefined', '__undefined__');
-      return `"${modified}"`;
-    }
-  );
+  let t = transpiled?.replace(function_regex, (match) => {
+    let modified = match
+      .replaceAll('\n', ' ')
+      .replaceAll('"', '\\"')
+      .replaceAll('undefined', '__undefined__');
+    return `"${modified}"`;
+  });
 
-  let t = game_data_declaration as string;
-
-  let game_data_or_error: GameData | ParseErrorObject;
+  let setup_or_error: Setup | ParseErrorObject;
 
   try {
+    t = t.replace(`var ${SETUP_NAME} =`, '');
     t = t.replaceAll("'", '"');
     t = t.replace('},\n\n', '}');
     t = `{
@@ -93,15 +66,22 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
     }`;
     t = t.replaceAll(/(?<!["'])\bundefined\b(?!["'])/g, `"!undefined!"`);
     t = t.replaceAll('__undefined__', 'undefined');
+    let first_curly = t.indexOf('{');
+    let last_curly = t.lastIndexOf('};');
+
+    t = t.slice(first_curly + 1, last_curly);
+    t = t.slice(0, t.lastIndexOf('},'));
+    t += '}\n}';
+    t = t.replace(SETUP_DECLARATION, '');
 
     // BACKLOG: support types for nested variables
-    game_data_or_error = JSON5.parse(t, (key, val) => {
+    setup_or_error = JSON5.parse(t, (key, val) => {
       if (val == '!undefined!') return undefined;
       if (val == '!null!') return null;
       return val;
-    }).game_data;
+    });
   } catch (e) {
-    game_data_or_error = {
+    setup_or_error = {
       code,
       json_string: t,
       // @ts-expect-error
@@ -109,18 +89,18 @@ export function code_string_to_json(code: string): GameData | ParseErrorObject {
     };
   }
 
-  return game_data_or_error;
+  return setup_or_error;
 }
 
 // BACKLOG: fix indentation
-export function json_to_code_string(json: GameData) {
+export function json_to_code_string(json: Setup) {
   let str = ``;
 
   for (let [key, val] of Object.entries(json)) {
     str += `${key}: ${JSON.stringify(val, null, '\t')},\n`;
   }
 
-  return `game_data = {
+  return `${SETUP_DECLARATION} {
   ${str.replace(/"([^"]+)":/g, '$1:')}}
   `;
 }
@@ -180,79 +160,6 @@ export async function generate_asset_urls(
   return asset_urls;
 }
 
-export const template_json_code: GameData = {
-  settings: {
-    fps: 8,
-    easing: 'sineOut',
-    duration: 400,
-    camera: {
-      zoom: 9
-    }
-  },
-  collisions: ['floor_2'],
-  agents: {
-    player: {
-      states: {
-        idle: {
-          frame_count: 1
-        }
-      }
-    }
-  },
-  variables: {
-    variable_name: 3
-  },
-  events: {},
-  keybindings: {},
-  gui: {
-    $pause_menu: {
-      tokens: [
-        'absolute',
-        'bottom-0',
-        'w-full',
-        'h-full',
-        'bg-black/50',
-        'flex',
-        'flex-col',
-        'items-center',
-        'gap-2',
-        'pt-8'
-      ],
-      transition: { type: 'fade' },
-      children: {
-        continue: {
-          type: 'button',
-          tokens: [
-            'bg-amber-200',
-            'font-bold',
-            'p-4',
-            'hover:bg-purple-200',
-            'text-amber-600',
-            'w-1/2',
-            'rounded'
-          ],
-          onclick: '$close_pause_menu',
-          text: 'Continue' // add variable {v.var_name}
-        },
-        exit: {
-          type: 'button',
-          tokens: [
-            'bg-amber-200',
-            'font-bold',
-            'p-4',
-            'hover:bg-purple-200',
-            'text-amber-600',
-            'w-1/2',
-            'rounded'
-          ],
-          onclick: '$exit',
-          text: 'Exit' // add variable {v.var_name}
-        }
-      }
-    }
-  }
-};
-
 export function generate_template_data() {
   return JSON5.stringify({
     id: crypto.randomUUID(),
@@ -299,11 +206,10 @@ export function extract_tailwind_classes(stringified_gui) {
   return Array.from(tokens.values()).join(' ');
 }
 
-export const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {
-  events: ({ text }) => text.startsWith('events:'),
+export const filters: { [key in keyof Setup]?: ({ text }: { text: string }) => boolean } = {
+  handlers: ({ text }) => text.startsWith('handlers:'),
   variables: ({ text }) => text.startsWith('variables:'),
   gui: ({ text }) => text.startsWith('gui:')
-  // agent_states: ({ text }) => text.startsWith('variables:'),
 };
 
 export function focus_trap(node: HTMLElement, enabled: boolean) {
