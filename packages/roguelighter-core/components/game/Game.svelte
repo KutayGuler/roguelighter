@@ -17,7 +17,7 @@
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
   import { World, Debug } from '@threlte/rapier';
-  import type { KeyboardEventCode, Setup, GUI_Element, GUI } from '../../types/game';
+  import type { Setup, GUI_Element, GUI, Handlers } from '../../types/game';
   import { code_string_to_json, pos_to_xy } from '../../utils';
   import type {
     AgentAssetUrls,
@@ -29,6 +29,7 @@
   } from '../../types/engine';
   import { TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
   import { SvelteSet } from 'svelte/reactivity';
+  import WindowHandlers from './WindowHandlers.svelte';
 
   // BACKLOG: try catch for user defined functions
   // BACKLOG: introduce objects
@@ -45,7 +46,17 @@
   }: Props = $props();
 
   let _$_ = $state(code_string_to_json(project.code) as Setup);
-  let { variables, agents, settings, handlers, gui, __dev_only } = $state(_$_);
+  let {
+    variables: variables_obj,
+    agents,
+    settings,
+    handlers: handlers_obj,
+    gui,
+    __dev_only
+  } = $state(_$_);
+  let handlers: Handlers = $state({});
+  let variables = $state({});
+  let computed_variable_names = $state(new SvelteSet());
 
   let unmodified_scenes = structuredClone(project.scenes);
   let scene: PlayableScene = $state() as PlayableScene;
@@ -90,49 +101,47 @@
     scene = scenes.get(current_scene_id as UUID) as PlayableScene;
   }
 
-  let computed_variables = {};
-  let computed_variable_names = new SvelteSet();
+  let instantiated = $state(false);
 
   function instantiate() {
-    for (let [key, val] of Object.entries(handlers)) {
-      if (typeof val === 'string') {
-        const fn_str = val;
-        const fn = new Function('return ' + fn_str)();
-        handlers[key] = fn;
+    for (let [key, fn_str] of Object.entries(handlers_obj)) {
+      if (key == 'window') {
+        handlers.window = {};
+
+        // @ts-expect-error
+        for (let [window_key, window_fn_str] of Object.entries(handlers_obj.window)) {
+          // @ts-expect-error
+          handlers.window[window_key] = new Function(
+            // @ts-expect-error
+            'return ' + window_fn_str.replace('(e)', '(e, _, $)')
+          )();
+        }
+      } else {
+        // @ts-expect-error
+        handlers[key] = new Function('return ' + fn_str.replace('()', '(_, $)'))();
       }
     }
 
-    for (let variable_name of Object.keys(variables)) {
-      const fn_str_or_other = variables[variable_name];
+    console.log(handlers);
 
-      if (typeof fn_str_or_other == 'string' && fn_str_or_other.startsWith('function (_)')) {
-        const modified_fn_str = fn_str_or_other.replace('(_)', '(variables)').replace('_.', ''); // will not work if "_.variables" is destructured
-        const fn = new Function('return ' + modified_fn_str)(variables);
+    for (let [variable_name, value] of Object.entries(variables_obj)) {
+      if (typeof value == 'string' && value.startsWith('function ()')) {
+        const modified_fn_str = value.replace('()', '(_, $)');
+        const fn = new Function('return ' + modified_fn_str)(variables, handlers);
         // @ts-expect-error
-        computed_variables[variable_name] = fn;
+        variables[variable_name] = fn;
         computed_variable_names.add(variable_name);
+      } else {
+        // @ts-expect-error
+        variables[variable_name] = value;
       }
     }
 
     let internal_variables = {};
-    Object.assign(variables, internal_variables);
+    Object.assign(variables_obj, internal_variables);
     Object.assign(handlers, internal_events);
     transform_scenes();
-  }
-
-  function handle(kbd_event: KeyboardEvent) {
-    let event_code = kbd_event.code;
-
-    if (kbd_event.ctrlKey) {
-      event_code = 'Control_' + kbd_event.code;
-    } else if (kbd_event.shiftKey) {
-      event_code = 'Shift_' + kbd_event.code;
-    } else if (kbd_event.altKey) {
-      event_code = 'Alt_' + kbd_event.code;
-    }
-
-    // BACKLOG: could be optimized by checking which variables are being updated
-    window.dispatchEvent(new Event('fired_event'));
+    instantiated = true;
   }
 
   function change_scene(portal_info: Portal) {
@@ -153,10 +162,11 @@
   }
 
   function get_variable_value(variable_name: string) {
-    if (variable_name in computed_variables) {
+    if (computed_variable_names.has(variable_name)) {
       // @ts-expect-error
-      return computed_variables[variable_name](variables);
+      return variables[variable_name](variables, handlers);
     } else {
+      // @ts-expect-error
       return variables[variable_name];
     }
   }
@@ -165,10 +175,9 @@
 
   // TODO: add new component (Collider or CollisionBox)
   // TODO: should fire handlers (on_contact, on_bla)
-  $inspect(variables);
 </script>
 
-<svelte:window onkeydown={handle} />
+<WindowHandlers window_handlers={handlers.window} bind:variables bind:handlers></WindowHandlers>
 
 <!-- FIXME: top-12 issue (could show/hide the top bar with a key)-->
 
@@ -207,10 +216,11 @@
     {#if name == TEMPLATE_IF_STATEMENT}
       {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
         <GuiElement
+          bind:variables
+          bind:handlers
+          is_in_if_block
           {get_variable_value}
           {children_handler}
-          is_in_if_block
-          {handlers}
           {name}
           {gui_element}
         />
@@ -218,27 +228,31 @@
     {:else if name == TEMPLATE_FOR_LOOP}
       {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
         <GuiElement
+          bind:variables
+          bind:handlers
+          is_in_for_block
           {get_variable_value}
           {children_handler}
-          is_in_for_block
-          {handlers}
           {name}
           {gui_element}
         />
       {/each}
     {:else}
       <GuiElement
+        bind:variables
+        bind:handlers
+        gui_element={element_or_if_or_for}
         {get_variable_value}
         {children_handler}
-        {handlers}
         {name}
-        gui_element={element_or_if_or_for}
       />
     {/if}
   {/each}
 {/snippet}
 
-{@render children_handler(gui)}
+{#if instantiated}
+  {@render children_handler(gui)}
+{/if}
 
 <!-- <svelte:boundary>
  {#snippet failed(error, reset)}

@@ -71,10 +71,10 @@
         return;
       }
 
-      if (![...current_scene.agents.values()].includes('player')) {
-        on_no_player_in_scene();
-        return;
-      }
+      // if (![...current_scene.agents.values()].includes('player')) {
+      //   on_no_player_in_scene();
+      //   return;
+      // }
     }
 
     change_view('game');

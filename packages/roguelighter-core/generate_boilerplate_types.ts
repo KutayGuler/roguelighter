@@ -6,8 +6,7 @@ export function generate_boilerplate_types({
   variables,
   variables_map,
   agent_states,
-  custom_handler_names,
-  user_functions_and_parameters,
+  handler_types,
   gui_interface
 }: {
   assets: { agents: string; backgrounds: string };
@@ -15,23 +14,31 @@ export function generate_boilerplate_types({
   variables: string;
   variables_map: Map<string, [value: string, type: string]>;
   agent_states: string;
-  custom_handler_names: string;
-  user_functions_and_parameters: string;
+  handler_types: any;
   gui_interface: string;
 }) {
   let variable_declarations = '';
+  const custom_handler_union = Object.keys(handler_types)
+    .map((str) => `| '${str}'`)
+    .join(' ');
 
   for (let [key, [value, type]] of variables_map.entries()) {
-    let keyword = type == 'ComputedVariable' ? 'const' : 'let';
-    variable_declarations += `${keyword} _${key} = ${value};\n`;
+    let readonly = type == 'ComputedVariable' ? 'readonly' : '';
+    variable_declarations += `${readonly} ${key}: ${value},\n`;
   }
 
+  // _ means variables
+  // $ means handlers
+  // PROCESS means system obj
+  // BACKLOG do not allow read/write access to setup
+
   const setup_declarations = `
-  interface GameEnvironment {
-    system: { exit: SystemExitFunction };
-  }
-  let $: GameEnvironment = {}
-  ${variable_declarations}
+  type Process = { exit: HandlerFunction }
+  type HandlersObject = { ${Object.entries(handler_types).map(([key, params]) => `${key}: (${params}) => any;\n`)} };
+
+  const PROCESS: Process = {};
+  const $: HandlersObject = {};
+  const _ = { ${variable_declarations} };
 
   let ${SETUP_NAME}: Setup = {} 
   `;
@@ -43,16 +50,11 @@ export function generate_boilerplate_types({
   type Variables = { ${variables} };
   type BackgroundNames = ${assets.backgrounds};
   type AgentStates = { ${agent_states} };
-  type UserFunctionsAndParameters = ${user_functions_and_parameters};
-  type CustomFunctionNames = ${custom_handler_names}
+  type CustomFunctionNames = ${custom_handler_union}
   `;
 
   // @start
-  const static_types = `type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
-type ComputedVariable = () => string | number | boolean | null | undefined | object;
-
+  const static_types = `// @replace
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
@@ -63,39 +65,18 @@ type BackgroundNames = any;
 type AgentStates = { [key: string]: any };
 type UserFunctionsAndParameters = any;
 
-type Easing =
-  | 'backIn'
-  | 'backOut'
-  | 'backInOut'
-  | 'bounceIn'
-  | 'bounceOut'
-  | 'bounceInOut'
-  | 'circIn'
-  | 'circOut'
-  | 'circInOut'
-  | 'cubicIn'
-  | 'cubicOut'
-  | 'cubicInOut'
-  | 'elasticIn'
-  | 'elasticOut'
-  | 'elasticInOut'
-  | 'expoIn'
-  | 'expoOut'
-  | 'expoInOut'
-  | 'quadIn'
-  | 'quadOut'
-  | 'quadInOut'
-  | 'quartIn'
-  | 'quartOut'
-  | 'quartInOut'
-  | 'quintIn'
-  | 'quintOut'
-  | 'quintInOut'
-  | 'sineIn'
-  | 'sineOut'
-  | 'sineInOut';
+type HandlerFunction = (...args: any) => void;
+type CustomFunctionNames = 'custom';
 
-type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';
+declare type Handlers = {
+  [function_name in CustomFunctionNames]?: HandlerFunction;
+} & {
+  window?: {
+    [key in \`on\${keyof WindowEventMap}\`]?: HandlerFunction;
+  };
+};
+
+// replace@
 
 // Taken from https://github.com/aryomuzakki/tw-prefixer/tree/main/assets
 declare namespace Tw {
@@ -1836,33 +1817,14 @@ declare namespace Tw {
   type Tokens = StandaloneClasses;
 }
 
-declare type PlayerPositions = 'x' | 'y';
-declare type WritableProps = PlayerPositions;
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+type ComputedVariable = () => string | number | boolean | null | undefined | object;
 
-type HandlerFunction = (...args: any) => void;
-type CustomFunctionNames = 'custom'; // @replace
-
-/**
- * TODO: docs
- */
-/**
- * TODO: docs
- */
-type Handlers = {
-  [function_name in CustomFunctionNames]?: HandlerFunction;
-} & {
-  window?: {
-    [key in \`on\${keyof WindowEventMap}\`]?: HandlerFunction;
-  };
-};
-
-// TODO: implement this
-type SystemExitFunction = '$SEF';
-type InternalEvents = SystemExitFunction | WindowEventMap;
-type InternalTexts = '$agent_avatar' | '$agent_name' | '$agent_text';
 type TemplateLogicKeywords = '$if' | '$for';
 
-declare type StyleObject = {
+declare type ClassesObject = {
   /** TODO: Tailwind tokens for styling */
   default?: Array<Tw.Tokens>;
   modifiers?: {
@@ -1870,29 +1832,26 @@ declare type StyleObject = {
   };
 };
 
-declare type ParameterizedStyleObject<ReplaceParams> = StyleObject & {
+declare type ParameterizedStyleObject<ReplaceParams> = ClassesObject & {
   params: ReplaceParams;
 };
 
-declare type StyleObjectWithIf = StyleObject & {
+declare type ClassesObjectWithIf = ClassesObject & {
   $if?: {
-    [key in keyof Variables]?: StyleObject;
+    [key in keyof Variables]?: ClassesObject;
   };
 };
 
-// TODO: implement this
+// TODO: test this
 declare type GUI_Element = {
-  [event in \`on\${keyof HTMLElementEventMap}\`]?:
-    | EventNames
-    | InternalEvents
-    | UserFunctionsAndParameters;
+  [event in \`on\${keyof HTMLElementEventMap}\`]?: HandlerFunction | ((e: Event) => HandlerFunction);
 } & {
   /** The type of HTML element */
   type?: keyof HTMLElementTagNameMap;
   id?: string;
-  style?: Prettify<StyleObjectWithIf>;
+  classes?: Prettify<ClassesObjectWithIf>;
   /** TODO: The text that will be displayed inside the element */
-  text?: InternalTexts | (string & {});
+  text?: string;
   /** An array of elements that will be inside this element
    *
    * @example TODO
@@ -2156,10 +2115,39 @@ declare interface Setup {
   };
 }
 
-// declare interface GameEnvironment {
-//   variables: Variables;
-//   agents: any;
-// }
+type Easing =
+  | 'backIn'
+  | 'backOut'
+  | 'backInOut'
+  | 'bounceIn'
+  | 'bounceOut'
+  | 'bounceInOut'
+  | 'circIn'
+  | 'circOut'
+  | 'circInOut'
+  | 'cubicIn'
+  | 'cubicOut'
+  | 'cubicInOut'
+  | 'elasticIn'
+  | 'elasticOut'
+  | 'elasticInOut'
+  | 'expoIn'
+  | 'expoOut'
+  | 'expoInOut'
+  | 'quadIn'
+  | 'quadOut'
+  | 'quadInOut'
+  | 'quartIn'
+  | 'quartOut'
+  | 'quartInOut'
+  | 'quintIn'
+  | 'quintOut'
+  | 'quintInOut'
+  | 'sineIn'
+  | 'sineOut'
+  | 'sineInOut';
+
+type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';
 `;
   // @end
 

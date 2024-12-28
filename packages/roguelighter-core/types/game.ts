@@ -1,8 +1,4 @@
-type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
-type ComputedVariable = () => string | number | boolean | null | undefined | object;
-
+// @replace
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
@@ -11,41 +7,19 @@ type Variables = {
 };
 type BackgroundNames = any;
 type AgentStates = { [key: string]: any };
-type UserFunctionsAndParameters = any;
 
-type Easing =
-  | 'backIn'
-  | 'backOut'
-  | 'backInOut'
-  | 'bounceIn'
-  | 'bounceOut'
-  | 'bounceInOut'
-  | 'circIn'
-  | 'circOut'
-  | 'circInOut'
-  | 'cubicIn'
-  | 'cubicOut'
-  | 'cubicInOut'
-  | 'elasticIn'
-  | 'elasticOut'
-  | 'elasticInOut'
-  | 'expoIn'
-  | 'expoOut'
-  | 'expoInOut'
-  | 'quadIn'
-  | 'quadOut'
-  | 'quadInOut'
-  | 'quartIn'
-  | 'quartOut'
-  | 'quartInOut'
-  | 'quintIn'
-  | 'quintOut'
-  | 'quintInOut'
-  | 'sineIn'
-  | 'sineOut'
-  | 'sineInOut';
+type HandlerFunction = (...args: any) => void;
+type CustomFunctionNames = 'custom';
 
-type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';
+export type Handlers = {
+  [function_name in CustomFunctionNames]?: HandlerFunction;
+} & {
+  window?: {
+    [key in `on${keyof WindowEventMap}`]?: HandlerFunction;
+  };
+};
+
+// replace@
 
 // Taken from https://github.com/aryomuzakki/tw-prefixer/tree/main/assets
 declare namespace Tw {
@@ -1786,33 +1760,14 @@ declare namespace Tw {
   type Tokens = StandaloneClasses;
 }
 
-export type PlayerPositions = 'x' | 'y';
-export type WritableProps = PlayerPositions;
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+type ComputedVariable = () => string | number | boolean | null | undefined | object;
 
-type HandlerFunction = (...args: any) => void;
-type CustomFunctionNames = 'custom'; // @replace
-
-/**
- * TODO: docs
- */
-/**
- * TODO: docs
- */
-type Handlers = {
-  [function_name in CustomFunctionNames]?: HandlerFunction;
-} & {
-  window?: {
-    [key in `on${keyof WindowEventMap}`]?: HandlerFunction;
-  };
-};
-
-// TODO: implement this
-type SystemExitFunction = '$SEF';
-type InternalEvents = SystemExitFunction | WindowEventMap;
-type InternalTexts = '$agent_avatar' | '$agent_name' | '$agent_text';
 type TemplateLogicKeywords = '$if' | '$for';
 
-export type StyleObject = {
+export type ClassesObject = {
   /** TODO: Tailwind tokens for styling */
   default?: Array<Tw.Tokens>;
   modifiers?: {
@@ -1820,29 +1775,26 @@ export type StyleObject = {
   };
 };
 
-export type ParameterizedStyleObject<ReplaceParams> = StyleObject & {
+export type ParameterizedStyleObject<ReplaceParams> = ClassesObject & {
   params: ReplaceParams;
 };
 
-export type StyleObjectWithIf = StyleObject & {
+export type ClassesObjectWithIf = ClassesObject & {
   $if?: {
-    [key in keyof Variables]?: StyleObject;
+    [key in keyof Variables]?: ClassesObject;
   };
 };
 
-// TODO: implement this
+// TODO: test this
 export type GUI_Element = {
-  [event in `on${keyof HTMLElementEventMap}`]?:
-    | EventNames
-    | InternalEvents
-    | UserFunctionsAndParameters;
+  [event in `on${keyof HTMLElementEventMap}`]?: HandlerFunction | ((e: Event) => HandlerFunction);
 } & {
   /** The type of HTML element */
   type?: keyof HTMLElementTagNameMap;
   id?: string;
-  style?: Prettify<StyleObjectWithIf>;
+  classes?: Prettify<ClassesObjectWithIf>;
   /** TODO: The text that will be displayed inside the element */
-  text?: InternalTexts | (string & {});
+  text?: string;
   /** An array of elements that will be inside this element
    *
    * @example TODO
@@ -2106,7 +2058,36 @@ export interface Setup {
   };
 }
 
-// export interface GameEnvironment {
-//   variables: Variables;
-//   agents: any;
-// }
+type Easing =
+  | 'backIn'
+  | 'backOut'
+  | 'backInOut'
+  | 'bounceIn'
+  | 'bounceOut'
+  | 'bounceInOut'
+  | 'circIn'
+  | 'circOut'
+  | 'circInOut'
+  | 'cubicIn'
+  | 'cubicOut'
+  | 'cubicInOut'
+  | 'elasticIn'
+  | 'elasticOut'
+  | 'elasticInOut'
+  | 'expoIn'
+  | 'expoOut'
+  | 'expoInOut'
+  | 'quadIn'
+  | 'quadOut'
+  | 'quadInOut'
+  | 'quartIn'
+  | 'quartOut'
+  | 'quartInOut'
+  | 'quintIn'
+  | 'quintOut'
+  | 'quintInOut'
+  | 'sineIn'
+  | 'sineOut'
+  | 'sineInOut';
+
+type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';

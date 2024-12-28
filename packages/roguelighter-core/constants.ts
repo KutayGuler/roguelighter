@@ -31,6 +31,14 @@ export const TOAST_SETTINGS = {
   position: 'bottom-right'
 } as const;
 
+const _ = {
+  is_paused: false
+};
+
+const $ = {
+  toggle_pause: () => {}
+};
+
 const setup: Setup = {
   settings: {
     fps: 8,
@@ -40,7 +48,6 @@ const setup: Setup = {
       zoom: 9
     }
   },
-  collisions: ['floor_2'],
   agents: {
     player: {
       states: {
@@ -51,53 +58,57 @@ const setup: Setup = {
     }
   },
   variables: {
-    x: 3
+    is_paused: false
   },
-  handlers: {},
+  handlers: {
+    // @ts-expect-error
+    toggle_pause: () => {
+      _.is_paused = !_.is_paused;
+    },
+    window: {
+      onkeydown: (e) => {
+        if (e.code == 'Escape') {
+          $.toggle_pause();
+        }
+      }
+    }
+  },
   gui: {
-    $pause_menu: {
-      tokens: [
-        'absolute',
-        'bottom-0',
-        'w-full',
-        'h-full',
-        'bg-black/50',
-        'flex',
-        'flex-col',
-        'items-center',
-        'gap-2',
-        'pt-8'
-      ],
+    pause_menu: {
+      classes: {
+        default: [
+          'absolute',
+          'bottom-0',
+          'w-full',
+          'h-full',
+          'bg-black/50',
+          'flex',
+          'flex-col',
+          'items-center',
+          'gap-2',
+          'pt-8'
+        ]
+      },
       transition: { type: 'fade' },
       children: {
         continue: {
           type: 'button',
-          style: {
-            default: [
-              'bg-amber-200',
-              'font-bold',
-              'p-4',
-              'hover:bg-purple-200',
-              'text-amber-600',
-              'w-1/2',
-              'rounded'
-            ]
+          classes: {
+            default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
+            modifiers: {
+              hover: ['bg-purple-200']
+            }
           },
           onclick: '$close_pause_menu',
           text: 'Continue' // add variable {v.var_name}
         },
         exit: {
           type: 'button',
-          style: {
-            default: [
-              'bg-amber-200',
-              'font-bold',
-              'p-4',
-              'hover:bg-purple-200',
-              'text-amber-600',
-              'w-1/2',
-              'rounded'
-            ]
+          classes: {
+            default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
+            modifiers: {
+              hover: ['bg-purple-200']
+            }
           },
           onclick: '$exit',
           text: 'Exit' // add variable {v.var_name}

@@ -27,4 +27,4 @@
   });
 </script>
 
-<span>{modified_text}</span>
+{modified_text}

@@ -153,8 +153,6 @@
   }
 
   export function generate_types(code: string, cached_entries: Array<EntryObject> = []) {
-    // TODO: infer function types cuz computed variables cannot be reassigned
-
     try {
       const ast = generate_ast(code);
       const prop_assignments = ast.c[0].c[0].c[2].c;
@@ -186,7 +184,6 @@
       let handlers = '';
       let variables = '';
       let agent_states = '';
-      let user_functions_and_parameters = '';
       let handler_types: { [key: string]: string } = {};
 
       for (let assignment of handler_functions) {
@@ -207,35 +204,11 @@
           parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
         }
 
-        let typed_parameters = [];
+        handler_types[identifier] = '';
 
         for (let p of parameters) {
-          if (p.text == '_') continue;
-
-          let optional = '';
-
-          for (let c of p.c) {
-            if (c.text == '?') optional = ' | undefined';
-          }
-
-          let type = p.c.find(({ kind }) => kind.includes('Keyword'));
-          if (!type) continue;
-
-          typed_parameters.push(type.text + optional);
+          handler_types[identifier] += p.text + ', ';
         }
-
-        let filtered_typed_parameters = typed_parameters.filter((t) => !t.includes('undefined'));
-        handler_types[identifier] =
-          '[' +
-          typed_parameters.join(', ') +
-          '] | ' +
-          '[' +
-          filtered_typed_parameters.join(', ') +
-          ']';
-      }
-
-      for (let [key, val] of Object.entries(handler_types)) {
-        user_functions_and_parameters += `| ["${key}", ${val}]`;
       }
 
       let assets = {
@@ -253,8 +226,6 @@
           infer_type(assignment.c[1].kind)
         ]);
       }
-
-      console.log(variables_map);
 
       for (let [key, val] of Object.entries(agent_states_obj)) {
         agent_states += `${key}: `;
@@ -282,10 +253,7 @@
         variables,
         agent_states,
         variables_map,
-        custom_handler_names: Object.keys(handler_types)
-          .map((str) => `| '${str}'`)
-          .join(' '),
-        user_functions_and_parameters,
+        handler_types,
         gui_interface
       });
 
@@ -357,8 +325,6 @@
           const startColumn = content.indexOf(match);
           const variable_name = match.replace('{', '').replace('}', '');
 
-          console.log(variable_name);
-
           let message = '';
 
           if (variable_name == '') {
@@ -384,6 +350,7 @@
               '}'
             ])
           ) {
+            // BACKLOG: should only apply under GUI
             message = `Cannot use empty space or operators inside curly brackets.`;
           } else if (!variable_keys.includes(variable_name)) {
             message = `Variable "${variable_name}" does not exist.`;
@@ -478,8 +445,7 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            // TODO: USE SETUP_NAME HERE
-            /^(?:\$|\tsettings|\tcollisions|\tagents|\tvariables|\thandlers|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
+            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\thandlers|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],
@@ -629,7 +595,9 @@
     set_language_settings();
     set_editor_element_settings();
     load_code(project.code);
-    format_document();
+    setTimeout(() => {
+      format_document();
+    }, 100);
   });
 
   onDestroy(dispose);

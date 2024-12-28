@@ -23,7 +23,6 @@
           zoom: 20
         }
       },
-      collisions: ['floor_2'],
       agents: {
         player: {
           states: {

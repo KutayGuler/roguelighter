@@ -445,6 +445,7 @@
               onclick={() => (portal_remove_mode = !portal_remove_mode)}
               >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</button
             >
+            <!-- BACKLOG: make the popover work when button is disabled -->
             <button
               data-tippy-content={portal_btn_disabled
                 ? 'You need at least two scenes to place a portal'
