@@ -343,7 +343,7 @@ if not exist "${EXPORT_DIR}" (
         bind:bg_asset_urls
         bind:agent_asset_urls
         bind:current_scene_id
-        save_file={debounce(save_file, 100)}
+        {save_file}
         {switch_to_game}
         {unfocus_from_scene_editor}
       />
@@ -365,7 +365,7 @@ if not exist "${EXPORT_DIR}" (
         bind:project
         bind:this={code_editor}
         {unfocus_from_code_editor}
-        save_file={debounce(save_file, 100)}
+        {save_file}
       ></CodeEditor>
     </div>
   </main>

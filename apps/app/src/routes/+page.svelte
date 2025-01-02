@@ -70,7 +70,7 @@
       { baseDir }
     );
     new_project_modal.close();
-    goto('/projects/' + new_project_name);
+    goto('/projects/' + new_project_name + '?initial=true');
   }
 
   async function delete_project() {
@@ -81,7 +81,8 @@
         baseDir,
         recursive: true
       });
-      toast.success(`Removed project [${current_project_name}] successfully.`, TOAST_SETTINGS);
+      // BACKLOG: make the current_project_name bold
+      toast.success(`Removed project ${current_project_name} successfully.`, TOAST_SETTINGS);
       invalidate('page:projects');
     } catch (e) {
       toast.error('Failed to remove the project');
@@ -151,7 +152,7 @@
           }}
         ></ProjectCard>
       {:else}
-        <p>You don't have any projects.</p>
+        <p class="text-base-300">You don't have any projects.</p>
       {/each}
     </div>
   </div>

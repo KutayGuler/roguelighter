@@ -9,7 +9,6 @@
   import { exit } from '@tauri-apps/plugin-process';
 
   // LATER: zoom settings not working
-  // LATER: $exit not working
   const id = crypto.randomUUID();
 
   const project: RoguelighterProject = {

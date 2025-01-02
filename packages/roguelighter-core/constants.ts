@@ -15,7 +15,6 @@ export const MAPS = ['backgrounds', 'agents', 'portals'];
 
 export const CROSS = '🞫';
 
-export const INTERNAL_EVENTS = ['$exit'];
 export const INTERNAL_TEXTS = ['$agent_avatar', '$agent_name', '$agent_text'];
 export const TEMPLATE_FOR_LOOP = '$for';
 export const TEMPLATE_IF_STATEMENT = '$if';
@@ -31,13 +30,33 @@ export const TOAST_SETTINGS = {
   position: 'bottom-right'
 } as const;
 
+const PROCESS = {
+  exit: () => {}
+};
+
 const _ = {
   is_paused: false
 };
 
 const $ = {
-  toggle_pause: () => {}
+  toggle_pause: () => {
+    _.is_paused = !_.is_paused;
+  }
 };
+
+export const REPLACER = [
+  [`'F_tp'`, `() => { _.is_paused = !_.is_paused;}`],
+  [
+    `'F_okd'`,
+    `(e) => {
+      if (e.code == \"Escape\") {
+        $.toggle_pause();
+      }
+    }`
+  ],
+  [`'F_coc'`, `() => $.toggle_pause()`],
+  [`'F_pe'`, `() => PROCESS.exit()`]
+] as const;
 
 const setup: Setup = {
   settings: {
@@ -60,58 +79,58 @@ const setup: Setup = {
   variables: {
     is_paused: false
   },
-  handlers: {
+  functions: {
     // @ts-expect-error
-    toggle_pause: () => {
-      _.is_paused = !_.is_paused;
-    },
-    window: {
-      onkeydown: (e) => {
-        if (e.code == 'Escape') {
-          $.toggle_pause();
-        }
-      }
-    }
+    toggle_pause: 'F_tp'
+  },
+  window: {
+    // @ts-expect-error
+    onkeydown: 'F_okd'
   },
   gui: {
-    pause_menu: {
-      classes: {
-        default: [
-          'absolute',
-          'bottom-0',
-          'w-full',
-          'h-full',
-          'bg-black/50',
-          'flex',
-          'flex-col',
-          'items-center',
-          'gap-2',
-          'pt-8'
-        ]
-      },
-      transition: { type: 'fade' },
-      children: {
-        continue: {
-          type: 'button',
-          classes: {
-            default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
-            modifiers: {
-              hover: ['bg-purple-200']
-            }
-          },
-          onclick: '$close_pause_menu',
-          text: 'Continue' // add variable {v.var_name}
+    $if: {
+      // @ts-expect-error
+      is_paused: {
+        classes: {
+          default: [
+            'absolute',
+            'bottom-0',
+            'w-full',
+            'h-full',
+            'bg-black/50',
+            'flex',
+            'flex-col',
+            'items-center',
+            'gap-2',
+            'pt-8'
+          ]
         },
-        exit: {
-          type: 'button',
-          classes: {
-            default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
-            modifiers: {
-              hover: ['bg-purple-200']
-            }
+        transition: { type: 'fade' },
+        children: {
+          continue: {
+            type: 'button',
+            classes: {
+              default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
+              modifiers: {
+                hover: ['bg-purple-200']
+              }
+            },
+            // @ts-expect-error
+            onclick: 'F_coc',
+            text: 'Continue' // add variable {v.var_name}
           },
-          onclick: '$exit',
-          text: 'Exit' // add variable {v.var_name}
+          exit: {
+            type: 'button',
+            classes: {
+              default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
+              modifiers: {
+                hover: ['bg-purple-200']
+              }
+            },
+            // @ts-expect-error
+            onclick: 'F_pe',
+            text: 'Exit' // add variable {v.var_name}
+          }
         }
       }
     }

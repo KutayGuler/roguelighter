@@ -44,35 +44,95 @@ export function debounce(fn: Function, ms: number) {
 }
 
 export function code_string_to_json(code: string): Setup | ParseErrorObject {
-  const transpiled = ts.transpile(code, { removeComments: true, strict: false });
+  let sourceFile = ts.createSourceFile('code.ts', code, ts.ScriptTarget.Latest, true);
+
+  const function_parameter_extender = (context: ts.TransformationContext) => {
+    const visit: ts.Visitor = (node) => {
+      // Transform FunctionDeclaration nodes into VariableStatements with arrow functions
+
+      if (ts.isFunctionExpression(node)) {
+        const variables_param = ts.factory.createParameterDeclaration(
+          /* decorators */ undefined,
+          /* modifiers */ undefined,
+          /* name */ ts.factory.createIdentifier('_'),
+          /* questionToken */ undefined
+        );
+
+        const functions_param = ts.factory.createParameterDeclaration(
+          /* decorators */ undefined,
+          /* modifiers */ undefined,
+          /* name */ ts.factory.createIdentifier('$'),
+          /* questionToken */ undefined
+        );
+
+        // TODO: add __event to handlers that have no params
+        // TODO: add _, $ and PROCESS to params of $.[functionName](params)
+        // TODO: add PROCESS too
+
+        const updated_params = [...node.parameters, variables_param, functions_param];
+
+        const modified_function = ts.factory.updateFunctionExpression(
+          node,
+          node.modifiers,
+          node.asteriskToken,
+          node.name,
+          node.typeParameters,
+          updated_params,
+          node.type,
+          node.body
+        );
+
+        return modified_function;
+      }
+
+      // Recursively visit child nodes
+      return ts.visitEachChild(node, visit, context);
+    };
+
+    return (node: ts.SourceFile) => ts.visitNode(node, visit);
+  };
+
+  const function_quote_wrapper = (context: ts.TransformationContext) => {
+    const visit: ts.Visitor = (node) => {
+      // Transform FunctionDeclaration nodes into VariableStatements with arrow functions
+
+      if (ts.isFunctionExpression(node)) {
+        return ts.factory.createStringLiteral(node.getText(sourceFile).trim());
+      }
+
+      // Recursively visit child nodes
+      return ts.visitEachChild(node, visit, context);
+    };
+
+    return (node: ts.SourceFile) => ts.visitNode(node, visit);
+  };
+
+  const { outputText } = ts.transpileModule(code, {
+    transformers: { after: [function_parameter_extender] },
+    compilerOptions: { removeComments: true }
+  });
+
+  sourceFile = ts.createSourceFile('code.ts', outputText, ts.ScriptTarget.Latest, true);
+
+  const result = ts.transpileModule(outputText, {
+    transformers: { after: [function_quote_wrapper] }
+    // compilerOptions: { removeComments: true, "" }
+  });
 
   // turn function declarations into strings
-  let t = transpiled?.replace(function_regex, (match) => {
-    let modified = match
-      .replaceAll('\n', ' ')
-      .replaceAll('"', '\\"')
-      .replaceAll('undefined', '__undefined__');
-    return `"${modified}"`;
-  });
+  let t = result.outputText;
 
   let setup_or_error: Setup | ParseErrorObject;
 
   try {
-    t = t.replace(`var ${SETUP_NAME} =`, '');
+    t = t.replace(SETUP_DECLARATION, '');
     t = t.replaceAll("'", '"');
-    t = t.replace('},\n\n', '}');
-    t = `{
-      ${t}
-    }`;
     t = t.replaceAll(/(?<!["'])\bundefined\b(?!["'])/g, `"!undefined!"`);
     t = t.replaceAll('__undefined__', 'undefined');
-    let first_curly = t.indexOf('{');
-    let last_curly = t.lastIndexOf('};');
-
-    t = t.slice(first_curly + 1, last_curly);
-    t = t.slice(0, t.lastIndexOf('},'));
-    t += '}\n}';
-    t = t.replace(SETUP_DECLARATION, '');
+    t = t.replaceAll(/(?<!["'])\bnull\b(?!["'])/g, `"!null!"`);
+    t = t.replaceAll('__null__', 'null');
+    let closing_tag = t.lastIndexOf('};');
+    t = t.slice(0, closing_tag) + '\n}';
 
     // BACKLOG: support types for nested variables
     setup_or_error = JSON5.parse(t, (key, val) => {
@@ -97,7 +157,7 @@ export function json_to_code_string(json: Setup) {
   let str = ``;
 
   for (let [key, val] of Object.entries(json)) {
-    str += `${key}: ${JSON.stringify(val, null, '\t')},\n`;
+    str += `${key}: ${JSON5.stringify(val, null, '\t')},\n`;
   }
 
   return `${SETUP_DECLARATION} {
@@ -126,6 +186,7 @@ export async function process_entries_recursively(
       const children = await process_entries_recursively(dir, await readDir(dir), type);
       _entries.push(...children);
       if (type == 'agents') {
+        // @ts-expect-error
         agent_states_obj[name] = children.map(({ name }) => name);
       }
       continue;
@@ -171,7 +232,7 @@ export function generate_template_data() {
 const array_regex = /\[([^\]]*)\]/g;
 const token_regex = /"([^"]+)"/g;
 
-export function extract_tailwind_classes(stringified_gui) {
+export function extract_tailwind_classes(stringified_gui: string) {
   let tokens = new Set();
   let match;
 
@@ -207,7 +268,7 @@ export function extract_tailwind_classes(stringified_gui) {
 }
 
 export const filters: { [key in keyof Setup]?: ({ text }: { text: string }) => boolean } = {
-  handlers: ({ text }) => text.startsWith('handlers:'),
+  functions: ({ text }) => text.startsWith('functions:'),
   variables: ({ text }) => text.startsWith('variables:'),
   gui: ({ text }) => text.startsWith('gui:')
 };

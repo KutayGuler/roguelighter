@@ -54,7 +54,7 @@ export function generate_boilerplate_types({
   `;
 
   // @start
-  const static_types = `// @replace
+const static_types = `// @replace
 type AgentAssets = any;
 type BackgroundAssets = any;
 type EventNames = any;
@@ -63,17 +63,20 @@ type Variables = {
 };
 type BackgroundNames = any;
 type AgentStates = { [key: string]: any };
-type UserFunctionsAndParameters = any;
 
-type HandlerFunction = (...args: any) => void;
+type UserFunction = (...args: any) => void;
 type CustomFunctionNames = 'custom';
 
-declare type Handlers = {
-  [function_name in CustomFunctionNames]?: HandlerFunction;
-} & {
-  window?: {
-    [key in \`on\${keyof WindowEventMap}\`]?: HandlerFunction;
-  };
+type RemovePrefix<T extends string, Prefix extends string> = T extends \`\${Prefix}\${infer Rest}\`
+  ? Rest
+  : T;
+
+declare type Functions = {
+  [key: string]: UserFunction;
+};
+
+declare type WindowHandlers = {
+  [key in \`on\${keyof WindowEventMap}\`]?: (e: WindowEventMap[RemovePrefix<key, 'on'>]) => void;
 };
 
 // replace@
@@ -1842,9 +1845,10 @@ declare type ClassesObjectWithIf = ClassesObject & {
   };
 };
 
-// TODO: test this
 declare type GUI_Element = {
-  [event in \`on\${keyof HTMLElementEventMap}\`]?: HandlerFunction | ((e: Event) => HandlerFunction);
+  [key in \`on\${keyof HTMLElementEventMap}\`]?: (
+    e: HTMLElementEventMap[RemovePrefix<key, 'on'>]
+  ) => void;
 } & {
   /** The type of HTML element */
   type?: keyof HTMLElementTagNameMap;
@@ -2083,7 +2087,11 @@ declare interface Setup {
   /**
    * TODO: doc
    */
-  handlers: Prettify<Handlers>;
+  functions: Prettify<Functions>;
+  /**
+   * TODO: doc
+   */
+  window: Prettify<WindowHandlers>;
   /**
    * The object that contains all the GUI elements that will be in the game
    */
@@ -2107,7 +2115,11 @@ declare interface Setup {
     /**
      * TODO: doc
      */
-    handlers?: Prettify<Handlers>;
+    functions?: Prettify<Functions>;
+    /**
+     * TODO: doc
+     */
+    window?: Prettify<WindowHandlers>;
     /**
      * The object that contains all the GUI elements that will be in the game
      */
@@ -2148,8 +2160,8 @@ type Easing =
   | 'sineInOut';
 
 type Transition = 'blur' | 'fade' | 'fly' | 'slide' | 'scale';
-`;
-  // @end
+`
+// @end
 
   return (
     generated_types + setup_declarations + static_types.replaceAll(DEFAULT_GUI_TYPE, gui_interface)

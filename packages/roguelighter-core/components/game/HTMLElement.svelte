@@ -2,25 +2,29 @@
   // @ts-nocheck
   import GuiText from './GuiText.svelte';
   import { noop } from '../../utils';
+  import * as transitions from 'svelte/transition';
 
   let {
     variables = $bindable(),
-    handlers = $bindable(),
+    functions = $bindable(),
     all_tokens = $bindable(),
     index,
+    attrs,
     children_handler,
     get_variable_value,
     name,
     gui_element
   } = $props();
 
-  const element_transition = gui_element.transition ? transitions[transition.type] : noop;
+  const element_transition = gui_element.transition
+    ? transitions[gui_element.transition.type]
+    : noop;
 
   function wrap(e, name) {
     // @ts-expect-error
     if (attrs[name]) {
       // @ts-expect-error
-      attrs[name](e, variables, handlers);
+      attrs[name](e, variables, functions);
     }
   }
 </script>

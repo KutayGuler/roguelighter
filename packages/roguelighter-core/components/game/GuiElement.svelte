@@ -1,9 +1,9 @@
 <script module>
   interface Props {
     get_variable_value: (variable_name: string) => any;
-    children_handler: (obj: GUI | GUI_Element) => Snippet;
+    children_handler: (obj: GUI | GUI_Element) => ReturnType<import('svelte').Snippet>;
     variables: { [key: string]: any };
-    handlers: any;
+    functions: any;
     name: string;
     gui_element: GUI_Element;
     is_in_if_block?: boolean;
@@ -30,7 +30,7 @@
 
   let {
     variables = $bindable(),
-    handlers = $bindable(),
+    functions = $bindable(),
     children_handler,
     get_variable_value,
     name,
@@ -46,20 +46,19 @@
     children,
     ...original_attrs
   } = $state(gui_element);
-  const element_transition = transition ? transitions[transition.type] : noop;
-
   let attrs = $state({});
-  $inspect(attrs);
 
   for (let [key, val] of Object.entries(original_attrs)) {
-    if (typeof val == 'string' && val.startsWith('function')) {
+    if (typeof val == 'string' && key.startsWith('on')) {
       // @ts-expect-error
-      attrs[key] = new Function('return ' + val.replace('(e)', '(e, _, $)'))();
+      attrs[key] = new Function('return ' + val)();
     } else {
       // @ts-expect-error
       attrs[key] = val;
     }
   }
+
+  $inspect(functions);
 
   let iteration_count = $derived.by(() => {
     if (!is_in_for_block) return 1;
@@ -88,14 +87,6 @@
       }
     }
   });
-
-  function wrap<T extends keyof HTMLElementEventMap>(e: HTMLElementEventMap[T], name: T) {
-    // @ts-expect-error
-    if (attrs[name]) {
-      // @ts-expect-error
-      attrs[name](e, variables, handlers);
-    }
-  }
 </script>
 
 {#snippet gui_component()}
@@ -105,7 +96,8 @@
     <HtmlElement
       bind:all_tokens
       bind:variables
-      bind:handlers
+      bind:functions
+      {attrs}
       {index}
       {gui_element}
       {children_handler}

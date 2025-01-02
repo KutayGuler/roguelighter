@@ -13,6 +13,7 @@
       agents: Array<EntryObject>;
       bg: Array<EntryObject>;
     };
+    initial_code_replacer_arr?: Array<[code_to_be_replaced: string, new_value: string]>;
   }
 </script>
 
@@ -21,6 +22,7 @@
   import { onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+  // @ts-expect-error
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
   // import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
   // import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
@@ -32,7 +34,6 @@
   // } from 'monaco-tailwindcss';
   import { debounce, filters, includes_any, agent_states_obj, noop } from '../../utils';
   import {
-    INTERNAL_EVENTS,
     TEMPLATE_LOGIC,
     INTERNAL_TEXTS,
     variables_regex,
@@ -48,6 +49,7 @@
     predefined_entries,
     unfocus_from_code_editor = noop,
     save_file,
+    initial_code_replacer_arr = [],
     on_content_changed = noop
   }: Props = $props();
   let editor_element: HTMLDivElement | undefined = $state();
@@ -156,7 +158,7 @@
     try {
       const ast = generate_ast(code);
       const prop_assignments = ast.c[0].c[0].c[2].c;
-      const handler_functions = prop_assignments.filter(filters.handlers)[0].c[1].c;
+      const function_declarations = prop_assignments.filter(filters.functions)[0].c[1].c;
       const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
       const gui_assignments = prop_assignments.filter(filters.gui)[0].c[1].c;
 
@@ -186,7 +188,7 @@
       let agent_states = '';
       let handler_types: { [key: string]: string } = {};
 
-      for (let assignment of handler_functions) {
+      for (let assignment of function_declarations) {
         let identifier = assignment.c[0].text;
 
         if (identifier == 'window') continue;
@@ -263,6 +265,20 @@
     }
   }
 
+  function ast_to_obj(node: ts.Node): any {
+    const result: any = {
+      kind: ts.SyntaxKind[node.kind],
+      text: node.getText(),
+      c: []
+    };
+
+    ts.forEachChild(node, (child) => {
+      result.c.push(ast_to_obj(child));
+    });
+
+    return result;
+  }
+
   function generate_ast(code: string) {
     const ast = ts.createSourceFile(
       'code.ts',
@@ -273,20 +289,6 @@
       true,
       ts.ScriptKind.TS
     );
-
-    function ast_to_obj(node: ts.Node): any {
-      const result: any = {
-        kind: ts.SyntaxKind[node.kind],
-        text: node.getText(),
-        c: []
-      };
-
-      ts.forEachChild(node, (child) => {
-        result.c.push(ast_to_obj(child));
-      });
-
-      return result;
-    }
 
     return ast_to_obj(ast);
   }
@@ -351,7 +353,7 @@
             ])
           ) {
             // BACKLOG: should only apply under GUI
-            message = `Cannot use empty space or operators inside curly brackets.`;
+            // message = `Cannot use empty space or operators inside curly brackets.`;
           } else if (!variable_keys.includes(variable_name)) {
             message = `Variable "${variable_name}" does not exist.`;
           }
@@ -445,7 +447,7 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\thandlers|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
+            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\tfunctions|\twindow|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],
@@ -500,7 +502,8 @@
     // compiler options
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true
+      allowNonTsExtensions: true,
+      strict: true
     });
 
     monaco.editor.createModel(generate_types(project.code) || '', 'typescript');
@@ -591,6 +594,10 @@
         // }
       }
     };
+
+    for (let [to_be_replaced, new_code] of initial_code_replacer_arr) {
+      project.code.replace(to_be_replaced, new_code);
+    }
 
     set_language_settings();
     set_editor_element_settings();

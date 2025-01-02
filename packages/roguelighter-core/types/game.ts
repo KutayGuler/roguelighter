@@ -8,15 +8,19 @@ type Variables = {
 type BackgroundNames = any;
 type AgentStates = { [key: string]: any };
 
-type HandlerFunction = (...args: any) => void;
+type UserFunction = (...args: any) => void;
 type CustomFunctionNames = 'custom';
 
-export type Handlers = {
-  [function_name in CustomFunctionNames]?: HandlerFunction;
-} & {
-  window?: {
-    [key in `on${keyof WindowEventMap}`]?: HandlerFunction;
-  };
+type RemovePrefix<T extends string, Prefix extends string> = T extends `${Prefix}${infer Rest}`
+  ? Rest
+  : T;
+
+export type Functions = {
+  [key: string]: UserFunction;
+};
+
+export type WindowHandlers = {
+  [key in `on${keyof WindowEventMap}`]?: (e: WindowEventMap[RemovePrefix<key, 'on'>]) => void;
 };
 
 // replace@
@@ -1785,9 +1789,10 @@ export type ClassesObjectWithIf = ClassesObject & {
   };
 };
 
-// TODO: test this
 export type GUI_Element = {
-  [event in `on${keyof HTMLElementEventMap}`]?: HandlerFunction | ((e: Event) => HandlerFunction);
+  [key in `on${keyof HTMLElementEventMap}`]?: (
+    e: HTMLElementEventMap[RemovePrefix<key, 'on'>]
+  ) => void;
 } & {
   /** The type of HTML element */
   type?: keyof HTMLElementTagNameMap;
@@ -2026,7 +2031,11 @@ export interface Setup {
   /**
    * TODO: doc
    */
-  handlers: Prettify<Handlers>;
+  functions: Prettify<Functions>;
+  /**
+   * TODO: doc
+   */
+  window: Prettify<WindowHandlers>;
   /**
    * The object that contains all the GUI elements that will be in the game
    */
@@ -2050,7 +2059,11 @@ export interface Setup {
     /**
      * TODO: doc
      */
-    handlers?: Prettify<Handlers>;
+    functions?: Prettify<Functions>;
+    /**
+     * TODO: doc
+     */
+    window?: Prettify<WindowHandlers>;
     /**
      * The object that contains all the GUI elements that will be in the game
      */
