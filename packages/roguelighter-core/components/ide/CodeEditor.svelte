@@ -612,7 +612,10 @@
 
 <div class="h-screen" bind:this={editor_element}></div>
 <div
-  class="absolute bottom-12 bg-base-900 w-full h-fit flex flex-row items-end justify-end px-1 mono"
+  class="absolute bottom-12 bg-base-900 w-full h-fit flex flex-row items-end justify-between px-1"
 >
-  <button onclick={restart_ide} class="btn-base z-10 !text-base-300 !text-xs">restart</button>
+  <span class="text-base-400 z-10 text-xs text-center pb-1.5 pl-1.5">
+    {project.name}
+  </span>
+  <button onclick={restart_ide} class="btn-base z-10 !text-base-400 !text-xs">restart</button>
 </div>

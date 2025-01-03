@@ -2,10 +2,11 @@ import JSON5 from 'json5';
 import ts from 'typescript';
 import {
   SETUP_DECLARATION,
-  SETUP_NAME,
   PROJECTS_DIR,
-  function_regex,
-  template_json_code
+  template_json_code,
+  PROCESS_IDENTIFIER,
+  FUNCTIONS_IDENTIFIER,
+  VARIABLES_IDENTIFIER
 } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
@@ -43,84 +44,183 @@ export function debounce(fn: Function, ms: number) {
   };
 }
 
+const function_argument_appender = (context: ts.TransformationContext) => {
+  const createAdditionalParameters = () => {
+    return [
+      ts.factory.createIdentifier(VARIABLES_IDENTIFIER),
+      ts.factory.createIdentifier(FUNCTIONS_IDENTIFIER),
+      ts.factory.createIdentifier(PROCESS_IDENTIFIER)
+    ];
+  };
+
+  const visit: ts.Visitor = (node: ts.Node): ts.Node => {
+    node = ts.visitEachChild(node, visit, context);
+
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression;
+
+      if (ts.isPropertyAccessExpression(callee)) {
+        const object = callee.expression;
+
+        if (ts.isIdentifier(object) && object.text === FUNCTIONS_IDENTIFIER) {
+          const existingArgs = Array.from(node.arguments);
+
+          const newArgs = ts.factory.createNodeArray([
+            ...existingArgs,
+            ...createAdditionalParameters()
+          ]);
+
+          return ts.factory.createCallExpression(callee, node.typeArguments, newArgs);
+        }
+      }
+    }
+
+    return node;
+  };
+
+  return (node: ts.Node) => ts.visitNode(node, visit);
+};
+
+const event_handler_parameter_appender = (context: ts.TransformationContext) => {
+  const visit: ts.Visitor = (node: ts.Node): ts.Node => {
+    if (ts.isPropertyAssignment(node)) {
+      const prop_name = node.name;
+
+      // @ts-expect-error
+      let prop_name_text = prop_name.text;
+
+      if (prop_name_text.toLowerCase().startsWith('on')) {
+        const initializer = node.initializer;
+
+        if (ts.isFunctionExpression(initializer)) {
+          if (initializer.parameters.length === 0) {
+            const event_param = ts.factory.createParameterDeclaration(
+              undefined,
+              undefined,
+              '__event__',
+              undefined,
+              undefined
+            );
+
+            const updated_function = ts.factory.createFunctionExpression(
+              initializer.modifiers,
+              initializer.asteriskToken,
+              undefined,
+              initializer.typeParameters,
+              [event_param],
+              initializer.type,
+              initializer.body
+            );
+
+            return ts.factory.createPropertyAssignment(prop_name, updated_function);
+          }
+        }
+      }
+    }
+
+    // Continue traversing the AST
+    return ts.visitEachChild(node, visit, context);
+  };
+
+  return (node: ts.SourceFile) => ts.visitNode(node, visit);
+};
+
+const function_parameter_appender = (context: ts.TransformationContext) => {
+  const visit: ts.Visitor = (node) => {
+    if (ts.isFunctionExpression(node)) {
+      const variables_param = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        ts.factory.createIdentifier(VARIABLES_IDENTIFIER),
+        undefined
+      );
+
+      const functions_param = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        ts.factory.createIdentifier(FUNCTIONS_IDENTIFIER),
+        undefined
+      );
+
+      const process_param = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        ts.factory.createIdentifier(PROCESS_IDENTIFIER),
+        undefined
+      );
+
+      const updated_params = [...node.parameters, variables_param, functions_param, process_param];
+
+      const modified_function = ts.factory.updateFunctionExpression(
+        node,
+        node.modifiers,
+        node.asteriskToken,
+        node.name,
+        node.typeParameters,
+        updated_params,
+        node.type,
+        node.body
+      );
+
+      return modified_function;
+    }
+
+    return ts.visitEachChild(node, visit, context);
+  };
+
+  return (node: ts.SourceFile) => ts.visitNode(node, visit);
+};
+
+const function_stringifier = (context: ts.TransformationContext) => {
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+
+  const visit: ts.Visitor = (node: ts.Node): ts.Node => {
+    if (ts.isFunctionExpression(node)) {
+      // @ts-expect-error
+      const sourceFile = ts.getSourceFileOfNode(node);
+      const functionString = printer.printNode(ts.EmitHint.Unspecified, node, sourceFile);
+
+      return ts.factory.createStringLiteral(functionString);
+    }
+
+    if (ts.isMethodDeclaration(node)) {
+      const methodString = printer.printNode(
+        ts.EmitHint.Unspecified,
+        node,
+        // @ts-expect-error
+        ts.getSourceFileOfNode(node)
+      );
+
+      return ts.factory.createPropertyAssignment(
+        node.name,
+        ts.factory.createStringLiteral(methodString)
+      );
+    }
+
+    return ts.visitEachChild(node, visit, context);
+  };
+
+  return (node: ts.Node) => ts.visitNode(node, visit);
+};
+
 export function code_string_to_json(code: string): Setup | ParseErrorObject {
-  let sourceFile = ts.createSourceFile('code.ts', code, ts.ScriptTarget.Latest, true);
-
-  const function_parameter_extender = (context: ts.TransformationContext) => {
-    const visit: ts.Visitor = (node) => {
-      // Transform FunctionDeclaration nodes into VariableStatements with arrow functions
-
-      if (ts.isFunctionExpression(node)) {
-        const variables_param = ts.factory.createParameterDeclaration(
-          /* decorators */ undefined,
-          /* modifiers */ undefined,
-          /* name */ ts.factory.createIdentifier('_'),
-          /* questionToken */ undefined
-        );
-
-        const functions_param = ts.factory.createParameterDeclaration(
-          /* decorators */ undefined,
-          /* modifiers */ undefined,
-          /* name */ ts.factory.createIdentifier('$'),
-          /* questionToken */ undefined
-        );
-
-        // TODO: add __event to handlers that have no params
-        // TODO: add _, $ and PROCESS to params of $.[functionName](params)
-        // TODO: add PROCESS too
-
-        const updated_params = [...node.parameters, variables_param, functions_param];
-
-        const modified_function = ts.factory.updateFunctionExpression(
-          node,
-          node.modifiers,
-          node.asteriskToken,
-          node.name,
-          node.typeParameters,
-          updated_params,
-          node.type,
-          node.body
-        );
-
-        return modified_function;
-      }
-
-      // Recursively visit child nodes
-      return ts.visitEachChild(node, visit, context);
-    };
-
-    return (node: ts.SourceFile) => ts.visitNode(node, visit);
-  };
-
-  const function_quote_wrapper = (context: ts.TransformationContext) => {
-    const visit: ts.Visitor = (node) => {
-      // Transform FunctionDeclaration nodes into VariableStatements with arrow functions
-
-      if (ts.isFunctionExpression(node)) {
-        return ts.factory.createStringLiteral(node.getText(sourceFile).trim());
-      }
-
-      // Recursively visit child nodes
-      return ts.visitEachChild(node, visit, context);
-    };
-
-    return (node: ts.SourceFile) => ts.visitNode(node, visit);
-  };
-
   const { outputText } = ts.transpileModule(code, {
-    transformers: { after: [function_parameter_extender] },
+    transformers: {
+      after: [
+        // @ts-expect-error
+        event_handler_parameter_appender,
+        // @ts-expect-error
+        function_argument_appender,
+        // @ts-expect-error
+        function_parameter_appender,
+        // @ts-expect-error
+        function_stringifier
+      ]
+    },
     compilerOptions: { removeComments: true }
   });
 
-  sourceFile = ts.createSourceFile('code.ts', outputText, ts.ScriptTarget.Latest, true);
-
-  const result = ts.transpileModule(outputText, {
-    transformers: { after: [function_quote_wrapper] }
-    // compilerOptions: { removeComments: true, "" }
-  });
-
-  // turn function declarations into strings
-  let t = result.outputText;
+  let t = outputText;
 
   let setup_or_error: Setup | ParseErrorObject;
 

@@ -1,8 +1,6 @@
 <script lang="ts">
   import { Engine, TOAST_SETTINGS } from 'roguelighter-core';
   import toast from '../../../lib/svelte-french-toast/core/toast.js';
-  import RunCSS from 'runcss';
-  const { processClasses: process_classes, exportCSS } = RunCSS();
 
   let { data } = $props();
 
@@ -20,6 +18,6 @@
   document_path={data.document_path}
   {on_no_player_in_scene}
   {on_no_scene_is_selected}
-  {process_classes}
-  {exportCSS}
+  process_classes={data.process_classes}
+  exportCSS={data.exportCSS}
 />

@@ -27,16 +27,12 @@ export function generate_boilerplate_types({
     variable_declarations += `${readonly} ${key}: ${value},\n`;
   }
 
-  // _ means variables
-  // $ means handlers
-  // PROCESS means system obj
   // BACKLOG do not allow read/write access to setup
 
   const setup_declarations = `
-  type Process = { exit: HandlerFunction }
   type HandlersObject = { ${Object.entries(handler_types).map(([key, params]) => `${key}: (${params}) => any;\n`)} };
 
-  const PROCESS: Process = {};
+  const PROCESS = { exit: () => { window.dispatchEvent(new Event('$exit')) }} as const;
   const $: HandlersObject = {};
   const _ = { ${variable_declarations} };
 
@@ -1998,14 +1994,6 @@ declare interface Settings {
    * Number of frames that will be played in a second
    */
   fps?: number;
-  /**
-   * Default easing function for animations
-   */
-  easing?: Easing;
-  /**
-   * Default duration for animations
-   */
-  duration?: number;
   /**
    * TODO: docs
    */

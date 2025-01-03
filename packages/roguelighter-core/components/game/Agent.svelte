@@ -73,8 +73,6 @@
     return;
   };
 
-  // TODO: player should be able to define keybindings
-
   const handleKeydown = (e: KeyboardEvent) => {
     pressed.add(e.key);
     pressed.forEach((key) => handleKey(key, 1));

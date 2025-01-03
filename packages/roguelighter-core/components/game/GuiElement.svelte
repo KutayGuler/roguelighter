@@ -8,6 +8,7 @@
     gui_element: GUI_Element;
     is_in_if_block?: boolean;
     is_in_for_block?: boolean;
+    PROCESS: any;
   }
 </script>
 
@@ -31,6 +32,7 @@
   let {
     variables = $bindable(),
     functions = $bindable(),
+    PROCESS,
     children_handler,
     get_variable_value,
     name,
@@ -50,6 +52,8 @@
 
   for (let [key, val] of Object.entries(original_attrs)) {
     if (typeof val == 'string' && key.startsWith('on')) {
+      console.log(val);
+
       // @ts-expect-error
       attrs[key] = new Function('return ' + val)();
     } else {
@@ -92,11 +96,11 @@
 {#snippet gui_component()}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   {#each { length: iteration_count }, index}
-    <!-- TODO: test component -->
     <HtmlElement
-      bind:all_tokens
-      bind:variables
-      bind:functions
+      {all_tokens}
+      {variables}
+      {functions}
+      {PROCESS}
       {attrs}
       {index}
       {gui_element}

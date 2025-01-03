@@ -13,7 +13,8 @@
     children_handler,
     get_variable_value,
     name,
-    gui_element
+    gui_element,
+    PROCESS
   } = $props();
 
   const element_transition = gui_element.transition
@@ -24,7 +25,7 @@
     // @ts-expect-error
     if (attrs[name]) {
       // @ts-expect-error
-      attrs[name](e, variables, functions);
+      attrs[name](e, variables, functions, PROCESS);
     }
   }
 </script>

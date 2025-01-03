@@ -30,6 +30,10 @@ export const TOAST_SETTINGS = {
   position: 'bottom-right'
 } as const;
 
+export const VARIABLES_IDENTIFIER = '_';
+export const FUNCTIONS_IDENTIFIER = '$';
+export const PROCESS_IDENTIFIER = 'PROCESS';
+
 const PROCESS = {
   exit: () => {}
 };
@@ -61,8 +65,6 @@ export const REPLACER = [
 const setup: Setup = {
   settings: {
     fps: 8,
-    easing: 'sineOut',
-    duration: 400,
     camera: {
       zoom: 9
     }
@@ -115,7 +117,6 @@ const setup: Setup = {
                 hover: ['bg-purple-200']
               }
             },
-            // @ts-expect-error
             onclick: 'F_coc',
             text: 'Continue' // add variable {v.var_name}
           },
@@ -127,7 +128,6 @@ const setup: Setup = {
                 hover: ['bg-purple-200']
               }
             },
-            // @ts-expect-error
             onclick: 'F_pe',
             text: 'Exit' // add variable {v.var_name}
           }

@@ -1,11 +1,10 @@
 <script>
   // @ts-nocheck
   import { noop } from '../../utils';
-  let { window_handlers, variables = $bindable(), functions = $bindable() } = $props();
+  let { window_handlers, variables = $bindable(), functions = $bindable(), PROCESS } = $props();
   function wrap(e, name) {
     if (window_handlers[name]) {
-      console.log(window_handlers[name]);
-      window_handlers[name](e, variables, functions);
+      window_handlers[name](e, variables, functions, PROCESS);
       window.dispatchEvent(new Event('fired_event'));
     }
   }

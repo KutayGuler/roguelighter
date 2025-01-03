@@ -1,142 +1,105 @@
 <script lang="ts">
-	import ts from 'typescript';
+	import * as ts from 'typescript';
 
-	const code = `setup = {
-	settings: {
-		fps: 8,
-		easing: "sineOut",
-		duration: 400,
-		camera: {
-			zoom: 9
-		}
-	},
-	collisions: [
-		"floor_2"
-	],
-	agents: {
-		player: {
-			states: {
-				idle: {
-					frame_count: 1
-				}
-			}
-		}
-		
-	},
-	variables: {
-		paused: false,
-		x: 3,
-		y: () => {
-			return _.x * 2;
-		},
-	},
-	handlers: {
-		// bla: (x: number, y?: number) => {
-		// console.log(x, y);
-		// },
-		window: {
-			// "onclick": (e) => {
+	function createParameterAppendTransformer() {
+		return (context: ts.TransformationContext) => {
+			// Helper function to create the additional parameters
+			const createAdditionalParameters = () => {
+				return [
+					ts.factory.createIdentifier('_'),
+					ts.factory.createIdentifier('$'),
+					ts.factory.createIdentifier('PROCESS')
+				];
+			};
 
-			// },
-			onkeydown: (e) => {
-				// if (e.code == "Escape") {
-				//	_.paused = !_.paused
-				// }
-			}
-		}
-	},
-	gui: {
-		$if: {
-			paused: {
-				classes: {
-					default:
-						[
-							"absolute",
-							"bottom-0",
-							"w-full",
-							"h-full",
-							"bg-black/50",
-							"flex",
-							"flex-col",
-							"items-center",
-							"gap-2",
-							"pt-8"
-						]
-				},
-				transition: {
-					type: "fade"
-				},
-				children: {
-					continue: {
-						type: "button",
-						classes: {
-							default: [
-								"bg-amber-200",
-								"font-bold",
-								"p-4",
-								"hover:bg-purple-200",
-								"text-amber-600",
-								"w-1/2",
-								"rounded"
-							]
-						},
-						text: "Continue",
-					},
-					exit: {
-						type: "button",
-						classes: {
-							default: [
-								"bg-amber-200",
-								"font-bold",
-								"p-4",
-								"hover:bg-purple-200",
-								"text-amber-600",
-								"w-1/2",
-								"rounded"
-							]
-						},
-						text: "{x} {y}",
-						onclick: (e) => {
-							console.log(e, _, $)
+			const visit: ts.Visitor = (node: ts.Node): ts.Node => {
+				// First, recursively transform any child nodes
+				// This ensures we transform nested calls from the inside out
+				node = ts.visitEachChild(node, visit, context);
+
+				// Then check if the current node is a call expression
+				if (ts.isCallExpression(node)) {
+					// Get the called expression (e.g., $.toggle_pause)
+					const callee = node.expression;
+
+					// Check if it's a property access expression (e.g., $.something)
+					if (ts.isPropertyAccessExpression(callee)) {
+						// Get the object being accessed (e.g., $ in $.toggle_pause)
+						const object = callee.expression;
+
+						// Check if the object is $ (using identifier check)
+						if (ts.isIdentifier(object) && object.text === '$') {
+							// Get existing arguments - they might already contain transformed nested calls
+							const existingArgs = Array.from(node.arguments);
+
+							// Create new argument list combining existing and additional parameters
+							const newArgs = ts.factory.createNodeArray([
+								...existingArgs,
+								...createAdditionalParameters()
+							]);
+
+							// Create a new call expression with the updated arguments
+							return ts.factory.createCallExpression(callee, node.typeArguments, newArgs);
 						}
 					}
 				}
-			}
-		}
-	},
-}`;
 
-	const code2 = `
-x = {
-  onclick: function (e) {
-    console.log(e, _, $);
-  }
-}
+				return node;
+			};
+
+			return (node: ts.Node) => ts.visitNode(node, visit);
+		};
+	}
+
+	// Helper function to apply the transformer to source code
+	function transformCode(sourceCode: string): string {
+		// Create a source file
+		const sourceFile = ts.createSourceFile('temp.ts', sourceCode, ts.ScriptTarget.Latest, true);
+
+		// Create and apply the transformer
+		const result = ts.transform(sourceFile, [createParameterAppendTransformer()]);
+		const transformedSourceFile = result.transformed[0];
+
+		// Print the transformed code
+		const printer = ts.createPrinter({
+			newLine: ts.NewLineKind.LineFeed,
+			removeComments: false,
+			omitTrailingSemicolon: false
+		});
+
+		const transformedCode = printer.printNode(
+			ts.EmitHint.Unspecified,
+			transformedSourceFile,
+			sourceFile
+		);
+
+		result.dispose();
+		return transformedCode;
+	}
+
+	// Example usage demonstrating nested calls
+	const sourceCode = `
+// Simple case with no parameters
+$.toggle_pause();
+
+// Case with one parameter
+$.toggle_pause(x);
+
+// Case with multiple parameters
+$.toggle_pause(x, y);
+
+// Case with non-$ object (should not be transformed)
+otherObject.toggle_pause();
+
+// Complex case with nested calls
+$.outer($.inner(), x);
+
+// Even more complex nested calls
+$.a($.b($.c()));
+
+// Mixed nested calls
+$.x(y, $.y(z), $.z());
 `;
 
-	const sourceFile = ts.createSourceFile('code.ts', code, ts.ScriptTarget.Latest, true);
-
-	const transformer = (context: ts.TransformationContext) => {
-		const visit: ts.Visitor = (node) => {
-			// Transform FunctionDeclaration nodes into VariableStatements with arrow functions
-
-			if (ts.isFunctionExpression(node)) {
-				return ts.factory.createStringLiteral(node.getText(sourceFile).trim());
-			}
-
-			// Recursively visit child nodes
-			return ts.visitEachChild(node, visit, context);
-		};
-
-		return (node: ts.SourceFile) => ts.visitNode(node, visit);
-	};
-
-	const result = ts.transpileModule(code, {
-		transformers: { after: [transformer] },
-		compilerOptions: { removeComments: true }
-	});
+	console.log(transformCode(sourceCode));
 </script>
-
-<pre>
-	{result.outputText}
-</pre>

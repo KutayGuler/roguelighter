@@ -71,6 +71,10 @@
   let scene_just_changed = $state(false);
   let player_pos = $state(0);
 
+  const PROCESS = {
+    exit: on_exit
+  };
+
   function transform_scenes() {
     for (let [id, scene] of unmodified_scenes) {
       // @ts-expect-error
@@ -154,7 +158,7 @@
   function get_variable_value(variable_name: string) {
     if (computed_variable_names.has(variable_name)) {
       // @ts-expect-error
-      return variables[variable_name](variables, functions);
+      return variables[variable_name](variables, functions, PROCESS);
     } else {
       // @ts-expect-error
       return variables[variable_name];
@@ -163,11 +167,15 @@
 
   instantiate();
 
+  window.addEventListener('$exit', () => {
+    console.log('exit');
+  });
+
   // TODO: add new component (Collider or CollisionBox)
   // TODO: should fire handlers (on_contact, on_bla)
 </script>
 
-<WindowHandlers {window_handlers} bind:variables bind:functions></WindowHandlers>
+<WindowHandlers {window_handlers} bind:variables bind:functions {PROCESS}></WindowHandlers>
 
 <!-- FIXME: top-12 issue (could show/hide the top bar with a key)-->
 
@@ -210,6 +218,7 @@
         <GuiElement
           bind:variables
           bind:functions
+          {PROCESS}
           {is_in_if_block}
           {is_in_for_block}
           {get_variable_value}
@@ -222,6 +231,7 @@
       <GuiElement
         bind:variables
         bind:functions
+        {PROCESS}
         gui_element={element_or_if_or_for}
         {get_variable_value}
         {children_handler}

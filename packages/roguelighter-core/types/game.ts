@@ -1943,14 +1943,6 @@ export interface Settings {
    */
   fps?: number;
   /**
-   * Default easing function for animations
-   */
-  easing?: Easing;
-  /**
-   * Default duration for animations
-   */
-  duration?: number;
-  /**
    * TODO: docs
    */
   filter?: 'nearest' | 'linear';
