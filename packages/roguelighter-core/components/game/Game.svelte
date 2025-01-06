@@ -16,7 +16,7 @@
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
-  import { World, Debug } from '@threlte/rapier';
+  // import { World, Debug } from '@threlte/rapier';
   import type {
     Setup,
     GUI_Element,
@@ -109,8 +109,6 @@
 
   function instantiate() {
     for (let [key, fn_str] of Object.entries(window_handlers_obj)) {
-      console.log(key, fn_str);
-
       // @ts-expect-error
       window_handlers[key] = new Function('return ' + fn_str)();
     }
@@ -118,8 +116,6 @@
     for (let [key, fn_str] of Object.entries(functions_obj)) {
       functions[key] = new Function('return ' + fn_str)();
     }
-
-    console.log(functions);
 
     for (let [variable_name, value] of Object.entries(variables_obj)) {
       if (typeof value == 'string' && value.startsWith('function')) {
@@ -166,48 +162,41 @@
   }
 
   instantiate();
-
-  window.addEventListener('$exit', () => {
-    console.log('exit');
-  });
-
-  // TODO: add new component (Collider or CollisionBox)
-  // TODO: should fire handlers (on_contact, on_bla)
 </script>
 
 <WindowHandlers {window_handlers} bind:variables bind:functions {PROCESS}></WindowHandlers>
 
 <!-- FIXME: top-12 issue (could show/hide the top bar with a key)-->
 
-<svelte:boundary>
-  {#if scene}
-    <main class="w-full h-full" style:background={settings.scene?.background}>
-      <Canvas>
-        <World>
-          <Debug />
+<!-- <svelte:boundary> -->
+{#if scene}
+  <main class="w-full h-full" style:background={settings.scene?.background}>
+    <Canvas>
+      <!-- <World> -->
+      <!-- <Debug /> -->
 
-          <Scene
-            {change_scene}
-            {player_pos}
-            {settings}
-            {scene}
-            {scene_just_changed}
-            {bg_asset_urls}
-            {agent_asset_urls}
-          />
-        </World>
-      </Canvas>
-    </main>
-  {/if}
+      <Scene
+        {change_scene}
+        {player_pos}
+        {settings}
+        {scene}
+        {scene_just_changed}
+        {bg_asset_urls}
+        {agent_asset_urls}
+      />
+      <!-- </World> -->
+    </Canvas>
+  </main>
+{/if}
 
-  {#snippet failed(error, reset)}
-    <div class="pl-4 pt-16">
-      <p>An error occured while rendering the canvas</p>
-      <pre class="text-xs">{error}</pre>
-      <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
-    </div>
-  {/snippet}
-</svelte:boundary>
+{#snippet failed(error, reset)}
+  <div class="pl-4 pt-16">
+    <p>An error occured while rendering the canvas</p>
+    <pre class="text-xs">{error}</pre>
+    <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
+  </div>
+{/snippet}
+<!-- </svelte:boundary> -->
 
 {#snippet children_handler(nested_obj: GUI | GUI_Element)}
   {#each Object.entries(nested_obj) as [name, element_or_if_or_for]}

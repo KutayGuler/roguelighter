@@ -6,29 +6,30 @@
   ];
 </script>
 
-<main class="flex flex-col items-center w-full h-full overflow-y-auto">
-  <div class="flex flex-col gap-16 max-w-6xl">
-    <div class="flex flex-row relative pb-20 pt-12 overflow-visible">
+<main class="flex flex-col items-center justify-center w-full h-full overflow-y-auto">
+  <div class="flex flex-col gap-16 max-w-6xl w-full pb-20">
+    <div class="flex flex-row relative">
       <div class="z-10">
-        <h1>
-          The game engine <br /> for roguelikes.
-        </h1>
-        <p class="text-xl pt-4">
-          Roguelighter is a free, open-source, low-code game engine <br /> specifically designed for
-          developing roguelike games.
+        <h1>The sveltest game <br /> engine for everyone</h1>
+        <p class="text-lg pt-4 text-base-400">
+          Roguelighter is a free, open-source, low-code game engine <br /> for 2D game development.
         </p>
         <div class="w-full flex flex-row gap-4 pt-16">
-          <a href="/tutorial" class="btn-success-ghost px-8 py-4">Play with interactive tutorial</a>
-          <button class="btn-primary !px-8">Download latest version</button>
+          <a
+            href="/examples"
+            class="py-4 px-8 text-sm border border-primary-900 rounded-lg hover:bg-emerald-800/20"
+            >Check out the examples</a
+          >
+          <button class="btn-primary !px-8">Download the latest version</button>
         </div>
       </div>
       <img
         src="/witch3.png"
         alt=""
-        class="absolute bottom-16 right-16 w-1/3 brightness-50 scale-125"
+        class="absolute -bottom-12 right-36 w-1/3 brightness-50 scale-125"
       />
     </div>
-    <div class="flex flex-row gap-8 z-10">
+    <!-- <div class="flex flex-row gap-8 z-10">
       {#each features as [title, description]}
         <div class="w-1/3 flex flex-col rounded">
           <div class="w-full bg-[#0a0012] h-40 rounded-t"></div>
@@ -38,10 +39,6 @@
           </div>
         </div>
       {/each}
-    </div>
-    <!-- <footer class="w-full p-4 bg-base-900">
-      <div>© 2023 Kutay Güler</div>
-      <div>Website source code on github</div>
-    </footer> -->
+    </div> -->
   </div>
 </main>

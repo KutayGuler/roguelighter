@@ -1,12 +1,22 @@
 <script lang="ts">
-	import {
-		CodeEditor,
-		Game,
-		json_to_code_string,
-		REPLACER,
-		Scene,
-		template_json_code
-	} from 'roguelighter-core';
+	import { Canvas, T } from '@threlte/core';
+	import { World, useRapier, Debug } from '@threlte/rapier';
+	import Agent from './Agent.svelte';
+	import { Game, json_to_code_string, REPLACER, template_json_code } from 'roguelighter-core';
+	let second = $state(false);
+	let firstBox = $state();
+	let secondBox = $state();
+
+	let intersecting = $state();
+
+	function check_collision() {
+		if (!firstBox || !secondBox) {
+			intersecting = false;
+			return;
+		}
+
+		intersecting = firstBox.intersectsBox(secondBox);
+	}
 
 	let code = json_to_code_string(template_json_code);
 
@@ -33,7 +43,11 @@
 						[8, 'floor']
 					],
 					portals: [],
-					agents: [[0, 'player']],
+					agents: [
+						[0, 'player'],
+						[2, 'coin']
+						// [2, 'player']
+					],
 					width: 3,
 					height: 3
 				}
@@ -56,5 +70,11 @@
 	scene.portals = new Map();
 </script>
 
-<!-- <CodeEditor {project} view="code" save_file={() => {}}></CodeEditor> -->
+<button
+	onclick={() => {
+		second = !second;
+	}}>{second ? 'despawn' : 'spawn'}</button
+>
+<div>{intersecting}</div>
+
 <Game {project} current_scene_id={0} {bg_asset_urls} {agent_asset_urls}></Game>

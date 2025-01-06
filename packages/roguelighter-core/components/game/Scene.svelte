@@ -4,18 +4,16 @@
     agent_asset_urls: AgentAssetUrls;
     settings: Settings;
     scene: PlayableScene;
-    scene_just_changed: boolean;
-    player_pos: number;
+    agents: Agents;
     change_scene: (portal_info: Portal) => void;
   }
 </script>
 
 <script lang="ts">
-  import type { Settings } from '../../types/game';
+  import type { Agents, Settings } from '../../types/game';
   import { T, useTask } from '@threlte/core';
   import { AnimatedSpriteMaterial } from '@threlte/extras';
-  import { Collider, AutoColliders, useRapier, RigidBody } from '@threlte/rapier';
-  import { DEG2RAD } from 'three/src/math/MathUtils.js';
+  // import { Collider, AutoColliders, useRapier, RigidBody } from '@threlte/rapier';
   import Agent from './Agent.svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
   import type {
@@ -24,30 +22,17 @@
     PlayableScene,
     Portal
   } from '../../types/engine';
+  import { Box3 } from 'three';
 
-  const { world } = useRapier();
-  world.gravity = { x: 0, y: 0, z: 0 };
+  // const { world } = useRapier();
+  // world.gravity = { x: 0, y: 0, z: 0 };
 
-  let {
-    bg_asset_urls,
-    agent_asset_urls,
-    settings,
-    scene,
-    scene_just_changed,
-    player_pos,
-    change_scene
-  }: Props = $props();
+  let { bg_asset_urls, agent_asset_urls, settings, scene, change_scene, agents }: Props = $props();
 
   let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
 
-  useTask(() => {
-    if (!scene_just_changed && scene.portals.has(player_pos)) {
-      const portal_info = scene.portals.get(player_pos) as Portal;
-      change_scene(portal_info);
-    }
-  });
-
   function calc_pos(pos: number, offsetX = 0, offsetY = 0): [number, number, number] {
+    console.log(pos);
     return [(pos % scene.width) + offsetX, -Math.floor(pos / scene.width) + offsetY, 0];
   }
 
@@ -77,6 +62,22 @@
     all_empty_cells.add(i);
     offsets.set(i, [0, 1, 0, -height]);
   }
+
+  let boxes: Array<Box3> = [];
+
+  function check_collision() {
+    for (let i = 0; i < boxes.length; i++) {
+      const box = boxes[i];
+      for (let j = 0; j < boxes.length; j++) {
+        if (i !== j) {
+          const other_box = boxes[j];
+          if (box.intersectsBox(other_box)) {
+            console.log(`Box ${i} intersects with Box ${j}`);
+          }
+        }
+      }
+    }
+  }
 </script>
 
 <T.PerspectiveCamera />
@@ -90,32 +91,14 @@
     </T.Sprite>
   {/if}
 {/each}
-{#each scene.agents.entries() as [pos, agent]}
-  <Agent {scene} {agent_asset_urls} {agent} {settings} position={calc_pos(pos)} />
+{#each scene.agents.entries() as [pos, agent], i}
+  <Agent
+    bind:box={boxes[i]}
+    {scene}
+    {agent_asset_urls}
+    {agent}
+    {settings}
+    position={calc_pos(pos)}
+    {check_collision}
+  />
 {/each}
-<!-- LATER: make this invisible -->
-<!-- LATER: make this collide with the player -->
-<!-- LATER: fix the algorithm -->
-<!-- {#each all_empty_cells as pos}
-  {@const o = offsets.get(pos)}
-  <T.Group position={calc_pos(pos, o?.[0] || 0, o?.[1] || 0)}>
-    <Collider sensor shape="cuboid" args={[0.5, 0.5, 0.5]} onsensorenter={(e) => console.log(e)}
-    ></Collider>
-    <RigidBody>
-      <T.Mesh>
-        <T.BoxGeometry />
-        <T.MeshBasicMaterial />
-      </T.Mesh>
-    </RigidBody>
-  </T.Group>
-  <T.Group position={calc_pos(pos, o?.[2] || 0, o?.[3] || 0)}>
-    <Collider sensor shape="cuboid" args={[0.5, 0.5, 0.5]} onsensorenter={(e) => console.log(e)}
-    ></Collider>
-    <RigidBody>
-      <T.Mesh>
-        <T.BoxGeometry />
-        <T.MeshBasicMaterial />
-      </T.Mesh>
-    </RigidBody>
-  </T.Group>
-{/each} -->

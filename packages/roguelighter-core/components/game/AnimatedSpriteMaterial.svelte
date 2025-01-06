@@ -142,8 +142,6 @@
 </script>
 
 <script lang="ts">
-  import type { Props } from '@threlte/core';
-  import { ClampToEdgeWrapping, Material } from 'three';
   import {
     asyncWritable,
     type AsyncWritable,
@@ -372,9 +370,7 @@
       if (!json) return;
       const now = performance.now();
       const diff = now - timerOffset;
-
       const name = frameNames[currentFrame];
-      if (!json.frames[name]) return;
       const { frame, duration } = json.frames[name];
       const interval = duration ?? fpsInterval;
 

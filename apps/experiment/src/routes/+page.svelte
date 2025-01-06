@@ -40,8 +40,6 @@
 	const overrides: Partial<Setup> = {
 		settings: {
 			fps: 8,
-			easing: 'sineOut',
-			duration: 400,
 			camera: {
 				zoom: 8
 			},

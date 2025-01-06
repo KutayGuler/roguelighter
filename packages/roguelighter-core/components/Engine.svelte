@@ -7,7 +7,6 @@
     project: RoguelighterProject;
     document_path: string;
     on_no_scene_is_selected: Function;
-    on_no_player_in_scene: Function;
     process_classes: Function;
     exportCSS: Function;
   }
@@ -19,7 +18,6 @@
   import SceneEditor from './editor/SceneEditor.svelte';
   import Game from './game/Game.svelte';
   import {
-    debounce,
     code_string_to_json,
     generate_asset_urls,
     process_entries_recursively,
@@ -42,7 +40,6 @@
     isWeb = false,
     document_path,
     on_no_scene_is_selected,
-    on_no_player_in_scene,
     process_classes,
     exportCSS
   }: Props = $props();
@@ -72,7 +69,7 @@
       }
 
       // if (![...current_scene.agents.values()].includes('player')) {
-      //   on_no_player_in_scene();
+      //   _in_scene();
       //   return;
       // }
     }
@@ -144,6 +141,8 @@
 
   async function export_game() {
     const project_path = await join(document_path, `${PROJECTS_DIR}/${project.name}`);
+    // TODO: error handling
+    // create UI for export
 
     const bat_name = 'export';
     const bat_content = `
@@ -278,6 +277,7 @@ if not exist "${EXPORT_DIR}" (
 {#if initialized}
   <main class="relative flex flex-col w-full h-full overflow-hidden select-none">
     <nav
+      class:opacity-50={view == 'game'}
       class="absolute top-0 z-40 bg-base-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-base-200"
     >
       <a aria-label="Home" href="/" class=""

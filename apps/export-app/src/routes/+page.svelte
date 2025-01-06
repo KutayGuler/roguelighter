@@ -16,8 +16,6 @@
     code: json_to_code_string({
       settings: {
         fps: 8,
-        easing: 'sineOut',
-        duration: 400,
         camera: {
           zoom: 20
         }

@@ -1,116 +1,93 @@
-<script lang="ts">
-  import { T, useTask, useThrelte } from '@threlte/core';
-  import AnimatedSpriteMaterial from './AnimatedSpriteMaterial.svelte';
-  import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
-  import { Mesh } from 'three';
-  import { noop } from '../../utils';
-  import type { AgentAssetUrls, PlayableAgent, PlayableScene } from '../../types/engine';
-  import type { Settings, SpriteConfig } from '../../types/game';
-  import { SvelteSet } from 'svelte/reactivity';
-  const { camera } = useThrelte();
-
+<script module>
   interface Props {
     agent: PlayableAgent<'player'>;
+    box: THREE.Box3;
+    is_first: boolean;
+    is_player: boolean;
     settings: Settings;
     agent_asset_urls: AgentAssetUrls;
     position: [number, number, number];
-    scene: PlayableScene;
+    check_collision: Function;
   }
+</script>
 
-  let { agent, settings, agent_asset_urls, position, scene }: Props = $props();
-  const is_player = agent.name == 'player';
+<script lang="ts">
+  import { T, useTask, useThrelte } from '@threlte/core';
+  import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
+  import * as THREE from 'three';
+  import { noop } from '../../utils';
+  import type { AgentAssetUrls, PlayableAgent } from '../../types/engine';
+  import type { Settings, SpriteConfig } from '../../types/game';
+  const { camera } = useThrelte();
 
-  // @ts-expect-error
-  let play: () => void = $state(),
-    // @ts-expect-error
-    pause: () => void = $state();
+  let {
+    is_first,
+    agent,
+    box = $bindable(),
+    is_player,
+    settings,
+    agent_asset_urls,
+    position: initial_position,
+    check_collision
+  }: Props = $props();
+
+  console.log(agent);
 
   const states = agent.states as SpriteConfig;
 
-  let _state_name = $state('idle');
+  let texture_url = agent_asset_urls.get(agent.name) as string;
+  console.log(agent_asset_urls);
+  console.log(texture_url);
+  let current_state = $state('idle');
   // @ts-expect-error
-  let _state = $derived(states[_state_name]);
-  let textureUrl = agent_asset_urls.get(agent.name) as string;
-  let totalFrames = $derived(_state?.frame_count || DEFAULT_FRAME_COUNT);
+  let _state = $derived(states[current_state]);
   let fps = $derived(_state?.fps || settings?.fps || DEFAULT_FPS);
-  let columns = $derived(_state?.columns || 0);
-  let rows = $derived(_state?.rows || 1);
-  let startFrame = $derived(_state?.start_frame || 0);
-  let endFrame = $derived(_state?.end_frame || totalFrames - 1);
-  let delay = $derived(_state?.delay || 0);
   let filter = $derived(_state?.filter || settings?.filter || 'nearest');
+  let frame_count = $derived(_state?.frame_count || DEFAULT_FRAME_COUNT);
+  let current_frame = $state(1);
 
-  let keyboard = $state({ x: 0, y: 0 });
-  const pressed = $state(new SvelteSet<string>());
-  const mesh = new Mesh();
-  mesh.position.set(...position);
+  let map = new THREE.TextureLoader().load(texture_url, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
+    texture.magFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
+    texture.wrapS = THREE.ClampToEdgeWrapping; // prevents texture bleeding
+    texture.wrapT = THREE.ClampToEdgeWrapping; // prevents texture bleeding
+    texture.repeat.set(1 / frame_count, current_frame);
+  });
 
-  const handleKey = (key: string, value: 0 | 1) => {
-    if (key.toLocaleLowerCase() == 'z') {
-      $camera.position.z += 1;
-      return;
-    }
+  let position = $state([0, 0, 0]);
+  let t = $state(0);
+  let _box = $state(new THREE.Box3());
+  let sprite = $state(new THREE.Sprite(new THREE.SpriteMaterial({ map: map, color: 0xffffff })));
 
-    if (key.toLocaleLowerCase() == 'x') {
-      $camera.position.z += -1;
-      return;
-    }
-
-    switch (key.toLowerCase()) {
-      case 'a':
-      case 'arrowleft':
-        return (keyboard.x = +value);
-      case 'd':
-      case 'arrowright':
-        return (keyboard.x = -value);
-      case 'w':
-      case 'arrowup':
-        return (keyboard.y = -value);
-      case 's':
-      case 'arrowdown':
-        return (keyboard.y = +value);
-    }
-    return;
-  };
-
-  const handleKeydown = (e: KeyboardEvent) => {
-    pressed.add(e.key);
-    pressed.forEach((key) => handleKey(key, 1));
-  };
-
-  const handleKeyup = (e: KeyboardEvent) => {
-    pressed.delete(e.key);
-    handleKey(e.key, 0);
-    pressed.forEach((key) => handleKey(key, 1));
-    if (e.key === 'q') play();
-    if (e.key === 'e') pause();
-  };
+  sprite.scale.set(1, 1, 1);
+  sprite.geometry.computeBoundingBox();
 
   $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
 
-  const sqrtTwo = 1.4;
-  const { width, height } = scene;
+  const handleKeydown = (e: KeyboardEvent) => {};
 
-  useTask((delta) => {
-    let makeHalf = keyboard.x && keyboard.y;
+  const handleKeyup = (e: KeyboardEvent) => {};
 
-    let xDiff = (-keyboard.x * (delta * 5)) / (makeHalf ? sqrtTwo : 1);
-    let yDiff = (-keyboard.y * (delta * 5)) / (makeHalf ? sqrtTwo : 1);
-    let resX = position[0] + xDiff;
-    let resY = position[1] + yDiff;
+  const { start, stop } = useTask((delta: number) => {
+    t += delta;
 
-    if (resX > 0 && resX < width - 1) {
-      position[0] += xDiff;
-      $camera.position.x = position[0];
+    // event handling
+
+    _box.copy(sprite.geometry.boundingBox).applyMatrix4(sprite.matrixWorld);
+    box = _box;
+    check_collision();
+
+    if (t > 1 / fps) {
+      current_frame = (current_frame + 1) % frame_count;
+      map.offset.x = current_frame / frame_count;
+      t = 0;
     }
-
-    if (resY < 0 && resY > -height + 1) {
-      position[1] += yDiff;
-      $camera.position.y = position[1];
-    }
-
-    mesh.position.set(...position);
   });
+
+  if (is_first) {
+    start();
+  }
 </script>
 
 <svelte:window
@@ -118,41 +95,4 @@
   onkeyup={is_player ? handleKeyup : noop}
 />
 
-<T is={mesh}>
-  <AnimatedSpriteMaterial
-    {textureUrl}
-    {totalFrames}
-    {fps}
-    {rows}
-    {startFrame}
-    {endFrame}
-    {filter}
-    {delay}
-  />
-  <T.PlaneGeometry />
-</T>
-
-<!-- <T.Group>
-  <RigidBody type="kinematicPosition">
-    <Collider
-      bind:collider
-      oncontact={(e) => console.log(e)}
-      oncollisionenter={(e) => console.log(e)}
-      shape="cuboid"
-      args={[0.5, 0.5, 0.5]}
-    ></Collider>
-    <T is={mesh}>
-      <AnimatedSpriteMaterial
-        {textureUrl}
-        {totalFrames}
-        {fps}
-        {rows}
-        {startFrame}
-        {endFrame}
-        {filter}
-        {delay}
-      />
-      <T.PlaneGeometry />
-    </T>
-  </RigidBody>
-</T.Group> -->
+<T is={sprite} {position}></T>

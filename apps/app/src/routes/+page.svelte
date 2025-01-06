@@ -119,7 +119,7 @@
             new_project_modal?.open();
           }}>New Project</button
         >
-        <a href="/settings" aria-labelledby="settings" class="absolute top-1 -right-10">
+        <!-- <a href="/settings" aria-labelledby="settings" class="absolute top-1 -right-10">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -139,7 +139,7 @@
               d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
             />
           </svg>
-        </a>
+        </a> -->
       </div>
     </div>
     <div class="flex flex-col gap-2 pt-4">

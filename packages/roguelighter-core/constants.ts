@@ -49,7 +49,7 @@ const $ = {
 };
 
 export const REPLACER = [
-  [`'F_tp'`, `() => { _.is_paused = !_.is_paused;}`],
+  [`'F_tp'`, ` () => { _.is_paused = !_.is_paused;}`],
   [
     `'F_okd'`,
     `(e) => {
@@ -59,7 +59,8 @@ export const REPLACER = [
     }`
   ],
   [`'F_coc'`, `() => $.toggle_pause()`],
-  [`'F_pe'`, `() => PROCESS.exit()`]
+  [`'F_pe'`, `() => PROCESS.exit()`],
+  [`C_tp;`, `\n// This is a comment for toggle_pause function \n`]
 ] as const;
 
 const setup: Setup = {
@@ -71,6 +72,13 @@ const setup: Setup = {
   },
   agents: {
     player: {
+      states: {
+        idle: {
+          frame_count: 4
+        }
+      }
+    },
+    coin: {
       states: {
         idle: {
           frame_count: 1
