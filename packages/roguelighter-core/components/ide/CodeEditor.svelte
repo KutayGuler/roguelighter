@@ -447,7 +447,7 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\tfunctions|\twindow|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
+            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\tfunctions|\tstep|\twindow|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],

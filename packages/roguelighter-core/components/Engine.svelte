@@ -119,8 +119,6 @@
     });
   }
 
-  // function save_edited
-
   const commands: Array<string> = [
     // BACKLOG:
     // # Create Roguelighter Exports/cache
@@ -182,6 +180,7 @@ if not exist "${EXPORT_DIR}" (
 
   async function recalculate() {
     let parsed = code_string_to_json(project.code);
+    console.log(parsed);
     if (!parsed) throw new Error('Parsing result is undefined');
 
     if ((parsed as ParseErrorObject).error) {

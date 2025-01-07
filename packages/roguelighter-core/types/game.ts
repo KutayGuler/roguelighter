@@ -2005,7 +2005,12 @@ export type Agents = {
   [key in keyof AgentStates]: Prettify<AgentConfig<key>>;
 };
 
-export type XY_Tuple = [x: number, y: number];
+export interface SpatialData {
+  position: [x: number, y: number, z: number];
+  rotation: [x: number, y: number, z: number, order?: any];
+}
+
+export type StepFunction = (delta: number, $player: SpatialData) => void;
 
 export interface Setup {
   /**
@@ -2020,6 +2025,10 @@ export interface Setup {
    * TODO: doc
    */
   settings: Prettify<Settings>;
+  /**
+   * TODO: doc
+   */
+  step: StepFunction;
   /**
    * TODO: doc
    */

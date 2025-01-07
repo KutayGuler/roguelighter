@@ -26,10 +26,13 @@
     <div class="flex flex-row gap-4">
       <!-- <a class="link" href="/tutorial">Tutorial</a> -->
       <a class="link" href="/examples">Examples</a>
-      <a class="link" href="/download">Download</a>
-      <a class="link" href="/docs">Docs</a>
-      <!-- svelte-ignore a11y_consider_explicit_label -->
-      <a class="link" href="https://github.com/roguelighterengine/roguelighter" target="_blank"
+      <!-- <a class="link" href="/download">Download</a> -->
+      <!-- <a class="link" href="/docs">Docs</a> -->
+      <a
+        class="link"
+        aria-label="Source Code on GitHub"
+        href="https://github.com/roguelighterengine/roguelighter"
+        target="_blank"
         ><svg
           class="h-6 w-6 fill-base-200 hover:fill-emerald-400 ease-out duration-150"
           width="98"

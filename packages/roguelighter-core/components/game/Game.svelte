@@ -57,9 +57,12 @@
     settings,
     functions: functions_obj,
     window: window_handlers_obj,
+    step: step_fn_str,
     gui,
     __dev_only
   } = $state(code_string_to_json(project.code) as Setup);
+
+  let step = new Function('return ' + step_fn_str)();
   let functions: Functions = $state({});
   let window_handlers: TWindowHandlers = $state({});
   let variables = $state({});
@@ -166,16 +169,12 @@
 
 <WindowHandlers {window_handlers} bind:variables bind:functions {PROCESS}></WindowHandlers>
 
-<!-- FIXME: top-12 issue (could show/hide the top bar with a key)-->
-
 <!-- <svelte:boundary> -->
 {#if scene}
   <main class="w-full h-full" style:background={settings.scene?.background}>
     <Canvas>
-      <!-- <World> -->
-      <!-- <Debug /> -->
-
       <Scene
+        {step}
         {change_scene}
         {player_pos}
         {settings}
@@ -183,8 +182,10 @@
         {scene_just_changed}
         {bg_asset_urls}
         {agent_asset_urls}
+        bind:variables
+        bind:functions
+        {PROCESS}
       />
-      <!-- </World> -->
     </Canvas>
   </main>
 {/if}

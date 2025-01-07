@@ -2,12 +2,14 @@
   interface Props {
     agent: PlayableAgent<'player'>;
     box: THREE.Box3;
-    is_first: boolean;
-    is_player: boolean;
     settings: Settings;
     agent_asset_urls: AgentAssetUrls;
     position: [number, number, number];
     check_collision: Function;
+    step: StepFunction;
+    variables: any;
+    functions: any;
+    PROCESS: any;
   }
 </script>
 
@@ -15,29 +17,31 @@
   import { T, useTask, useThrelte } from '@threlte/core';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
   import * as THREE from 'three';
-  import { noop } from '../../utils';
   import type { AgentAssetUrls, PlayableAgent } from '../../types/engine';
-  import type { Settings, SpriteConfig } from '../../types/game';
+  import type { Settings, SpatialData, SpriteConfig, StepFunction } from '../../types/game';
   const { camera } = useThrelte();
 
   let {
-    is_first,
     agent,
     box = $bindable(),
-    is_player,
     settings,
     agent_asset_urls,
     position: initial_position,
-    check_collision
+    check_collision,
+    step,
+    variables,
+    functions,
+    PROCESS
   }: Props = $props();
 
-  console.log(agent);
+  let spatial_data: SpatialData = $state({
+    position: initial_position,
+    rotation: [0, 0, 0]
+  });
 
   const states = agent.states as SpriteConfig;
 
   let texture_url = agent_asset_urls.get(agent.name) as string;
-  console.log(agent_asset_urls);
-  console.log(texture_url);
   let current_state = $state('idle');
   // @ts-expect-error
   let _state = $derived(states[current_state]);
@@ -47,7 +51,7 @@
   let current_frame = $state(1);
 
   let map = new THREE.TextureLoader().load(texture_url, (texture) => {
-    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.colorSpace = THREE.DisplayP3ColorSpace;
     texture.minFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
     texture.magFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
     texture.wrapS = THREE.ClampToEdgeWrapping; // prevents texture bleeding
@@ -55,7 +59,6 @@
     texture.repeat.set(1 / frame_count, current_frame);
   });
 
-  let position = $state([0, 0, 0]);
   let t = $state(0);
   let _box = $state(new THREE.Box3());
   let sprite = $state(new THREE.Sprite(new THREE.SpriteMaterial({ map: map, color: 0xffffff })));
@@ -65,34 +68,28 @@
 
   $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
 
-  const handleKeydown = (e: KeyboardEvent) => {};
+  // TODO: event handler oncollision
+  // TODO: add destroy function
 
-  const handleKeyup = (e: KeyboardEvent) => {};
+  useTask(
+    (delta: number) => {
+      t += delta;
 
-  const { start, stop } = useTask((delta: number) => {
-    t += delta;
+      // @ts-expect-error
+      step(delta, spatial_data, variables, functions, PROCESS);
 
-    // event handling
+      _box.copy(sprite.geometry.boundingBox).applyMatrix4(sprite.matrixWorld);
+      box = _box;
+      check_collision();
 
-    _box.copy(sprite.geometry.boundingBox).applyMatrix4(sprite.matrixWorld);
-    box = _box;
-    check_collision();
-
-    if (t > 1 / fps) {
-      current_frame = (current_frame + 1) % frame_count;
-      map.offset.x = current_frame / frame_count;
-      t = 0;
-    }
-  });
-
-  if (is_first) {
-    start();
-  }
+      if (t > 1 / fps) {
+        current_frame = (current_frame + 1) % frame_count;
+        map.offset.x = current_frame / frame_count;
+        t = 0;
+      }
+    },
+    { autoStart: agent.name == 'player' }
+  );
 </script>
 
-<svelte:window
-  onkeydown={is_player ? handleKeydown : noop}
-  onkeyup={is_player ? handleKeyup : noop}
-/>
-
-<T is={sprite} {position}></T>
+<T is={sprite} position={spatial_data.position} rotation={spatial_data.rotation}></T>

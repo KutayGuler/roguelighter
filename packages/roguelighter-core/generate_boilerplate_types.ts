@@ -2057,7 +2057,12 @@ declare type Agents = {
   [key in keyof AgentStates]: Prettify<AgentConfig<key>>;
 };
 
-declare type XY_Tuple = [x: number, y: number];
+declare interface SpatialData {
+  position: [x: number, y: number, z: number];
+  rotation: [x: number, y: number, z: number, order?: any];
+}
+
+declare type StepFunction = (delta: number, $player: SpatialData) => void;
 
 declare interface Setup {
   /**
@@ -2072,6 +2077,10 @@ declare interface Setup {
    * TODO: doc
    */
   settings: Prettify<Settings>;
+  /**
+   * TODO: doc
+   */
+  step: StepFunction;
   /**
    * TODO: doc
    */

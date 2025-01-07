@@ -60,7 +60,8 @@ export const REPLACER = [
   ],
   [`'F_coc'`, `() => $.toggle_pause()`],
   [`'F_pe'`, `() => PROCESS.exit()`],
-  [`C_tp;`, `\n// This is a comment for toggle_pause function \n`]
+  // [`C_tp;`, `\n// This is a comment for toggle_pause function \n`],
+  [`'F_step'`, `(delta, $player) => { }`]
 ] as const;
 
 const setup: Setup = {
@@ -93,6 +94,8 @@ const setup: Setup = {
     // @ts-expect-error
     toggle_pause: 'F_tp'
   },
+  // @ts-expect-error
+  step: 'F_step',
   window: {
     // @ts-expect-error
     onkeydown: 'F_okd'
