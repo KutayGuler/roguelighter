@@ -12,7 +12,7 @@
       <div class="z-10">
         <h1>The sveltest game <br /> engine for everyone</h1>
         <p class="text-lg pt-4 text-base-400">
-          Roguelighter is a free, open-source, low-code game engine <br /> for 2D game development.
+          Roguelighter is a free, open-source, easy-to-use game engine <br /> for 2D game development.
         </p>
         <div class="w-full flex flex-row gap-4 pt-16">
           <a

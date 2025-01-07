@@ -77,6 +77,7 @@
   let floor_boxes: Array<Box3> = $state([]);
 
   function check_collision() {
+    return;
     // TODO: get data of the collided objects, fire an event
     // collision event could be handled here based on the subjects
     // oncollision_object[player]();
@@ -103,6 +104,8 @@
       }
     }
   }
+
+  console.log(agent_asset_urls, bg_asset_urls);
 </script>
 
 {#each scene.backgrounds.entries() as [pos, texture], i}

@@ -610,12 +610,12 @@
   onDestroy(dispose);
 </script>
 
-<div class="h-screen" bind:this={editor_element}></div>
+<div class="h-full" bind:this={editor_element}></div>
 <div
-  class="absolute bottom-12 bg-base-900 w-full h-fit flex flex-row items-end justify-between px-1"
+  class="absolute bottom-0 bg-base-900 z-50 isolate w-full h-fit flex flex-row items-end justify-between px-1"
 >
-  <span class="text-base-400 z-10 text-xs text-center pb-1.5 pl-1.5">
+  <span class="text-base-400 text-xs text-center pb-1.5 pl-1.5">
     {project.name}
   </span>
-  <button onclick={restart_ide} class="btn-base z-10 !text-base-400 !text-xs">restart</button>
+  <button onclick={restart_ide} class="btn-base !text-base-400 !text-xs">restart</button>
 </div>

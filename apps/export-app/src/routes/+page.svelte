@@ -83,6 +83,4 @@
   const bg_asset_urls: BackgroundAssetUrls = new Map([['floor', '/floors/floor_1.png']]);
 </script>
 
-<!-- <main class="w-screen h-screen"> -->
 <Game {project} {bg_asset_urls} {agent_asset_urls} current_scene_id={id} on_exit={exit}></Game>
-<!-- </main> -->

@@ -171,7 +171,7 @@
 
 <!-- <svelte:boundary> -->
 {#if scene}
-  <main class="w-full h-full" style:background={settings.scene?.background}>
+  <main class="relative w-full h-full" style:background={settings.scene?.background || 'black'}>
     <Canvas>
       <Scene
         {step}
@@ -187,6 +187,39 @@
         {PROCESS}
       />
     </Canvas>
+    {#snippet children_handler(nested_obj: GUI | GUI_Element)}
+      {#each Object.entries(nested_obj) as [name, element_or_if_or_for]}
+        {#if [TEMPLATE_IF_STATEMENT, TEMPLATE_FOR_LOOP].includes(name)}
+          {@const is_in_if_block = name == TEMPLATE_IF_STATEMENT}
+          {@const is_in_for_block = name == TEMPLATE_FOR_LOOP}
+          {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
+            <GuiElement
+              bind:variables
+              bind:functions
+              {PROCESS}
+              {is_in_if_block}
+              {is_in_for_block}
+              {get_variable_value}
+              {children_handler}
+              {name}
+              {gui_element}
+            />
+          {/each}
+        {:else}
+          <GuiElement
+            bind:variables
+            bind:functions
+            {PROCESS}
+            gui_element={element_or_if_or_for}
+            {get_variable_value}
+            {children_handler}
+            {name}
+          />
+        {/if}
+      {/each}
+    {/snippet}
+
+    {@render children_handler(gui)}
   </main>
 {/if}
 
@@ -198,40 +231,6 @@
   </div>
 {/snippet}
 <!-- </svelte:boundary> -->
-
-{#snippet children_handler(nested_obj: GUI | GUI_Element)}
-  {#each Object.entries(nested_obj) as [name, element_or_if_or_for]}
-    {#if [TEMPLATE_IF_STATEMENT, TEMPLATE_FOR_LOOP].includes(name)}
-      {@const is_in_if_block = name == TEMPLATE_IF_STATEMENT}
-      {@const is_in_for_block = name == TEMPLATE_FOR_LOOP}
-      {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
-        <GuiElement
-          bind:variables
-          bind:functions
-          {PROCESS}
-          {is_in_if_block}
-          {is_in_for_block}
-          {get_variable_value}
-          {children_handler}
-          {name}
-          {gui_element}
-        />
-      {/each}
-    {:else}
-      <GuiElement
-        bind:variables
-        bind:functions
-        {PROCESS}
-        gui_element={element_or_if_or_for}
-        {get_variable_value}
-        {children_handler}
-        {name}
-      />
-    {/if}
-  {/each}
-{/snippet}
-
-{@render children_handler(gui)}
 
 <!-- <svelte:boundary>
  {#snippet failed(error, reset)}

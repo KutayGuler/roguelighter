@@ -1,33 +1,20 @@
 <script lang="ts">
   import 'roguelighter-core/styles.css';
-  import { processClasses } from '$lib/state.svelte';
-  import RunCSS from 'runcss';
-  let runCSSinitialized = $state(false);
 
   interface Props {
     children?: import('svelte').Snippet;
   }
 
   let { children }: Props = $props();
-
-  $effect(() => {
-    if (runCSSinitialized) return;
-    const { processClasses: pc } = RunCSS();
-    processClasses.fn = pc;
-    runCSSinitialized = true;
-  });
 </script>
 
 <main class="bg-[#1a141f] relative w-full h-full text-white flex flex-col items-center pt-16">
   <nav
-    class="serif absolute top-0 flex flex-row items-center justify-between w-full mono px-8 p-3 text-base-200 z-50 shadow-2xl bg-transparent"
+    class="serif absolute top-0 flex flex-row items-center justify-between w-full px-8 p-3 text-base-200 z-50 shadow-2xl bg-white/[0.5%]"
   >
     <a href="/" class="hover:text-emerald-400 text-4xl ease-out duration-1000">Roguelighter</a>
     <div class="flex flex-row gap-4">
-      <!-- <a class="link" href="/tutorial">Tutorial</a> -->
       <a class="link" href="/examples">Examples</a>
-      <!-- <a class="link" href="/download">Download</a> -->
-      <!-- <a class="link" href="/docs">Docs</a> -->
       <a
         class="link"
         aria-label="Source Code on GitHub"
@@ -48,7 +35,7 @@
       >
     </div>
   </nav>
-  <section class="relative flex flex-col w-full h-full p-4 text-base-200 max-w-7xl">
+  <section class="relative flex flex-col w-full h-full p-4 text-base-200 max-w-[1440px]">
     {@render children?.()}
   </section>
 </main>

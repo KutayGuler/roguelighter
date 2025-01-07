@@ -16,6 +16,15 @@ export interface TutorialJson {
   prev?: string;
 }
 
+export interface ExampleJson {
+  title: string;
+  project: RoguelighterProject;
+  agent_asset_urls: AgentAssetUrls;
+  bg_asset_urls: BackgroundAssetUrls;
+  replacer: Array<[to_be_replaced: string, new_value: string]>;
+  overrides: Partial<Setup>;
+}
+
 // interface Tutorial {
 //   header: string;
 //   description: string;

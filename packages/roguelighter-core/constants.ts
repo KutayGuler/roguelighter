@@ -34,33 +34,18 @@ export const VARIABLES_IDENTIFIER = '_';
 export const FUNCTIONS_IDENTIFIER = '$';
 export const PROCESS_IDENTIFIER = 'PROCESS';
 
-const PROCESS = {
-  exit: () => {}
-};
-
-const _ = {
-  is_paused: false
-};
-
-const $ = {
-  toggle_pause: () => {
-    _.is_paused = !_.is_paused;
-  }
-};
-
 export const REPLACER = [
-  [`'F_tp'`, ` () => { _.is_paused = !_.is_paused;}`],
-  [
-    `'F_okd'`,
-    `(e) => {
-      if (e.code == \"Escape\") {
-        $.toggle_pause();
-      }
-    }`
-  ],
-  [`'F_coc'`, `() => $.toggle_pause()`],
-  [`'F_pe'`, `() => PROCESS.exit()`],
-  // [`C_tp;`, `\n// This is a comment for toggle_pause function \n`],
+  // [`'F_tp'`, ` () => { _.is_paused = !_.is_paused;}`],
+  // [
+  //   `'F_okd'`,
+  //   `(e) => {
+  //     if (e.code == \"Escape\") {
+  //       $.toggle_pause();
+  //     }
+  //   }`
+  // ],
+  // [`'F_coc'`, `() => $.toggle_pause()`],
+  // [`'F_pe'`, `() => PROCESS.exit()`],
   [`'F_step'`, `(delta, $player) => { }`]
 ] as const;
 
@@ -69,6 +54,9 @@ const setup: Setup = {
     fps: 8,
     camera: {
       zoom: 9
+    },
+    scene: {
+      background: 'black'
     }
   },
   agents: {
@@ -78,73 +66,66 @@ const setup: Setup = {
           frame_count: 4
         }
       }
-    },
-    coin: {
-      states: {
-        idle: {
-          frame_count: 1
-        }
-      }
     }
   },
   variables: {
-    is_paused: false
+    // is_paused: false
   },
   functions: {
     // @ts-expect-error
-    toggle_pause: 'F_tp'
+    // toggle_pause: 'F_tp'
   },
   // @ts-expect-error
-  step: 'F_step',
+  step: `F_step`,
   window: {
     // @ts-expect-error
-    onkeydown: 'F_okd'
+    // onkeydown: 'F_okd'
   },
   gui: {
-    $if: {
-      // @ts-expect-error
-      is_paused: {
-        classes: {
-          default: [
-            'absolute',
-            'bottom-0',
-            'w-full',
-            'h-full',
-            'bg-black/50',
-            'flex',
-            'flex-col',
-            'items-center',
-            'gap-2',
-            'pt-8'
-          ]
-        },
-        transition: { type: 'fade' },
-        children: {
-          continue: {
-            type: 'button',
-            classes: {
-              default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
-              modifiers: {
-                hover: ['bg-purple-200']
-              }
-            },
-            onclick: 'F_coc',
-            text: 'Continue' // add variable {v.var_name}
-          },
-          exit: {
-            type: 'button',
-            classes: {
-              default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
-              modifiers: {
-                hover: ['bg-purple-200']
-              }
-            },
-            onclick: 'F_pe',
-            text: 'Exit' // add variable {v.var_name}
-          }
-        }
-      }
-    }
+    // $if: {
+    //   // @ts-expect-error
+    //   is_paused: {
+    //     classes: {
+    //       default: [
+    //         'absolute',
+    //         'bottom-0',
+    //         'w-full',
+    //         'h-full',
+    //         'bg-black/50',
+    //         'flex',
+    //         'flex-col',
+    //         'items-center',
+    //         'gap-2',
+    //         'pt-8'
+    //       ]
+    //     },
+    //     transition: { type: 'fade' },
+    //     children: {
+    //       continue: {
+    //         type: 'button',
+    //         classes: {
+    //           default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
+    //           modifiers: {
+    //             hover: ['bg-purple-200']
+    //           }
+    //         },
+    //         onclick: 'F_coc',
+    //         text: 'Continue' // add variable {v.var_name}
+    //       },
+    //       exit: {
+    //         type: 'button',
+    //         classes: {
+    //           default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
+    //           modifiers: {
+    //             hover: ['bg-purple-200']
+    //           }
+    //         },
+    //         onclick: 'F_pe',
+    //         text: 'Exit' // add variable {v.var_name}
+    //       }
+    //     }
+    //   }
+    // }
   }
 };
 
