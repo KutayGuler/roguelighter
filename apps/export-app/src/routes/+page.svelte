@@ -8,7 +8,6 @@
   } from 'roguelighter-core';
   import { exit } from '@tauri-apps/plugin-process';
 
-  // LATER: zoom settings not working
   const id = crypto.randomUUID();
 
   const project: RoguelighterProject = {

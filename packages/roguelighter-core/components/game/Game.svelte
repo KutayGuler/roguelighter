@@ -1,6 +1,5 @@
 <script module>
   interface Props {
-    // BACKLOG: portals can only go through their realms (dev_only, game_only)
     project: RoguelighterProject;
     current_scene_id: UUID | undefined;
     bg_asset_urls: BackgroundAssetUrls;
@@ -14,11 +13,9 @@
 </script>
 
 <script lang="ts">
-  // LATER: introduce helpers
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
-  // import { World, Debug } from '@threlte/rapier';
   import type {
     Setup,
     GUI_Element,
@@ -38,11 +35,6 @@
   import { TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
   import { SvelteSet } from 'svelte/reactivity';
   import WindowHandlers from './WindowHandlers.svelte';
-
-  // BACKLOG: try catch for user defined functions
-  // BACKLOG: introduce objects
-  // BACKLOG: introduce agents[agent_name].props
-  // BACKLOG: dev_only scenes
 
   let {
     project,

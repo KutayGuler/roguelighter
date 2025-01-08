@@ -32,8 +32,6 @@
   import type { Setup } from '../types/game';
   import { onDestroy } from 'svelte';
 
-  // BACKLOG: sometimes editor styles not loading
-
   let {
     project = $bindable(),
     DEV = true,
@@ -120,7 +118,6 @@
   }
 
   const commands: Array<string> = [
-    // BACKLOG:
     // # Create Roguelighter Exports/cache
     // # git clone --filter=blob:none --sparse https://github.com/roguelighter
     // # git sparse-checkout add apps/export-app

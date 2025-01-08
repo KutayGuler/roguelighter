@@ -15,8 +15,6 @@
   import toast from '$lib/svelte-french-toast/core/toast.js';
   import ProjectCard from '$lib/ProjectCard.svelte';
 
-  // BACKLOG: cannot select any project after returning to home from a project
-
   let { data } = $props();
 
   let projects: Array<DirEntry> = $derived(data.projects);
@@ -48,7 +46,6 @@
   }
 
   async function create_project(e: SubmitEvent) {
-    // BACKLOG: any of the following steps could fail?
     e.preventDefault();
     await mkdir(`${PROJECTS_DIR}\\${new_project_name}`, {
       baseDir
@@ -81,7 +78,6 @@
         baseDir,
         recursive: true
       });
-      // BACKLOG: make the current_project_name bold
       toast.success(`Removed project ${current_project_name} successfully.`, TOAST_SETTINGS);
       invalidate('page:projects');
     } catch (e) {
@@ -89,7 +85,6 @@
     }
   }
 
-  // BACKLOG: getting VM level TypeError: window["_" + 12312323] is not a function
   watch(
     data.projects_dir,
     async (e) => {

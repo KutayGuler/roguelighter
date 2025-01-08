@@ -234,7 +234,6 @@ export function code_string_to_json(code: string): Setup | ParseErrorObject {
     let closing_tag = t.lastIndexOf('};');
     t = t.slice(0, closing_tag) + '\n}';
 
-    // BACKLOG: support types for nested variables
     setup_or_error = JSON5.parse(t, (key, val) => {
       if (val == '!undefined!') return undefined;
       if (val == '!null!') return null;
@@ -252,7 +251,6 @@ export function code_string_to_json(code: string): Setup | ParseErrorObject {
   return setup_or_error;
 }
 
-// BACKLOG: fix indentation
 export function json_to_code_string(json: Setup) {
   let str = ``;
 

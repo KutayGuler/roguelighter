@@ -6,14 +6,7 @@
   }
 
   let { open = $bindable(false) }: Props = $props();
-  // BACKLOG: hotkey to switch views (Ctrl + Q)
-  // BACKLOG: put all stuff inside Roguelighter document
-  // options.json
-  // Projects
-  // Exports
-  // options page
-  // options.json should be stored globally (probably in Roguelighter Options or sth)
-  // export game button
+
   let value = $state('Ctrl + Q');
   let editing = $state(false);
 
@@ -21,8 +14,6 @@
     editing = !editing;
 
     if (!editing) return;
-
-    // BACKLOG: prevent ctrl + tab
 
     value = 'Press a key';
   }

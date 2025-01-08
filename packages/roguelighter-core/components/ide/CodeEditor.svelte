@@ -18,7 +18,6 @@
 </script>
 
 <script lang="ts">
-  // BACKLOG: save folding information on code
   import { onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
   // @ts-expect-error
@@ -113,7 +112,6 @@
   }
 
   function infer_type(kind: string) {
-    // BACKLOG: cannot infer the types of objects inside variables
     if (kind === 'FirstLiteralToken') {
       return 'number';
     } else if (kind === 'StringLiteral') {
@@ -193,7 +191,6 @@
 
         if (!assignment.c[1]) continue;
 
-        // BACKLOG: also add regular function declaration
         if (assignment.c[1].kind == 'ArrowFunction') {
           parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
         } else {
@@ -348,8 +345,6 @@
               '}'
             ])
           ) {
-            // BACKLOG: should only apply under GUI
-            // message = `Cannot use empty space or operators inside curly brackets.`;
           } else if (!variable_keys.includes(variable_name)) {
             message = `Variable "${variable_name}" does not exist.`;
           }
@@ -542,7 +537,6 @@
         e.preventDefault();
         return;
       }
-      // LATER: prevent triggering OS level shortcut
       if (e.code === 'Escape' && e.shiftKey) {
         e.preventDefault();
         unfocus_from_code_editor();

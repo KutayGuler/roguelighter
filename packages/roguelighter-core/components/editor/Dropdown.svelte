@@ -15,7 +15,6 @@
 
 <div class="relative inline-block text-left">
   <button use:dropdown.button class="btn-ghost flex items-center justify-center">
-    <!-- BACKLOG: standardize this -->
     {#if button}{@render button()}{:else}<!-- optional fallback -->{/if}
   </button>
 
@@ -32,7 +31,6 @@
       use:dropdown.items
       class="absolute right-0 mt-2 z-20 w-64 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
     >
-      <!-- BACKLOG: standardize this -->
       {#if items}{@render items()}{:else}<!-- optional fallback -->{/if}
     </div>
   </Transition>

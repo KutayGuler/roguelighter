@@ -72,16 +72,12 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content={HANDLE} />
   <meta name="twitter:creator" content={HANDLE} />
-  <!-- LATER: -->
-  <!-- <meta name="twitter:image" content="https://svelte.dev/images/twitter-thumbnail.jpg" /> -->
   <meta property="twitter:domain" content={DOMAIN} />
   <meta property="twitter:url" content={TUTORIAL_URL} />
 
   <meta property="og:title" content="{tutorial.title} • Roguelighter Tutorial" />
   <meta property="og:url" content={TUTORIAL_URL} />
   <meta property="og:type" content="website" />
-  <!-- LATER: -->
-  <!-- <meta property="og:image" content="https://roguelighter.dev/images/twitter-thumbnail.jpg" /> -->
 </svelte:head>
 
 <main class="flex flex-row gap-2 h-full overflow-hidden">

@@ -261,7 +261,6 @@
   onmousedown={() => (holding = true)}
   onmouseup={() => (holding = false)}
   onkeydown={(e) => {
-    // LATER: prevent triggering OS level shortcut
     if (e.code == 'Escape' && e.shiftKey) {
       unfocus_from_scene_editor();
       return;
@@ -445,7 +444,6 @@
               onclick={() => (portal_remove_mode = !portal_remove_mode)}
               >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</button
             >
-            <!-- BACKLOG: make the popover work when button is disabled -->
             <button
               data-tippy-content={portal_btn_disabled
                 ? 'You need at least two scenes to place a portal'
