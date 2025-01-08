@@ -10,6 +10,7 @@
     variables: any;
     functions: any;
     PROCESS: any;
+    on_step_function_failed: Function;
   }
 </script>
 
@@ -37,7 +38,8 @@
     agents,
     variables = $bindable(),
     functions = $bindable(),
-    PROCESS
+    PROCESS,
+    on_step_function_failed
   }: Props = $props();
 
   let zoom = settings.camera?.zoom || DEFAULT_CAMERA_ZOOM;
@@ -104,8 +106,6 @@
       }
     }
   }
-
-  console.log(agent_asset_urls, bg_asset_urls);
 </script>
 
 {#each scene.backgrounds.entries() as [pos, texture], i}
@@ -129,5 +129,6 @@
     {variables}
     {functions}
     {PROCESS}
+    {on_step_function_failed}
   />
 {/each}

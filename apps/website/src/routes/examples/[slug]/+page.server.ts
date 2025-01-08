@@ -30,7 +30,6 @@ export const load: PageServerLoad = async ({ params }) => {
   example.project.scenes = new Map(example.project.scenes);
   // @ts-expect-error
   let scene = example.project.scenes.get(0) as Scene;
-  console.log(scene);
 
   scene.backgrounds = new Map(scene?.backgrounds);
   scene.agents = new Map(scene?.agents);

@@ -8,6 +8,8 @@
     on_exit: Function;
     DEV?: boolean;
     exit_dev?: Function;
+    on_step_function_failed: Function;
+    on_window_handler_failed: Function;
   }
 </script>
 
@@ -48,7 +50,9 @@
     bg_asset_urls,
     agent_asset_urls,
     DEV = false,
-    on_exit
+    on_exit,
+    on_step_function_failed,
+    on_window_handler_failed
   }: Props = $props();
 
   let {
@@ -167,9 +171,9 @@
   instantiate();
 </script>
 
-<WindowHandlers {window_handlers} bind:variables bind:functions {PROCESS}></WindowHandlers>
+<WindowHandlers {window_handlers} bind:variables bind:functions {PROCESS} {on_window_handler_failed}
+></WindowHandlers>
 
-<!-- <svelte:boundary> -->
 {#if scene}
   <main class="relative w-full h-full" style:background={settings.scene?.background || 'black'}>
     <Canvas>
@@ -185,8 +189,10 @@
         bind:variables
         bind:functions
         {PROCESS}
+        {on_step_function_failed}
       />
     </Canvas>
+
     {#snippet children_handler(nested_obj: GUI | GUI_Element)}
       {#each Object.entries(nested_obj) as [name, element_or_if_or_for]}
         {#if [TEMPLATE_IF_STATEMENT, TEMPLATE_FOR_LOOP].includes(name)}
@@ -222,22 +228,3 @@
     {@render children_handler(gui)}
   </main>
 {/if}
-
-{#snippet failed(error, reset)}
-  <div class="pl-4 pt-16">
-    <p>An error occured while rendering the canvas</p>
-    <pre class="text-xs">{error}</pre>
-    <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
-  </div>
-{/snippet}
-<!-- </svelte:boundary> -->
-
-<!-- <svelte:boundary>
- {#snippet failed(error, reset)}
-    <div class="pl-4 pt-16">
-      <p>An error occured while rendering the GUI</p>
-      <pre class="text-xs">{error}</pre>
-      <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
-    </div>
-  {/snippet}
-</svelte:boundary> -->

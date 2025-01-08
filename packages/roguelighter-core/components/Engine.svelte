@@ -139,7 +139,6 @@
 
   async function export_game() {
     const project_path = await join(document_path, `${PROJECTS_DIR}/${project.name}`);
-    // TODO: error handling
     // create UI for export
 
     const bat_name = 'export';
@@ -180,7 +179,6 @@ if not exist "${EXPORT_DIR}" (
 
   async function recalculate() {
     let parsed = code_string_to_json(project.code);
-    console.log(parsed);
     if (!parsed) throw new Error('Parsing result is undefined');
 
     if ((parsed as ParseErrorObject).error) {
@@ -347,14 +345,24 @@ if not exist "${EXPORT_DIR}" (
         {unfocus_from_scene_editor}
       />
     {:else if view == 'game'}
-      <Game
-        DEV
-        {project}
-        {bg_asset_urls}
-        {agent_asset_urls}
-        {current_scene_id}
-        on_exit={DEV ? () => change_view('scene') : exit}
-      />
+      <svelte:boundary>
+        <Game
+          DEV
+          {project}
+          {bg_asset_urls}
+          {agent_asset_urls}
+          {current_scene_id}
+          on_exit={DEV ? () => change_view('scene') : exit}
+        />
+
+        {#snippet failed(error, reset)}
+          <div class="pl-4 pt-16">
+            <p>An error occured while running the game</p>
+            <pre class="text-xs">{error}</pre>
+            <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
+          </div>
+        {/snippet}
+      </svelte:boundary>
     {/if}
     <div
       class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"

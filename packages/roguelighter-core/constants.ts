@@ -2,11 +2,11 @@ import { BaseDirectory } from '@tauri-apps/plugin-fs';
 import { Setup } from './types/game';
 
 export const DEFAULT_FRAME_COUNT = 1;
-export const DEFAULT_FPS = 24;
+export const DEFAULT_FPS = 8;
 export const DEFAULT_EASING = 'linear';
 export const DEFAULT_DURATION = 400;
 export const DEFAULT_MAP_WIDTH = 10;
-export const DEFAULT_CAMERA_ZOOM = 20;
+export const DEFAULT_CAMERA_ZOOM = 10;
 export const DEFAULT_DIR = 'roguelighter';
 export const PROJECTS_DIR = `${DEFAULT_DIR}/projects`;
 export const EXPORT_DIR = `${DEFAULT_DIR}/exports`;
@@ -33,6 +33,11 @@ export const TOAST_SETTINGS = {
 export const VARIABLES_IDENTIFIER = '_';
 export const FUNCTIONS_IDENTIFIER = '$';
 export const PROCESS_IDENTIFIER = 'PROCESS';
+
+export const ERROR_MESSAGES = {
+  on_step_function_failed: 'Step function failed to execute: ',
+  on_window_handler_failed: 'Window handler failed to execute: '
+};
 
 export const REPLACER = [
   // [`'F_tp'`, ` () => { _.is_paused = !_.is_paused;}`],

@@ -56,8 +56,6 @@
     ? transitions[gui_element.transition.type]
     : noop;
 
-  console.log(element_transition);
-
   for (let [key, val] of Object.entries(original_attrs)) {
     if (typeof val == 'string' && key.startsWith('on')) {
       // @ts-expect-error

@@ -10,6 +10,7 @@
     variables: any;
     functions: any;
     PROCESS: any;
+    on_step_function_failed: Function;
   }
 </script>
 
@@ -31,7 +32,8 @@
     step,
     variables,
     functions,
-    PROCESS
+    PROCESS,
+    on_step_function_failed
   }: Props = $props();
 
   let spatial_data: SpatialData = $state({
@@ -71,12 +73,17 @@
   // TODO: event handler oncollision
   // TODO: add destroy function
 
-  useTask(
+  const { stop } = useTask(
     (delta: number) => {
       t += delta;
 
-      // @ts-expect-error
-      step(delta, spatial_data, variables, functions, PROCESS);
+      try {
+        // @ts-expect-error
+        step(delta, spatial_data, variables, functions, PROCESS);
+      } catch (e) {
+        on_step_function_failed(e);
+        stop();
+      }
 
       _box.copy(sprite.geometry.boundingBox).applyMatrix4(sprite.matrixWorld);
       box = _box;

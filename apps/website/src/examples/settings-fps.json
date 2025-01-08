@@ -1,13 +1,44 @@
 {
-  "title": "Introduction",
+  "title": "Settings - FPS",
   "project": {
-    "scenes": [[0, {}]]
+    "scenes": [
+      [
+        0,
+        {
+          "name": "tutorial",
+          "backgrounds": [
+            [0, "floor"],
+            [1, "floor"],
+            [2, "floor"],
+            [3, "floor"],
+            [4, "floor"],
+            [5, "floor"],
+            [6, "floor"],
+            [7, "floor"],
+            [8, "floor"]
+          ],
+          "portals": [],
+          "agents": [[0, "player"]],
+          "width": 3,
+          "height": 3
+        }
+      ]
+    ]
   },
   "agent_asset_urls": [["player", "/elf_idle.png"]],
   "bg_asset_urls": [["floor", "/floors/floor_1.png"]],
   "overrides": {
     "settings": {
       "fps": 8
+    },
+    "agents": {
+      "player": {
+        "states": {
+          "idle": {
+            "frame_count": 4
+          }
+        }
+      }
     }
   },
   "replacer": []

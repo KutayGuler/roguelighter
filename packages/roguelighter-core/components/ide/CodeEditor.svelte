@@ -21,17 +21,10 @@
   // BACKLOG: save folding information on code
   import { onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
-  // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
   // @ts-expect-error
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  // import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
-  // import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
-  // import {
-  //   configureMonacoTailwindcss,
-  //   tailwindcssData,
-  // } from 'monaco-tailwindcss';
   import { debounce, filters, includes_any, agent_states_obj, noop } from '../../utils';
   import {
     TEMPLATE_LOGIC,
@@ -57,6 +50,7 @@
   let model: monaco.editor.ITextModel;
   let agents_entries: Array<EntryObject> = predefined_entries?.agents || [];
   let bg_entries: Array<EntryObject> = predefined_entries?.bg || [];
+  let is_invalid_code = $state(false);
 
   export function set_code(new_code: string) {
     project.code = new_code;
@@ -179,8 +173,6 @@
         gui_interface += `\t${template_logic}?: { [name in keyof Variables]?: GUI_Element; };\n`;
       }
 
-      console.log(gui_interface);
-
       if (!gui_interface.length) {
         gui_interface = DEFAULT_GUI_TYPE;
       }
@@ -261,9 +253,11 @@
         gui_interface
       });
 
+      is_invalid_code = false;
+
       return generated_type;
     } catch (e) {
-      console.log(e);
+      is_invalid_code = true;
     }
   }
 
@@ -528,7 +522,7 @@
         try {
           validate(model);
         } catch (e) {
-          console.log('code validation error', e);
+          is_invalid_code = true;
         }
         project.code = editor.getValue();
         save_file();
@@ -561,7 +555,7 @@
     editor?.dispose();
   }
 
-  function restart_ide() {
+  export function restart_ide() {
     dispose();
     set_language_settings();
     set_editor_element_settings();
@@ -574,26 +568,9 @@
 
     self.MonacoEnvironment = {
       getWorker(moduleID, label) {
-        // if (label == 'tailwindcss') {
-        //   return new twWorker();
-        // }
         if (label == 'typescript' || label == 'editorWorkerService') {
           return new tsWorker();
-        } else if (label == 'html') {
-          // return new HtmlWorker()
         }
-
-        // console.log(moduleID, label);
-        // switch (label) {
-        //   case 'typescript':
-        //     console.log('typescript');
-        //     return new tsWorker();
-        //   case 'tailwindcss':
-        //     console.log('tailwindcss');
-        //     return new twWorker();
-        //   default:
-        //     return new editorWorker();
-        // }
       }
     };
 
@@ -614,10 +591,17 @@
 
 <div class="h-full" bind:this={editor_element}></div>
 <div
-  class="absolute bottom-0 bg-base-900 z-50 isolate w-full h-fit flex flex-row items-end justify-between px-1"
+  class:is_invalid_code
+  class="absolute bottom-0 bg-black/50 z-50 isolate w-full h-fit flex flex-row items-end justify-between px-1"
 >
   <span class="text-base-400 text-xs text-center pb-1.5 pl-1.5">
     {project.name}
   </span>
-  <button onclick={restart_ide} class="btn-base !text-base-400 !text-xs">restart</button>
+  <button onclick={restart_ide} class="text-base-300 text-sm py-1">restart</button>
 </div>
+
+<style>
+  .is_invalid_code {
+    @apply bg-red-500/50;
+  }
+</style>

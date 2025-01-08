@@ -1,8 +1,18 @@
 <script lang="ts">
-  let { window_handlers, variables = $bindable(), functions = $bindable(), PROCESS } = $props();
+  let {
+    window_handlers,
+    variables = $bindable(),
+    functions = $bindable(),
+    PROCESS,
+    on_window_handler_failed
+  } = $props();
   function wrap<K extends keyof WindowEventMap>(e: WindowEventMap[K]) {
     if (window_handlers['on' + e.type]) {
-      window_handlers['on' + e.type](e, variables, functions, PROCESS);
+      try {
+        window_handlers['on' + e.type](e, variables, functions, PROCESS);
+      } catch (e) {
+        on_window_handler_failed(e);
+      }
       window.dispatchEvent(new Event('fired_event'));
     }
   }

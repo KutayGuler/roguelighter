@@ -2026,7 +2026,7 @@ export interface Setup {
    */
   settings: Prettify<Settings>;
   /**
-   * TODO: doc
+   * Function that runs every frame
    */
   step: StepFunction;
   /**
