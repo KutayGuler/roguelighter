@@ -70,18 +70,6 @@
    */
 
   /**
-   * # variables #
-   * straight up variables in markup
-   * computed variables in markup
-   *
-   */
-
-  /**
-   * # functions #
-   * click to increase count
-   */
-
-  /**
    * # window event handlers #
    * press on space to increase count
    * move character with arrow keys or wasd
@@ -93,15 +81,6 @@
    * oncollision
    *
    *
-   */
-
-  /**
-   * # gui #
-   * styling
-   * modifiers (hover)
-   * $for template
-   * $if template (pause menu)
-   * gui transitions
    */
 </script> -->
     <div class="flex flex-row gap-2 items-center text-2xl text-base-500">
@@ -118,13 +97,27 @@
       }}
       bind:value={current_example}
     >
-      <optgroup label="Settings">
-        <option value="intro">FPS & Zoom & Background</option>
-      </optgroup>
       <optgroup label="GUI">
         <option value="gui-text">Text</option>
         <option value="gui-variable-text">Variable as text</option>
         <option value="gui-computed-variable-text">Computed variable as text</option>
+        <option value="gui-element-types">Element types</option>
+        <option value="gui-element-modifiers">Element modifiers</option>
+        <option value="gui-event-handlers">Element event handlers</option>
+        <option value="gui-if-syntax">$if syntax</option>
+        <option value="gui-for-syntax">$for syntax</option>
+      </optgroup>
+      <optgroup label="Window">
+        <option value="window-event-handlers">Window event handlers</option>
+        <option value="window-pause-menu">Window pause menu</option>
+      </optgroup>
+      <optgroup label="Settings">
+        <option value="settings-fps">FPS</option>
+        <option value="settings-zoom">Zoom</option>
+        <option value="settings-background">Background</option>
+      </optgroup>
+      <optgroup label="Step">
+        <option value="step-player-movement">Player movement</option>
       </optgroup>
     </select>
   </div>

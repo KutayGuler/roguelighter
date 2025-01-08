@@ -179,6 +179,8 @@
         gui_interface += `\t${template_logic}?: { [name in keyof Variables]?: GUI_Element; };\n`;
       }
 
+      console.log(gui_interface);
+
       if (!gui_interface.length) {
         gui_interface = DEFAULT_GUI_TYPE;
       }

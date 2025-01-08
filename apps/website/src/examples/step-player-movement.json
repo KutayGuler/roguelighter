@@ -1,0 +1,60 @@
+{
+  "title": "Introduction",
+  "project": {
+    "scenes": [
+      [
+        0,
+        {
+          "name": "tutorial",
+          "backgrounds": [
+            [0, "floor"],
+            [1, "floor"],
+            [2, "floor"],
+            [3, "floor"],
+            [4, "floor"],
+            [5, "floor"],
+            [6, "floor"],
+            [7, "floor"],
+            [8, "floor"]
+          ],
+          "portals": [],
+          "agents": [[4, "player"]],
+          "width": 3,
+          "height": 3
+        }
+      ]
+    ]
+  },
+  "agent_asset_urls": [["player", "/elf_idle.png"]],
+  "bg_asset_urls": [["floor", "/floors/floor_1.png"]],
+  "overrides": {
+    "variables": {
+      "speed": 2,
+      "wasd": {
+        "KeyW": false,
+        "KeyA": false,
+        "KeyD": false,
+        "KeyS": false
+      }
+    },
+    "window": {
+      "onkeydown": "'WH_down'",
+      "onkeyup": "'WH_up'"
+    },
+    "gui": {}
+  },
+  "replacer": [
+    [
+      "\"'WH_down'\"",
+      "(e) => { \n\t\t\tif(e.code in _.wasd) {\n\t\t\t_.wasd[e.code] = true;\n\t}\n}"
+    ],
+    [
+      "\"'WH_up'\"",
+      "(e) => { \n\t\t\tif(e.code in _.wasd) {\n\t\t\t_.wasd[e.code] = false;\n\t}\n}"
+    ],
+    [
+      "(delta, $player) => {}",
+      "(delta, $player) => { \n\tif (_.wasd.KeyW) {\n\t\t$player.position[1] += _.speed * delta\n\t} else if (_.wasd.KeyS) {\n\t\t$player.position[1] -= _.speed * delta\n\t}\n\n\tif (_.wasd.KeyD) {\n\t\t$player.position[0] += _.speed * delta\n\t} else if (_.wasd.KeyA) {\n\t\t$player.position[0] -= _.speed * delta\n\t}\n\t}"
+    ]
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "title": "Introduction",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [["player", "/elf_idle.png"]],
+  "bg_asset_urls": [["floor", "/floors/floor_1.png"]],
+  "overrides": {
+    "variables": {
+      "fruits": ["🍇", "🍉", "🍌"],
+      "fruits_count": "'CV_fruits'"
+    },
+    "gui": {
+      "text_element": {
+        "text": "here are {fruits_count} fruits: {fruits}",
+        "classes": {
+          "default": ["absolute", "text-3xl", "top-4", "left-4"]
+        }
+      },
+      "useful_button": {
+        "type": "button",
+        "text": "this button adds a new fruit",
+        "classes": {
+          "default": [
+            "bg-blue-500",
+            "py-2",
+            "px-4",
+            "rounded",
+            "absolute",
+            "text-2xl",
+            "bottom-4",
+            "left-4"
+          ],
+          "modifiers": {
+            "hover": ["bg-blue-700"]
+          }
+        },
+        "onclick": "'EH_btn'"
+      }
+    }
+  },
+  "replacer": [
+    ["\"'CV_fruits'\"", "() => _.fruits.length"],
+    ["\"'EH_btn'\"", "() => _.fruits.push(_.fruits[Math.floor(Math.random() * _.fruits.length)])"]
+  ]
+}

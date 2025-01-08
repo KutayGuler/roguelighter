@@ -1857,7 +1857,7 @@ declare type GUI_Element = {
    * @example TODO
    */
   children?: {
-    [key: string]: DetermineGuiChildType<string>;
+    [key in string]: DetermineGuiChildType<key>;
   };
 
   /** TODO: Documentation */

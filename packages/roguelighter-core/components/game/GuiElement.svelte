@@ -17,7 +17,9 @@
   import type { GUI, GUI_Element, ClassesObject } from '../../types/game';
   import type { Snippet } from 'svelte';
   import * as transitions from 'svelte/transition';
-  import HtmlElement from './HTMLElement.svelte';
+  import GuiText from './GuiText.svelte';
+
+  const scale = transitions.scale;
 
   function stringify_modifiers(modifiers: ClassesObject['modifiers']) {
     if (!modifiers) return '';
@@ -50,10 +52,14 @@
   } = $state(gui_element);
   let attrs = $state({});
 
+  const element_transition = gui_element.transition
+    ? transitions[gui_element.transition.type]
+    : noop;
+
+  console.log(element_transition);
+
   for (let [key, val] of Object.entries(original_attrs)) {
     if (typeof val == 'string' && key.startsWith('on')) {
-      console.log(val);
-
       // @ts-expect-error
       attrs[key] = new Function('return ' + val)();
     } else {
@@ -62,7 +68,18 @@
     }
   }
 
-  $inspect(functions);
+  let non_function_attrs = $state({});
+  let function_attrs = $state({});
+
+  for (let [attr_name, value] of Object.entries(attrs)) {
+    if (attr_name.startsWith('on')) {
+      // @ts-expect-error
+      function_attrs[attr_name] = (e) => value(e, variables, functions, PROCESS);
+    } else {
+      // @ts-expect-error
+      non_function_attrs[attr_name] = value;
+    }
+  }
 
   let iteration_count = $derived.by(() => {
     if (!is_in_for_block) return 1;
@@ -94,23 +111,24 @@
 </script>
 
 {#snippet gui_component()}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  {#each { length: iteration_count }, index}
-    <HtmlElement
-      {all_tokens}
-      {variables}
-      {functions}
-      {PROCESS}
-      {attrs}
-      {index}
-      {gui_element}
-      {children_handler}
-      {get_variable_value}
-      {name}
-    ></HtmlElement>
-  {/each}
+  {#if is_visible}
+    {#each { length: iteration_count }, index}
+      <svelte:element
+        this={gui_element.type || 'div'}
+        class={all_tokens}
+        transition:element_transition
+        {...non_function_attrs}
+        {...function_attrs}
+      >
+        {#if text}
+          <GuiText {index} {text} {get_variable_value}></GuiText>
+        {/if}
+        {#if Object.keys(children || {}).length}
+          {@render children_handler(children)}
+        {/if}
+      </svelte:element>
+    {/each}
+  {/if}
 {/snippet}
 
-{#if is_visible}
-  {@render gui_component()}
-{/if}
+{@render gui_component()}

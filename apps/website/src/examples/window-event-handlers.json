@@ -7,17 +7,19 @@
   "bg_asset_urls": [["floor", "/floors/floor_1.png"]],
   "overrides": {
     "variables": {
-      "fruits": ["🍇", "🍉", "🍌"],
-      "fruits_count": "'CV_fruits'"
+      "mouse_pos": [0, 0]
+    },
+    "window": {
+      "onmousemove": "'WH_mouse'"
     },
     "gui": {
       "text_element": {
-        "text": "here are {fruits_count} fruits: {fruits}",
+        "text": "Mouse position: {mouse_pos}",
         "classes": {
           "default": ["absolute", "text-3xl", "top-4", "left-4"]
         }
       }
     }
   },
-  "replacer": [["\"'CV_fruits'\"", "() => _.fruits.length"]]
+  "replacer": [["\"'WH_mouse'\"", "(e) => _.mouse_pos = [e.clientX, e.clientY]"]]
 }

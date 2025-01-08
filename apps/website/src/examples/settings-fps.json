@@ -6,13 +6,8 @@
   "agent_asset_urls": [["player", "/elf_idle.png"]],
   "bg_asset_urls": [["floor", "/floors/floor_1.png"]],
   "overrides": {
-    "gui": {
-      "text_element": {
-        "text": "here is some text",
-        "classes": {
-          "default": ["absolute", "text-3xl", "top-4", "left-4"]
-        }
-      }
+    "settings": {
+      "fps": 8
     }
   },
   "replacer": []

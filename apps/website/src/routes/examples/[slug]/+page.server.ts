@@ -16,7 +16,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
   const json_code = structuredClone(template);
   Object.assign(json_code, example.overrides);
-  console.log(json_code);
   let template_code_string = json_to_code_string(json_code);
 
   for (let [to_be_replaced, new_value] of REPLACER) {
@@ -31,6 +30,8 @@ export const load: PageServerLoad = async ({ params }) => {
   example.project.scenes = new Map(example.project.scenes);
   // @ts-expect-error
   let scene = example.project.scenes.get(0) as Scene;
+  console.log(scene);
+
   scene.backgrounds = new Map(scene?.backgrounds);
   scene.agents = new Map(scene?.agents);
   scene.portals = new Map();

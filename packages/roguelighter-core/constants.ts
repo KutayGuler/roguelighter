@@ -18,7 +18,7 @@ export const CROSS = '🞫';
 export const INTERNAL_TEXTS = ['$agent_avatar', '$agent_name', '$agent_text'];
 export const TEMPLATE_FOR_LOOP = '$for';
 export const TEMPLATE_IF_STATEMENT = '$if';
-export const TEMPLATE_LOGIC = [TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT];
+export const TEMPLATE_LOGIC = [TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT] as const;
 
 export const DEFAULT_GUI_TYPE = '[key: string]: DetermineGuiChildType<string>; // @replace';
 export const SETUP_NAME = 'setup';
@@ -46,27 +46,27 @@ export const REPLACER = [
   // ],
   // [`'F_coc'`, `() => $.toggle_pause()`],
   // [`'F_pe'`, `() => PROCESS.exit()`],
-  [`'F_step'`, `(delta, $player) => { }`]
+  [`'F_step'`, `(delta, $player) => {}`]
 ] as const;
 
 const setup: Setup = {
   settings: {
-    fps: 8,
-    camera: {
-      zoom: 9
-    },
-    scene: {
-      background: 'black'
-    }
+    // fps: 8,
+    // camera: {
+    //   zoom: 10
+    // },
+    // scene: {
+    //   background: 'black'
+    // }
   },
   agents: {
-    player: {
-      states: {
-        idle: {
-          frame_count: 4
-        }
-      }
-    }
+    // player: {
+    //   states: {
+    //     idle: {
+    //       frame_count: 4
+    //     }
+    //   }
+    // }
   },
   variables: {
     // is_paused: false
