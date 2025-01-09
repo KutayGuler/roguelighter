@@ -1,15 +1,6 @@
-<script module>
-  interface Props {
-    project: RoguelighterProject;
-    current_scene_id: UUID | undefined;
-    bg_asset_urls: BackgroundAssetUrls;
-    agent_asset_urls: AgentAssetUrls;
-    agents: Setup['agents'];
-    unfocus_from_scene_editor: Function;
-    switch_to_game: Function;
-    save_file: Function;
-  }
-</script>
+<!-- <script module>
+
+</script> -->
 
 <script lang="ts">
   import Modal from './Modal.svelte';
@@ -22,8 +13,7 @@
     BackgroundAssetUrls,
     Portal,
     RoguelighterProject,
-    Scene,
-    UUID
+    Scene
   } from '../../types/engine';
   import tippy from 'tippy.js';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -34,6 +24,17 @@
       tippy('[data-tippy-content]');
     }, 100);
   });
+
+  interface Props {
+    project: RoguelighterProject;
+    current_scene_id: number;
+    bg_asset_urls: BackgroundAssetUrls;
+    agent_asset_urls: AgentAssetUrls;
+    agents: Setup['agents'];
+    unfocus_from_scene_editor: Function;
+    switch_to_game: Function;
+    save_file: Function;
+  }
 
   let {
     project = $bindable(),
@@ -51,7 +52,7 @@
   let show_pos = $state(false);
   let portal_remove_mode = $state(false);
   let portal_from_pos = $state(0);
-  let portal_to_id: UUID | undefined = $state();
+  let portal_to_id = $state(-1);
   let portal_to_pos = $state(0);
   let scene_name = $state('');
   let map_width = $state(DEFAULT_MAP_WIDTH);
@@ -62,7 +63,8 @@
   let delete_scene_modal = $state(createDialog({ label: '' }));
 
   // @ts-expect-error
-  let current_scene: Scene = $derived(project.scenes.get(current_scene_id));
+  let current_scene: Scene = $state(project.scenes.get(current_scene_id));
+  let current_scene_exists = $derived(project.scenes.get(current_scene_id) !== undefined);
   let portal_btn_disabled = $derived((project.scenes?.size || 0) <= 1);
 
   interface Brushes {
@@ -131,12 +133,12 @@
 
   async function create_portal() {
     current_scene.portals.set(portal_from_pos, {
-      to_scene_id: portal_to_id as UUID,
+      to_scene_id: portal_to_id,
       to_position: portal_to_pos
     });
-    let portalled_scene = project.scenes.get(portal_to_id as UUID);
+    let portalled_scene = project.scenes.get(portal_to_id);
     portalled_scene?.portals.set(portal_to_pos, {
-      to_scene_id: current_scene_id as UUID,
+      to_scene_id: current_scene_id,
       to_position: portal_from_pos
     });
     portal_modal?.close();
@@ -155,12 +157,11 @@
 
   async function delete_current_scene(e: SubmitEvent) {
     e.preventDefault();
-    // @ts-expect-error
     project.scenes.delete(current_scene_id);
     project.scenes = project.scenes;
     // await project.scenes.delete(current_scene.id as IndexableType);
     // current_scene = undefined;
-    current_scene_id = undefined;
+    current_scene_id = -1;
     // current_scene_name = '';
     delete_scene_modal?.close();
     save_file();
@@ -175,8 +176,8 @@
   }
 
   function create_scene() {
-    let id = crypto.randomUUID();
-    project.scenes.set(id, {
+    project.scene_index += 1;
+    project.scenes.set(project.scene_index, {
       name: scene_name,
       backgrounds: new SvelteMap(),
       agents: new SvelteMap(),
@@ -186,7 +187,7 @@
     });
 
     scene_name = '';
-    current_scene_id = id;
+    current_scene_id = project.scene_index;
     new_scene_modal?.close();
   }
 
@@ -307,50 +308,38 @@
   style:image-rendering={'pixelated'}
   class="absolute w-full flex flex-row gap-4 bg-base-900 px-4 pb-4 pt-16 h-screen"
 >
-  <section class="flex flex-col min-w-60 max-w-96">
-    <div class="flex flex-row gap-2">
-      <!-- <select class="select" bind:value={current_scene_id}>
-        <option disabled value="">Select a scene</option>
-        {#each project.scenes.entries() as [id, { name }]}
-          <option value={id}>{name}</option>
-        {/each}
-      </select> -->
-      <select class="w-full" bind:value={current_scene_id}>
-        <optgroup label="Scenes">
-          {#each project.scenes.entries() as [id, { name }]}
-            <option value={id}>{name}</option>
-          {/each}
-        </optgroup>
-        <optgroup label="Dev Only Scenes">
-          <!--  -->
-        </optgroup>
-      </select>
-      <button
-        data-tippy-content="Ctrl + N"
-        class="btn-primary w-full"
-        onclick={() => new_scene_modal?.open()}
-        ><svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="w-6 h-6"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>&nbsp; New scene
-      </button>
-    </div>
+  <section class="flex flex-col min-w-80 max-w-96 gap-2">
+    <select class="w-full py-[0.7rem]" bind:value={current_scene_id}>
+      <option value={-1} disabled selected>Select a scene</option>
+      {#each project.scenes.entries() as [id, { name }]}
+        <option value={id}>{name}</option>
+      {/each}
+    </select>
+    <button
+      data-tippy-content="Ctrl + N"
+      class="btn-primary w-full"
+      onclick={() => new_scene_modal?.open()}
+      ><svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-6 h-6"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>&nbsp; New scene
+    </button>
     <button
       data-tippy-content="Ctrl + T"
       onclick={() => switch_to_game()}
-      class="btn-primary mt-2 group-has-[.must-be-replaced-agent,.must-be-replaced-background]:disabled"
+      class="btn-secondary group-has-[.must-be-replaced-agent,.must-be-replaced-background]:disabled"
       ><svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         stroke-width="1.5"
         stroke="currentColor"
-        class="w-5 h-5 pb-1 fill-white"
+        class="size-5 fill-white"
       >
         <path
           stroke-linecap="round"
@@ -361,7 +350,7 @@
       Test Scene</button
     >
     <div
-      class="w-full relative flex flex-col gap-8 mt-2 bg-base-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
+      class="w-full relative flex flex-col gap-8 bg-base-700 text-white duration-150 ease-out p-4 rounded grow h-full select-none overflow-y-auto"
     >
       {#if current_scene_id != undefined}
         {#if agent_asset_urls.size}
@@ -448,61 +437,84 @@
               data-tippy-content={portal_btn_disabled
                 ? 'You need at least two scenes to place a portal'
                 : 'Ctrl + P'}
-              class="btn-secondary w-full"
+              class="btn-primary w-full"
               color="purple"
               onclick={() => {
                 if (portal_btn_disabled) return;
                 portal_remove_mode = false;
                 portal_modal?.open();
-              }}>New Portal</button
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3"
+                />
+              </svg>
+
+              New Portal</button
             >
           </div>
         </div>
       {/if}
     </div>
   </section>
-  <section class="flex flex-col gap-2 w-4/5 h-full group">
-    <div
-      class="relative h-11 bg-base-700 w-full rounded p-2 px-4 text-white flex flex-row justify-between"
-    >
-      <label class="cursor-pointer">
-        <input type="checkbox" bind:checked={show_pos} />
-        Show Positions
-      </label>
+  <section class="flex flex-col gap-2 w-full h-full group">
+    {#if current_scene_exists}
+      <div
+        class="relative h-12 bg-base-700 w-full rounded p-2 px-4 text-white flex flex-row justify-between items-center"
+      >
+        <label class="cursor-pointer">
+          <input type="checkbox" bind:checked={show_pos} />
+          Show Positions
+        </label>
 
-      <Dropdown>
-        {#snippet button()}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="w-6 h-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
-            />
-          </svg>
-        {/snippet}
-        {#snippet items()}
-          <div class="bg-base-700 rounded p-4 flex flex-col gap-2 items-start">
-            <button
-              onclick={() => {
-                /** TODO **/
-              }}
-              class="hover:text-emerald-400 ease-out duration-150">Set as starting scene</button
+        <Dropdown>
+          {#snippet button()}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-5"
             >
-            <button
-              onclick={() => delete_scene_modal?.open()}
-              class="hover:text-red-400 ease-out duration-150">Delete scene</button
-            >
-          </div>
-        {/snippet}
-      </Dropdown>
-    </div>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+              />
+            </svg>
+          {/snippet}
+          {#snippet items()}
+            <div class="bg-base-700 rounded p-4 flex flex-col gap-2 items-start">
+              <button
+                onclick={() => {
+                  project.starting_scene_id = current_scene_id;
+                  console.log(project.starting_scene_id, current_scene_id);
+                }}
+                class="hover:text-emerald-400 ease-out duration-150"
+                >Set as starting scene {project.starting_scene_id == current_scene_id
+                  ? '✓'
+                  : ''}</button
+              >
+              <button
+                onclick={() => delete_scene_modal?.open()}
+                class="hover:text-red-400 ease-out duration-150">Delete scene</button
+              >
+            </div>
+          {/snippet}
+        </Dropdown>
+      </div>
+    {/if}
     <div
       class="text-sm bg-purple-900 text-amber-50 border border-purple-600 p-2 group-has-[.must-be-replaced-agent,.must-be-replaced-background]:block hidden"
     >
@@ -526,7 +538,7 @@
         {/each}
       </div>
     </div>
-    <section class="w-full h-full overflow-auto bg-base-500 border">
+    <section class="w-full h-full overflow-auto bg-base-800 border border-base-600">
       {#if current_scene}
         {#each { length: current_scene.height } as _, i}
           <div class="row flex flex-row w-max">
@@ -558,7 +570,7 @@
                   ></button>
                 {/if}
                 {#if show_pos}
-                  <span>{pos}</span>
+                  <span class="text-base-200">{pos}</span>
                 {:else}
                   {#if bg_url}
                     <span
@@ -614,10 +626,10 @@
         <input required min="0" max="100" bind:value={map_height} type="number" />
       </div>
     </label>
-    <label class="flex flex-row gap-2 items-center">
+    <!-- <label class="flex flex-row gap-2 items-center">
       <input type="checkbox" />
       Dev only
-    </label>
+    </label> -->
     <button class="btn-primary">Create</button>
   </form>
   <button class="absolute top-2 right-4" onclick={() => new_scene_modal?.close()}>{CROSS}</button>

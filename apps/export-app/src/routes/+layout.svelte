@@ -8,6 +8,4 @@
   let { children }: Props = $props();
 </script>
 
-{#if children}
-  {@render children()}
-{:else}<!-- optional fallback -->{/if}
+{@render children?.()}

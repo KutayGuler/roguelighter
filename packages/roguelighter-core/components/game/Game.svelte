@@ -1,14 +1,13 @@
 <script module>
   interface Props {
     project: RoguelighterProject;
-    current_scene_id: UUID | undefined;
+    current_scene_id: number;
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     on_exit: Function;
     DEV?: boolean;
     exit_dev?: Function;
-    on_step_function_failed: Function;
-    on_window_handler_failed: Function;
+    on_error: OnError;
   }
 </script>
 
@@ -27,24 +26,23 @@
   import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
+    OnError,
     PlayableScene,
     Portal,
-    RoguelighterProject,
-    UUID
+    RoguelighterProject
   } from '../../types/engine';
-  import { TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
+  import { DEFAULT_SCENE_ID, TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
   import { SvelteSet } from 'svelte/reactivity';
   import WindowHandlers from './WindowHandlers.svelte';
 
   let {
     project,
-    current_scene_id,
     bg_asset_urls,
     agent_asset_urls,
     DEV = false,
     on_exit,
-    on_step_function_failed,
-    on_window_handler_failed
+    on_error,
+    current_scene_id = DEFAULT_SCENE_ID
   }: Props = $props();
 
   let {
@@ -66,7 +64,7 @@
 
   let unmodified_scenes = structuredClone(project.scenes);
   let scene: PlayableScene = $state() as PlayableScene;
-  let scenes = new Map<UUID, PlayableScene>();
+  let scenes = new Map<number, PlayableScene>();
   let scene_just_changed = $state(false);
   let player_pos = $state(0);
 
@@ -103,7 +101,7 @@
       scenes.set(id, transformed_scene);
     }
 
-    scene = scenes.get(current_scene_id as UUID) as PlayableScene;
+    scene = scenes.get(current_scene_id) as PlayableScene;
   }
 
   function instantiate() {
@@ -163,7 +161,12 @@
   instantiate();
 </script>
 
-<WindowHandlers {window_handlers} bind:variables bind:functions {PROCESS} {on_window_handler_failed}
+<WindowHandlers
+  {window_handlers}
+  bind:variables
+  bind:functions
+  {PROCESS}
+  on_window_handler_failed={(e: any) => on_error('WINDOW_HANDLER_FAILED', e)}
 ></WindowHandlers>
 
 {#if scene}
@@ -181,7 +184,7 @@
         bind:variables
         bind:functions
         {PROCESS}
-        {on_step_function_failed}
+        on_step_function_failed={(e: any) => on_error('STEP_FUNCTION_FAILED', e)}
       />
     </Canvas>
 

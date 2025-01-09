@@ -34,6 +34,7 @@
   import type { EntryObject, RoguelighterProject, View } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
+  import { SvelteMap } from 'svelte/reactivity';
 
   let {
     project = $bindable(),
@@ -209,7 +210,7 @@
         backgrounds: `'ERROR: no assets found'`
       };
 
-      let variables_map = new Map();
+      let variables_map = new SvelteMap();
 
       for (let assignment of variable_assignments) {
         if (!assignment.c[1]) continue;

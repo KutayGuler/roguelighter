@@ -68,9 +68,9 @@
 		}
 	} as const;
 
-	process_classes(extract_tailwind_classes(JSON.stringify(template_json_code.gui)));
+	process_classes(extract_tailwind_classes(JSON5.stringify(template_json_code.gui)));
 	if (overrides.gui) {
-		process_classes(extract_tailwind_classes(JSON.stringify(overrides.gui)));
+		process_classes(extract_tailwind_classes(JSON5.stringify(overrides.gui)));
 	}
 
 	const template_code_string = json_to_code_string({
@@ -97,5 +97,4 @@
 	on_exit={() => {}}
 	agent_asset_urls={project.agent_asset_urls}
 	bg_asset_urls={project.bg_asset_urls}
-	current_scene_id={0}
 ></Game>

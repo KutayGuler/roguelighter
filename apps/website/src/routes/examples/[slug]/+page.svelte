@@ -7,10 +7,10 @@
     Game,
     TOAST_SETTINGS
   } from 'roguelighter-core';
-  import type { Setup } from 'roguelighter-core';
+  import type { OnError, Setup } from 'roguelighter-core';
   import { HANDLE, DOMAIN, EXAMPLES_URL } from '$lib/constants';
   import { afterNavigate, goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import toast from '$lib/svelte-french-toast/core/toast.js';
 
   // TODO: try to fix the ownership_invalid stuff
@@ -25,7 +25,7 @@
 
   let { data } = $props();
   let example = $state(data.example);
-  let current_example = $state($page.params.slug);
+  let current_example = $state(page.params.slug);
 
   let code_editor: any = $state();
   let rerender = $state(0);
@@ -41,23 +41,14 @@
   function on_content_changed() {
     if (!data.process_classes) return;
     if (!cannot_render) {
-      data.process_classes(extract_tailwind_classes(JSON.stringify((parsed as Setup).gui)));
+      data.process_classes(extract_tailwind_classes(JSON5.stringify((parsed as Setup).gui)));
       rerender++;
     }
   }
 
-  // TODO: refactor to on_error for Game.svelte
-  function on_step_function_failed(e: any) {
-    display_error(e, ERROR_MESSAGES.on_step_function_failed);
-  }
-
-  function on_window_handler_failed(e: any) {
-    display_error(e, ERROR_MESSAGES.on_window_handler_failed);
-  }
-
-  function display_error(e: any, message: string) {
-    toast.error('Step function failed to execute: ' + e, TOAST_SETTINGS);
-  }
+  const on_error: OnError = (type, e) => {
+    toast.error(ERROR_MESSAGES[type], TOAST_SETTINGS);
+  };
 </script>
 
 <svelte:head>
@@ -145,9 +136,7 @@
               project={example.project}
               agent_asset_urls={new Map(example.agent_asset_urls)}
               bg_asset_urls={new Map(example.bg_asset_urls)}
-              current_scene_id={0}
-              {on_step_function_failed}
-              {on_window_handler_failed}
+              {on_error}
             ></Game>
 
             {#snippet failed(error, reset)}

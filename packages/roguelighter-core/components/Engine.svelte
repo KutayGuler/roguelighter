@@ -1,17 +1,3 @@
-<script module>
-  import type { ParseErrorObject, RoguelighterProject, UUID } from '../types/engine';
-
-  interface Props {
-    DEV?: boolean;
-    isWeb?: boolean;
-    project: RoguelighterProject;
-    document_path: string;
-    on_no_scene_is_selected: Function;
-    process_classes: Function;
-    exportCSS: Function;
-  }
-</script>
-
 <script lang="ts">
   import JSON5 from 'json5';
   import CodeEditor from './ide/CodeEditor.svelte';
@@ -23,25 +9,37 @@
     process_entries_recursively,
     extract_tailwind_classes
   } from '../utils';
-  import { EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
+  import { DEFAULT_SCENE_ID, EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
   import { exit } from '@tauri-apps/plugin-process';
   import { readDir, watchImmediate, writeTextFile } from '@tauri-apps/plugin-fs';
   import { join } from '@tauri-apps/api/path';
   import { Command } from '@tauri-apps/plugin-shell';
+  import type { OnError, ParseErrorObject, RoguelighterProject } from '../types/engine';
   import type { RoguelighterDataFile, View } from '../types/engine';
   import type { Setup } from '../types/game';
   import { onDestroy } from 'svelte';
+
+  interface Props {
+    DEV?: boolean;
+    isWeb?: boolean;
+    project: RoguelighterProject;
+    document_path: string;
+    process_classes: Function;
+    exportCSS: Function;
+    on_error: OnError;
+  }
 
   let {
     project = $bindable(),
     DEV = true,
     isWeb = false,
     document_path,
-    on_no_scene_is_selected,
     process_classes,
-    exportCSS
+    exportCSS,
+    on_error
   }: Props = $props();
-  let current_scene_id: UUID | undefined = $state();
+  let current_scene_id = $state(DEFAULT_SCENE_ID);
+
   let view: View = $state('code');
   let previousView: View = $state('scene');
   let code_button: HTMLButtonElement | undefined = $state();
@@ -58,18 +56,13 @@
   let bg_entries, agents_entries;
 
   function switch_to_game() {
-    // @ts-expect-error
     let current_scene = project.scenes.get(current_scene_id);
+
     if (view == 'scene') {
       if (!current_scene) {
-        on_no_scene_is_selected();
+        on_error('NO_SCENE_IS_SELECTED', '');
         return;
       }
-
-      // if (![...current_scene.agents.values()].includes('player')) {
-      //   _in_scene();
-      //   return;
-      // }
     }
 
     change_view('game');
@@ -109,7 +102,12 @@
       }
     }
 
-    let obj: RoguelighterDataFile = { code: code || project.code, scenes: Array.from(scenes) };
+    let obj: RoguelighterDataFile = {
+      code: code || project.code,
+      scenes: Array.from(scenes),
+      starting_scene_id: project.starting_scene_id,
+      scene_index: project.scene_index
+    };
     let file_contents = JSON5.stringify(obj);
 
     writeTextFile(`${PROJECTS_DIR}\\${project.name}\\data.json`, file_contents, {
@@ -185,7 +183,7 @@ if not exist "${EXPORT_DIR}" (
       return;
     }
 
-    const extracted_classes = extract_tailwind_classes(JSON.stringify((parsed as Setup).gui));
+    const extracted_classes = extract_tailwind_classes(JSON5.stringify((parsed as Setup).gui));
     // console.log(extracted_classes);
     process_classes(extracted_classes);
     // console.log(exportCSS());
@@ -302,15 +300,6 @@ if not exist "${EXPORT_DIR}" (
           }}
           >Code
         </button>
-
-        <!-- <button
-          class:btn-primary={view == 'gui'}
-          class="btn-outline"
-          on:click={() => {
-            change_view('gui')
-          }}
-          >GUI
-        </button> -->
         <button
           bind:this={scene_button}
           class:btn-primary={view == 'scene'}
@@ -319,14 +308,6 @@ if not exist "${EXPORT_DIR}" (
             change_view('scene');
           }}>Scene</button
         >
-        <!-- <button
-          class:btn-primary={view == 'logs'}
-          class="btn-outline"
-          onclick={() => {
-            change_view('logs');
-          }}
-          >Logs
-        </button> -->
       </div>
       <span></span>
     </nav>
@@ -349,6 +330,7 @@ if not exist "${EXPORT_DIR}" (
           {bg_asset_urls}
           {agent_asset_urls}
           {current_scene_id}
+          {on_error}
           on_exit={DEV ? () => change_view('scene') : exit}
         />
 
@@ -382,12 +364,14 @@ if not exist "${EXPORT_DIR}" (
       <div
         class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-base-800 rounded p-2 pl-12"
       >
-        <pre
+        it do be like that
+        <!-- not working due to svelte parsing error -->
+        <!-- <pre
           class="absolute top-4 left-12 bg-transparent z-[10] w-full"
           contenteditable
           use:highlight
-          bind:innerText={code_with_errors}></pre>
-        {#each { length: line_count } as _, i}
+          bind:innerText={code_with_errors}></pre> -->
+        {#each { length: line_count }, i}
           <div
             id={i.toString()}
             class:is_error_line={error_line == i}

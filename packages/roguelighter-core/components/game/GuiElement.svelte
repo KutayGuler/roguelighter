@@ -15,11 +15,8 @@
 <script lang="ts">
   import { cn, noop } from '../../utils';
   import type { GUI, GUI_Element, ClassesObject } from '../../types/game';
-  import type { Snippet } from 'svelte';
   import * as transitions from 'svelte/transition';
   import GuiText from './GuiText.svelte';
-
-  const scale = transitions.scale;
 
   function stringify_modifiers(modifiers: ClassesObject['modifiers']) {
     if (!modifiers) return '';

@@ -1,6 +1,13 @@
 import { BaseDirectory } from '@tauri-apps/plugin-fs';
 import { Setup } from './types/game';
 
+export const PLATFORMS = {
+  WINDOWS: 'windows',
+  WEB: 'web'
+};
+
+export const DEFAULT_SCENE_ID = 0;
+export const DEFAULT_SCENE_INDEX = -1;
 export const DEFAULT_FRAME_COUNT = 1;
 export const DEFAULT_FPS = 8;
 export const DEFAULT_EASING = 'linear';
@@ -35,103 +42,22 @@ export const FUNCTIONS_IDENTIFIER = '$';
 export const PROCESS_IDENTIFIER = 'PROCESS';
 
 export const ERROR_MESSAGES = {
-  on_step_function_failed: 'Step function failed to execute: ',
-  on_window_handler_failed: 'Window handler failed to execute: '
-};
+  STEP_FUNCTION_FAILED: 'Step function failed to execute: ',
+  WINDOW_HANDLER_FAILED: 'Window handler failed to execute: ',
+  NO_SCENE_IS_SELECTED: 'No scene is selected, cannot start the game'
+} as const;
 
-export const REPLACER = [
-  // [`'F_tp'`, ` () => { _.is_paused = !_.is_paused;}`],
-  // [
-  //   `'F_okd'`,
-  //   `(e) => {
-  //     if (e.code == \"Escape\") {
-  //       $.toggle_pause();
-  //     }
-  //   }`
-  // ],
-  // [`'F_coc'`, `() => $.toggle_pause()`],
-  // [`'F_pe'`, `() => PROCESS.exit()`],
-  [`'F_step'`, `(delta, $player) => {}`]
-] as const;
+export const REPLACER = [[`'F_step'`, '(delta, $player) => {}']] as const;
 
 const setup: Setup = {
-  settings: {
-    // fps: 8,
-    // camera: {
-    //   zoom: 10
-    // },
-    // scene: {
-    //   background: 'black'
-    // }
-  },
-  agents: {
-    // player: {
-    //   states: {
-    //     idle: {
-    //       frame_count: 4
-    //     }
-    //   }
-    // }
-  },
-  variables: {
-    // is_paused: false
-  },
-  functions: {
-    // @ts-expect-error
-    // toggle_pause: 'F_tp'
-  },
+  settings: {},
+  agents: {},
+  variables: {},
+  functions: {},
   // @ts-expect-error
-  step: `F_step`,
-  window: {
-    // @ts-expect-error
-    // onkeydown: 'F_okd'
-  },
-  gui: {
-    // $if: {
-    //   // @ts-expect-error
-    //   is_paused: {
-    //     classes: {
-    //       default: [
-    //         'absolute',
-    //         'bottom-0',
-    //         'w-full',
-    //         'h-full',
-    //         'bg-black/50',
-    //         'flex',
-    //         'flex-col',
-    //         'items-center',
-    //         'gap-2',
-    //         'pt-8'
-    //       ]
-    //     },
-    //     transition: { type: 'fade' },
-    //     children: {
-    //       continue: {
-    //         type: 'button',
-    //         classes: {
-    //           default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
-    //           modifiers: {
-    //             hover: ['bg-purple-200']
-    //           }
-    //         },
-    //         onclick: 'F_coc',
-    //         text: 'Continue' // add variable {v.var_name}
-    //       },
-    //       exit: {
-    //         type: 'button',
-    //         classes: {
-    //           default: ['bg-amber-200', 'font-bold', 'p-4', 'text-amber-600', 'w-1/2', 'rounded'],
-    //           modifiers: {
-    //             hover: ['bg-purple-200']
-    //           }
-    //         },
-    //         onclick: 'F_pe',
-    //         text: 'Exit' // add variable {v.var_name}
-    //       }
-    //     }
-    //   }
-    // }
-  }
+  step: 'F_step',
+  window: {},
+  gui: {}
 };
 
 export { setup as template_json_code };

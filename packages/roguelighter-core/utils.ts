@@ -6,13 +6,20 @@ import {
   template_json_code,
   PROCESS_IDENTIFIER,
   FUNCTIONS_IDENTIFIER,
-  VARIABLES_IDENTIFIER
+  VARIABLES_IDENTIFIER,
+  DEFAULT_SCENE_INDEX,
+  DEFAULT_SCENE_ID
 } from './constants';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
 import { Setup } from './types/game';
-import { EntryObject, ParseErrorObject } from './types/engine';
+import {
+  EntryObject,
+  ParseErrorObject,
+  RoguelighterDataFile,
+  RoguelighterProject
+} from './types/engine';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -320,11 +327,13 @@ export async function generate_asset_urls(
 }
 
 export function generate_template_data() {
-  return JSON5.stringify({
-    id: crypto.randomUUID(),
+  const project: RoguelighterDataFile = {
+    scene_index: DEFAULT_SCENE_INDEX,
+    starting_scene_id: DEFAULT_SCENE_ID,
     code: json_to_code_string(template_json_code),
-    scenes: new Map()
-  });
+    scenes: []
+  };
+  return JSON5.stringify(project);
 }
 
 const array_regex = /\[([^\]]*)\]/g;

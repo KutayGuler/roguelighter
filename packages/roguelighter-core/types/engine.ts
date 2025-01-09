@@ -1,5 +1,10 @@
 import { createDialog, createMenu } from 'svelte-headlessui';
 import type { AgentConfig } from './game';
+import { ERROR_MESSAGES } from '../constants';
+
+export type ErrorType = keyof typeof ERROR_MESSAGES;
+
+export type OnError = (type: ErrorType, e: any) => void;
 
 export interface PlayableAgent<N extends string> extends AgentConfig<N> {
   name: N;
@@ -29,12 +34,13 @@ export type EntryObject = {
   path: string;
   type: AssetType;
 };
-export type UUID = `${string}-${string}-${string}-${string}-${string}`;
 
 export interface RoguelighterProject {
   name: string;
   code: string;
-  scenes: Map<UUID, Scene>;
+  scenes: Map<number, Scene>;
+  starting_scene_id: number;
+  scene_index: number;
 }
 
 export interface ParseErrorObject {
@@ -45,7 +51,9 @@ export interface ParseErrorObject {
 
 export interface RoguelighterDataFile {
   code: string;
-  scenes: Array<[UUID, Scene]>;
+  scenes: Array<[number, Scene]>;
+  starting_scene_id: number;
+  scene_index: number;
 }
 
 export interface PlayableScene extends Omit<Scene, 'agents'> {
@@ -53,7 +61,7 @@ export interface PlayableScene extends Omit<Scene, 'agents'> {
 }
 
 export interface Portal {
-  to_scene_id: UUID;
+  to_scene_id: number;
   to_position: number;
 }
 

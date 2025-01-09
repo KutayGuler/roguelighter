@@ -81,7 +81,7 @@
       toast.success(`Removed project ${current_project_name} successfully.`, TOAST_SETTINGS);
       invalidate('page:projects');
     } catch (e) {
-      toast.error('Failed to remove the project');
+      toast.error('Failed to remove the project', TOAST_SETTINGS);
     }
   }
 

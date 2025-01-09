@@ -22,7 +22,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
   tutorial.project.code = template_code_string;
   tutorial.project.scenes = new Map(tutorial.project.scenes);
-  // @ts-expect-error
   let scene = tutorial.project.scenes.get(0) as Scene;
   scene.backgrounds = new Map(scene?.backgrounds);
   scene.agents = new Map(scene?.agents);

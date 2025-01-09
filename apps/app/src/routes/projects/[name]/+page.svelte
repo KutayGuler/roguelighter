@@ -1,18 +1,19 @@
 <script lang="ts">
-  import { Engine, TOAST_SETTINGS } from 'roguelighter-core';
+  import { Engine, ERROR_MESSAGES, TOAST_SETTINGS, type OnError } from 'roguelighter-core';
   import toast from '../../../lib/svelte-french-toast/core/toast.js';
 
   let { data } = $props();
+  console.log(data);
 
-  function on_no_scene_is_selected() {
-    toast.error('No scene is selected, cannot start the game', TOAST_SETTINGS);
-  }
+  const on_error: OnError = (type, e) => {
+    toast.error(ERROR_MESSAGES[type], TOAST_SETTINGS);
+  };
 </script>
 
 <Engine
   project={data.project}
   document_path={data.document_path}
-  {on_no_scene_is_selected}
+  {on_error}
   process_classes={data.process_classes}
   exportCSS={data.exportCSS}
 />

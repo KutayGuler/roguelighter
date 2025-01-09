@@ -57,4 +57,4 @@
 </script>
 
 <!-- <CodeEditor {project} view="code" save_file={() => {}}></CodeEditor> -->
-<Game {project} current_scene_id={0} {bg_asset_urls} {agent_asset_urls}></Game>
+<Game {project} {bg_asset_urls} {agent_asset_urls}></Game>

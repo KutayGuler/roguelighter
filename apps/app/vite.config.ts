@@ -14,7 +14,6 @@ const viteServerConfig: Plugin = {
   }
 };
 
-const prefix = 'monaco-editor/esm/vs';
 export default defineConfig({
   plugins: [sveltekit(), viteServerConfig],
   build: {

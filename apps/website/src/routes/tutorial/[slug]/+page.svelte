@@ -54,7 +54,7 @@
 
   function on_content_changed() {
     if (!cannot_render) {
-      processClasses.fn(extract_tailwind_classes(JSON.stringify((parsed as Setup).gui)));
+      processClasses.fn(extract_tailwind_classes(JSON5.stringify((parsed as Setup).gui)));
       rerender++;
     }
   }
@@ -137,7 +137,6 @@
             project={tutorial.project}
             agent_asset_urls={tutorial.agent_asset_urls}
             bg_asset_urls={tutorial.bg_asset_urls}
-            current_scene_id={0}
           ></Game>
         {/key}
       {/if}
