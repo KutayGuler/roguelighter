@@ -26,7 +26,6 @@
 						[7, 'floor'],
 						[8, 'floor']
 					],
-					portals: [],
 					agents: [[0, 'player']],
 					width: 3,
 					height: 3
@@ -85,7 +84,6 @@
 	let scene = project.scenes.get(0) as Scene;
 	scene.backgrounds = new Map(scene?.backgrounds);
 	scene.agents = new Map(scene?.agents);
-	scene.portals = new Map();
 	// @ts-expect-error
 	project.agent_asset_urls = new Map(project.agent_asset_urls);
 	// @ts-expect-error

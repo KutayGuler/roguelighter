@@ -6,7 +6,6 @@
     scene: PlayableScene;
     agents: Agents;
     step: StepFunction;
-    change_scene: (portal_info: Portal) => void;
     variables: any;
     functions: any;
     PROCESS: any;
@@ -19,12 +18,7 @@
   import { T } from '@threlte/core';
   import Agent from './Agent.svelte';
   import { DEFAULT_CAMERA_ZOOM } from '../../constants';
-  import type {
-    AgentAssetUrls,
-    BackgroundAssetUrls,
-    PlayableScene,
-    Portal
-  } from '../../types/engine';
+  import type { AgentAssetUrls, BackgroundAssetUrls, PlayableScene } from '../../types/engine';
   import { Box3 } from 'three';
   import Floor from './Floor.svelte';
 

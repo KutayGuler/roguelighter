@@ -32,7 +32,6 @@
 						[7, 'floor'],
 						[8, 'floor']
 					],
-					portals: [],
 					agents: [[0, 'player']],
 					width: 3,
 					height: 3
@@ -53,7 +52,6 @@
 	let scene = project.scenes.get(0) as Scene;
 	scene.backgrounds = new Map(scene?.backgrounds);
 	scene.agents = new Map(scene?.agents);
-	scene.portals = new Map();
 </script>
 
 <!-- <CodeEditor {project} view="code" save_file={() => {}}></CodeEditor> -->

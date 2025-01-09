@@ -28,7 +28,6 @@
     BackgroundAssetUrls,
     OnError,
     PlayableScene,
-    Portal,
     RoguelighterProject
   } from '../../types/engine';
   import { DEFAULT_SCENE_ID, TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
@@ -129,23 +128,6 @@
     let internal_variables = {};
     Object.assign(variables_obj, internal_variables);
     transform_scenes();
-  }
-
-  function change_scene(portal_info: Portal) {
-    const { to_scene_id, to_position } = portal_info;
-    let player = scene.agents.get(player_pos);
-    if (!player) return;
-
-    scene = scenes.get(to_scene_id) as PlayableScene;
-    player_pos = to_position;
-    let [x, y] = pos_to_xy(player_pos, scene.width);
-    Object.assign(player, {
-      name: 'player',
-      x,
-      y
-    });
-    scene.agents.set(to_position, player);
-    scene_just_changed = true;
   }
 
   function get_variable_value(variable_name: string) {

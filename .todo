@@ -56,8 +56,6 @@
 - [ ] introduce objects
 - [ ] introduce agents[agent_name].props
 - [ ] dev_only scenes
-- [ ] portals can only go through their realms (dev_only, game_only)
-- [ ] make the popover work when button is disabled (portal_btn_disabled)
 - [ ] logs view
 - [ ] download logs
 - [ ] sometimes editor styles not loading

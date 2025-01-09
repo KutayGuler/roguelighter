@@ -19,7 +19,6 @@ export interface Scene {
   name: string;
   backgrounds: Map<number, string>;
   agents: Map<number, string>;
-  portals: Map<number, Portal>;
   width: number;
   height: number;
 }
@@ -58,11 +57,6 @@ export interface RoguelighterDataFile {
 
 export interface PlayableScene extends Omit<Scene, 'agents'> {
   agents: Map<number, PlayableAgent<'player'>>;
-}
-
-export interface Portal {
-  to_scene_id: number;
-  to_position: number;
 }
 
 // UI

@@ -11,7 +11,6 @@
   import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
-    Portal,
     RoguelighterProject,
     Scene
   } from '../../types/engine';
@@ -50,22 +49,16 @@
   let fill_mode: 'bg' | 'agent' = $state('bg');
   let holding = $state(false);
   let show_pos = $state(false);
-  let portal_remove_mode = $state(false);
-  let portal_from_pos = $state(0);
-  let portal_to_id = $state(-1);
-  let portal_to_pos = $state(0);
   let scene_name = $state('');
   let map_width = $state(DEFAULT_MAP_WIDTH);
   let map_height = $state(DEFAULT_MAP_WIDTH);
 
-  let portal_modal = $state(createDialog({ label: '' }));
   let new_scene_modal = $state(createDialog({ label: '' }));
   let delete_scene_modal = $state(createDialog({ label: '' }));
 
   // @ts-expect-error
   let current_scene: Scene = $state(project.scenes.get(current_scene_id));
   let current_scene_exists = $derived(project.scenes.get(current_scene_id) !== undefined);
-  let portal_btn_disabled = $derived((project.scenes?.size || 0) <= 1);
 
   interface Brushes {
     bg: keyof typeof backgrounds | undefined;
@@ -131,30 +124,6 @@
     bg: Object.keys(backgrounds)
   };
 
-  async function create_portal() {
-    current_scene.portals.set(portal_from_pos, {
-      to_scene_id: portal_to_id,
-      to_position: portal_to_pos
-    });
-    let portalled_scene = project.scenes.get(portal_to_id);
-    portalled_scene?.portals.set(portal_to_pos, {
-      to_scene_id: current_scene_id,
-      to_position: portal_from_pos
-    });
-    portal_modal?.close();
-    save_file();
-    tippy('[data-tippy-content]');
-  }
-
-  async function delete_portal(pos: number) {
-    if (!portal_remove_mode) return;
-    const { to_scene_id, to_position } = current_scene.portals.get(pos) as Portal;
-    current_scene.portals.delete(pos);
-    let portalled_scene = project.scenes.get(to_scene_id);
-    portalled_scene?.portals.delete(to_position);
-    save_file();
-  }
-
   async function delete_current_scene(e: SubmitEvent) {
     e.preventDefault();
     project.scenes.delete(current_scene_id);
@@ -181,7 +150,6 @@
       name: scene_name,
       backgrounds: new SvelteMap(),
       agents: new SvelteMap(),
-      portals: new SvelteMap(),
       width: map_width,
       height: map_height
     });
@@ -267,7 +235,7 @@
       return;
     }
 
-    if ($portal_modal?.expanded || $new_scene_modal?.expanded || $delete_scene_modal?.expanded) {
+    if ($new_scene_modal?.expanded || $delete_scene_modal?.expanded) {
       return;
     }
 
@@ -285,12 +253,6 @@
           break;
         case 'KeyT':
           switch_to_game();
-          break;
-        case 'KeyP':
-          portal_modal?.open();
-          break;
-        case 'KeyR':
-          portal_remove_mode = !portal_remove_mode;
           break;
       }
     } else {
@@ -421,49 +383,6 @@
         {:else}
           <p class="text-sm text-base-300">Background assets not found.</p>
         {/if}
-        <div class="flex-grow"></div>
-        <div>
-          <h3>Portals</h3>
-          <div class="flex flex-row gap-2 pt-2">
-            <button
-              disabled={current_scene?.portals?.size == 0}
-              data-tippy-content="Ctrl + R"
-              class="btn-outline w-full disabled:cursor-not-allowed"
-              color="purple"
-              onclick={() => (portal_remove_mode = !portal_remove_mode)}
-              >{portal_remove_mode ? 'Cancel' : 'Remove Portal'}</button
-            >
-            <button
-              data-tippy-content={portal_btn_disabled
-                ? 'You need at least two scenes to place a portal'
-                : 'Ctrl + P'}
-              class="btn-primary w-full"
-              color="purple"
-              onclick={() => {
-                if (portal_btn_disabled) return;
-                portal_remove_mode = false;
-                portal_modal?.open();
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                class="size-5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3"
-                />
-              </svg>
-
-              New Portal</button
-            >
-          </div>
-        </div>
       {/if}
     </div>
   </section>
@@ -546,7 +465,6 @@
               {@const pos = i * current_scene.width + j}
               {@const agent = current_scene.agents.get(pos)}
               {@const bg = current_scene.backgrounds.get(pos)}
-              {@const portal = current_scene.portals.get(pos)}
               {@const bg_url = bg ? bg_asset_urls.get(bg) : ''}
               {@const agent_url = agent ? agent_asset_urls.get(agent) : ''}
               <button
@@ -558,17 +476,6 @@
                 onclick={() => cell_clicked(pos)}
                 class="relative flex items-center justify-center size-16 focus:z-20"
               >
-                {#if portal}
-                  {@const to_scene = project.scenes.get(portal.to_scene_id)}
-                  <button
-                    onclick={() => delete_portal(pos)}
-                    id="portal_{pos}"
-                    data-tippy-content={`${to_scene?.name} #${portal.to_position}`}
-                    class="absolute top-0 border-4 border-purple-600 w-full h-full z-20 {portal_remove_mode
-                      ? 'hover:border-red-500'
-                      : ''}"
-                  ></button>
-                {/if}
                 {#if show_pos}
                   <span class="text-base-200">{pos}</span>
                 {:else}
@@ -633,64 +540,6 @@
     <button class="btn-primary">Create</button>
   </form>
   <button class="absolute top-2 right-4" onclick={() => new_scene_modal?.close()}>{CROSS}</button>
-</Modal>
-
-<Modal bind:dialog={portal_modal}>
-  <h3 class="h3 pb-4">Portal</h3>
-  <form class="flex flex-col gap-4" onsubmit={create_portal}>
-    <div class="flex flex-row w-full gap-4">
-      <label class="flex flex-col w-1/2" for="name">
-        From
-        <select class="select" disabled value={current_scene_id}>
-          {#each project.scenes.entries() as [id, { name: scene }]}
-            <option value={id}>{scene}</option>
-          {/each}
-        </select>
-      </label>
-      {#if current_scene}
-        <label class="flex flex-col w-1/2">
-          Position
-          <input
-            required
-            type="number"
-            min={0}
-            max={current_scene.width * current_scene.height - 1}
-            bind:value={portal_from_pos}
-          />
-        </label>
-      {/if}
-    </div>
-    <div class="flex flex-row w-full gap-4">
-      <label class="flex flex-col w-1/2" for="name">
-        To
-        <select class="select" required bind:value={portal_to_id}>
-          {#each project.scenes.entries() as [id, { name }]}
-            {#if name != current_scene?.name}
-              <option value={id}>{name}</option>
-            {/if}
-          {/each}
-        </select>
-      </label>
-      {#if typeof portal_to_id === 'number'}
-        {@const scene = project.scenes.get(portal_to_id)}
-        {#if scene}
-          <label class="flex flex-col w-1/2">
-            Position
-            <input
-              required
-              type="number"
-              min={0}
-              max={scene.width * scene.height - 1}
-              bind:value={portal_to_pos}
-            />
-          </label>
-        {/if}
-      {/if}
-    </div>
-    <button class="btn-primary">Create</button>
-  </form>
-
-  <button class="absolute top-2 right-4" onclick={() => portal_modal?.close()}>{CROSS}</button>
 </Modal>
 
 <Modal bind:dialog={delete_scene_modal}>

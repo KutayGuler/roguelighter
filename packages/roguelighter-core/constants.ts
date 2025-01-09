@@ -18,7 +18,7 @@ export const DEFAULT_DIR = 'roguelighter';
 export const PROJECTS_DIR = `${DEFAULT_DIR}/projects`;
 export const EXPORT_DIR = `${DEFAULT_DIR}/exports`;
 export const baseDir = BaseDirectory.Document;
-export const MAPS = ['backgrounds', 'agents', 'portals'];
+export const MAPS = ['backgrounds', 'agents'];
 
 export const CROSS = '🞫';
 

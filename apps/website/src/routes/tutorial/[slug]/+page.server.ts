@@ -25,7 +25,6 @@ export const load: PageServerLoad = async ({ params }) => {
   let scene = tutorial.project.scenes.get(0) as Scene;
   scene.backgrounds = new Map(scene?.backgrounds);
   scene.agents = new Map(scene?.agents);
-  scene.portals = new Map();
   // @ts-expect-error
   tutorial.project.agent_asset_urls = new Map(tutorial.project.agent_asset_urls);
   // @ts-expect-error
