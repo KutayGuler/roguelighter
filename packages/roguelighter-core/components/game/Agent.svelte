@@ -10,17 +10,23 @@
     variables: any;
     functions: any;
     PROCESS: any;
-    on_step_function_failed: Function;
+    on_error: OnError;
+    all_positions_calculated: boolean;
   }
 </script>
 
 <script lang="ts">
-  import { T, useTask, useThrelte } from '@threlte/core';
-  import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
+  import { T, useTask } from '@threlte/core';
+  import { DEFAULT_FRAME_COUNT, DEFAULT_FPS } from '../../constants';
   import * as THREE from 'three';
-  import type { PlayableAgent } from '../../types/engine';
-  import type { Settings, SpatialData, SpriteConfig, StepFunction } from '../../types/game';
-  const { camera } = useThrelte();
+  import type { OnError, PlayableAgent } from '../../types/engine';
+  import type {
+    CollisionEvent,
+    Settings,
+    SpatialData,
+    SpriteConfig,
+    StepFunction
+  } from '../../types/game';
 
   let {
     agent,
@@ -33,7 +39,8 @@
     variables,
     functions,
     PROCESS,
-    on_step_function_failed
+    on_error,
+    all_positions_calculated
   }: Props = $props();
 
   let spatial_data: SpatialData = $state({
@@ -51,11 +58,6 @@
   let frame_count = $derived(_state?.frame_count || DEFAULT_FRAME_COUNT);
   let current_frame = $state(1);
 
-  (async () => {
-    let xd = await fetch('yarro');
-    let x = new Response({});
-  })();
-
   let map = new THREE.TextureLoader().load(texture_url, (texture) => {
     texture.colorSpace = THREE.DisplayP3ColorSpace;
     texture.minFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
@@ -72,23 +74,59 @@
   sprite.scale.set(1, 1, 1);
   sprite.geometry.computeBoundingBox();
 
-  $camera.position.z = 100 / (settings.camera?.zoom || DEFAULT_CAMERA_ZOOM);
-
-  // TODO: event handler oncollision
   // TODO: add destroy function
+  let separation_queue: Array<CollisionEvent> = $state([]);
+  let collision_queue: Array<CollisionEvent> = $state([]);
+
+  export function oncollision(info: any) {
+    if (!all_positions_calculated) return;
+
+    collision_queue.push(info);
+  }
+
+  export function onseparation(info: CollisionEvent) {
+    if (!all_positions_calculated) return;
+
+    separation_queue.push(info);
+  }
+
+  let first_frame_ran = $state(false);
 
   const { stop } = useTask(
     (delta: number) => {
       t += delta;
 
       try {
-        // @ts-expect-error
-        step(delta, spatial_data, variables, functions, PROCESS);
+        while (collision_queue.length > 0) {
+          const info = collision_queue.shift();
+          // @ts-expect-error
+          agent.oncollision(delta, info, variables, functions, PROCESS);
+        }
       } catch (e) {
-        on_step_function_failed(e);
+        on_error('COLLISION_HANDLER_FAILED', e);
         stop();
       }
 
+      try {
+        while (separation_queue.length > 0) {
+          const info = separation_queue.shift();
+          // @ts-expect-error
+          agent.onseparation(delta, info, variables, functions, PROCESS);
+        }
+      } catch (e) {
+        on_error('SEPARATION_HANDLER_FAILED', e);
+        stop();
+      }
+
+      try {
+        // @ts-expect-error
+        step(delta, spatial_data, variables, functions, PROCESS);
+      } catch (e) {
+        on_error('STEP_FUNCTION_FAILED', e);
+        stop();
+      }
+
+      // @ts-expect-error
       _box.copy(sprite.geometry.boundingBox).applyMatrix4(sprite.matrixWorld);
       box = _box;
       check_collision();
@@ -98,6 +136,8 @@
         map.offset.x = current_frame / frame_count;
         t = 0;
       }
+
+      first_frame_ran = true;
     },
     { autoStart: agent.name == 'player' }
   );

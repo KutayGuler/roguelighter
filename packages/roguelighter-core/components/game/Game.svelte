@@ -22,7 +22,7 @@
     Functions,
     WindowHandlers as TWindowHandlers
   } from '../../types/game';
-  import { code_string_to_json, pos_to_xy } from '../../utils';
+  import { code_string_to_json, noop, pos_to_xy } from '../../utils';
   import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
@@ -78,13 +78,18 @@
 
       for (let [pos, name] of scene.agents.entries()) {
         let [x, y] = pos_to_xy(pos, scene.width);
+        const agent = agents[name];
 
         transformed_scene.agents.set(pos, {
           // @ts-expect-error
           name,
           x,
           y,
-          states: agents[name].states,
+          states: agent.states,
+          oncollision:
+            'oncollision' in agent ? new Function('return ' + agent.oncollision)() : noop,
+          onseparation:
+            'onseparation' in agent ? new Function('return ' + agent.onseparation)() : noop,
           state: 'default'
         });
 
@@ -165,7 +170,7 @@
         bind:variables
         bind:functions
         {PROCESS}
-        on_step_function_failed={(e: any) => on_error('STEP_FUNCTION_FAILED', e)}
+        {on_error}
       />
     </Canvas>
 

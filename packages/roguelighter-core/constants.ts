@@ -43,6 +43,8 @@ export const PROCESS_IDENTIFIER = 'PROCESS';
 
 export const ERROR_MESSAGES = {
   STEP_FUNCTION_FAILED: 'Step function failed to execute: ',
+  COLLISION_HANDLER_FAILED: 'oncollision handler failed to execute: ',
+  SEPARATION_HANDLER_FAILED: 'onseparation handler failed to execute: ',
   WINDOW_HANDLER_FAILED: 'Window handler failed to execute: ',
   NO_SCENE_IS_SELECTED: 'No scene is selected, cannot start the game'
 } as const;

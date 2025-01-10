@@ -41,7 +41,7 @@
   function on_content_changed() {
     if (!data.process_classes) return;
     if (!cannot_render) {
-      data.process_classes(extract_tailwind_classes(JSON5.stringify((parsed as Setup).gui)));
+      data.process_classes(extract_tailwind_classes(JSON.stringify((parsed as Setup).gui)));
       rerender++;
     }
   }
@@ -118,7 +118,7 @@
         view="code"
         save_file={() => {}}
       ></CodeEditor>
-      <div class="absolute hidden bg-black/50">
+      <div class="absolute bottom-0 hidden bg-black/50 z-50 isolate">
         tailwind hack, you can remove this if bottom bar on CodeEditor is working properly
       </div>
     </div>

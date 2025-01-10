@@ -20,7 +20,7 @@
             class="py-4 px-8 text-sm border border-primary-900 rounded-lg hover:bg-emerald-800/20"
             >Check out the examples</a
           >
-          <button class="btn-primary !px-8">Download the latest version</button>
+          <button class="btn-primary !px-8">Download the alpha version</button>
         </div>
       </div>
       <img

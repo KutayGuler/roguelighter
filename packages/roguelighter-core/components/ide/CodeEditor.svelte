@@ -24,14 +24,9 @@
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
-  import { debounce, filters, includes_any, agent_states_obj, noop } from '../../utils';
-  import {
-    TEMPLATE_LOGIC,
-    INTERNAL_TEXTS,
-    variables_regex,
-    DEFAULT_GUI_TYPE
-  } from '../../constants';
-  import type { EntryObject, RoguelighterProject, View } from '../../types/engine';
+  import { debounce, filters, includes_any, noop } from '../../utils';
+  import { TEMPLATE_LOGIC, variables_regex, DEFAULT_GUI_TYPE } from '../../constants';
+  import type { EntryObject } from '../../types/engine';
   import ts from 'typescript';
   import { generate_boilerplate_types } from '../../generate_boilerplate_types';
   import { SvelteMap } from 'svelte/reactivity';
@@ -178,7 +173,6 @@
 
       let handlers = '';
       let variables = '';
-      let agent_states = '';
       let handler_types: { [key: string]: string } = {};
 
       for (let assignment of function_declarations) {
@@ -221,14 +215,6 @@
         ]);
       }
 
-      for (let [key, val] of Object.entries(agent_states_obj)) {
-        agent_states += `${key}: `;
-        for (let v of val) {
-          agent_states += `| '${v}'`;
-        }
-        agent_states += ';\n';
-      }
-
       if (cached_entries.length) {
         assets.agents = '';
         assets.backgrounds = '';
@@ -245,7 +231,7 @@
         assets,
         handlers,
         variables,
-        agent_states,
+        // @ts-expect-error
         variables_map,
         handler_types,
         gui_interface
@@ -439,7 +425,7 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\tfunctions|\tstep|\twindow|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
+            /^(?:setup|[ \t]{2}settings|[ \t]{2}collisions|[ \t]{2}agents|[ \t]{2}variables|[ \t]{2}functions|[ \t]{2}step|[ \t]{2}window|[ \t]{2}keybindings|[ \t]{2}gui|[ \t]{2}__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],

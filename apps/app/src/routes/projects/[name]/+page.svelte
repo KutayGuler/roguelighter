@@ -5,7 +5,7 @@
   let { data } = $props();
 
   const on_error: OnError = (type, e) => {
-    toast.error(ERROR_MESSAGES[type], TOAST_SETTINGS);
+    toast.error(ERROR_MESSAGES[type] + e, TOAST_SETTINGS);
   };
 </script>
 

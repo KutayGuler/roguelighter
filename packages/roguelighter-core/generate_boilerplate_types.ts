@@ -5,7 +5,6 @@ export function generate_boilerplate_types({
   handlers,
   variables,
   variables_map,
-  agent_states,
   handler_types,
   gui_interface
 }: {
@@ -13,7 +12,6 @@ export function generate_boilerplate_types({
   handlers: string;
   variables: string;
   variables_map: Map<string, [value: string, type: string]>;
-  agent_states: string;
   handler_types: any;
   gui_interface: string;
 }) {
@@ -45,7 +43,7 @@ export function generate_boilerplate_types({
   type EventNames = ${handlers};
   type Variables = { ${variables} };
   type BackgroundNames = ${assets.backgrounds};
-  type AgentStates = { ${agent_states} };
+  
   type CustomFunctionNames = ${custom_handler_union}
   `;
 
@@ -2020,19 +2018,18 @@ declare type SpriteConfig = {
   frame_count?: number;
   /** The desired frames per second of the animation. */
   fps?: number;
-  /** The number of columns in the spritesheet. */
-  columns?: number;
-  /** The number of rows in the spritesheet. */
-  rows?: number;
-  /** The start frame of the current animation. */
-  start_frame?: number;
-  /** The end frame of the current animation. */
-  end_frame?: number;
-  /** Delay the start of the animation in ms. */
-  delay?: number;
   /** The texture filtering applied to the spritesheet. */
   filter?: 'nearest' | 'linear';
 };
+
+declare interface CollisionEvent {
+  id: number;
+  type: 'agent' | 'background';
+  name: string;
+}
+
+declare type CollisionHandler = (delta: number, event: CollisionEvent) => void;
+declare type SeparationHandler = CollisionHandler;
 
 /**
  * TODO: doc
@@ -2048,6 +2045,14 @@ declare interface AgentConfig<K extends keyof AgentStates> {
   states?: {
     [key in AgentStates[K]]?: SpriteConfig;
   };
+  /**
+   * Fired whenever there is a collision with the agent
+   */
+  oncollision?: CollisionHandler;
+  /**
+   * Fired whenever a collision is ended with an entity
+   */
+  onseparation?: SeparationHandler;
 }
 
 declare type Agents = {

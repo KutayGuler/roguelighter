@@ -1968,19 +1968,18 @@ export type SpriteConfig = {
   frame_count?: number;
   /** The desired frames per second of the animation. */
   fps?: number;
-  /** The number of columns in the spritesheet. */
-  columns?: number;
-  /** The number of rows in the spritesheet. */
-  rows?: number;
-  /** The start frame of the current animation. */
-  start_frame?: number;
-  /** The end frame of the current animation. */
-  end_frame?: number;
-  /** Delay the start of the animation in ms. */
-  delay?: number;
   /** The texture filtering applied to the spritesheet. */
   filter?: 'nearest' | 'linear';
 };
+
+export interface CollisionEvent {
+  id: number;
+  type: 'agent' | 'background';
+  name: string;
+}
+
+export type CollisionHandler = (delta: number, event: CollisionEvent) => void;
+export type SeparationHandler = CollisionHandler;
 
 /**
  * TODO: doc
@@ -1996,6 +1995,14 @@ export interface AgentConfig<K extends keyof AgentStates> {
   states?: {
     [key in AgentStates[K]]?: SpriteConfig;
   };
+  /**
+   * Fired whenever there is a collision with the agent
+   */
+  oncollision?: CollisionHandler;
+  /**
+   * Fired whenever a collision is ended with an entity
+   */
+  onseparation?: SeparationHandler;
 }
 
 export type Agents = {

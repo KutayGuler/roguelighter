@@ -94,13 +94,15 @@ const event_handler_parameter_appender = (context: ts.TransformationContext) => 
       const prop_name = node.name;
 
       // @ts-expect-error
-      let prop_name_text = prop_name.text;
+      let prop_name_text = prop_name.text.toLowerCase();
 
-      if (prop_name_text.toLowerCase().startsWith('on')) {
+      if (prop_name_text.startsWith('on')) {
         const initializer = node.initializer;
 
         if (ts.isFunctionExpression(initializer)) {
-          if (initializer.parameters.length === 0) {
+          if (['oncollision', 'onseparation'].includes(prop_name_text)) {
+            // holup
+          } else if (initializer.parameters.length === 0) {
             const event_param = ts.factory.createParameterDeclaration(
               undefined,
               undefined,
@@ -270,8 +272,6 @@ export function json_to_code_string(json: Setup) {
   `;
 }
 
-export let agent_states_obj = {};
-
 export async function process_entries_recursively(
   parent: string,
   entries: DirEntry[],
@@ -292,7 +292,7 @@ export async function process_entries_recursively(
       _entries.push(...children);
       if (type == 'agents') {
         // @ts-expect-error
-        agent_states_obj[name] = children.map(({ name }) => name);
+        // agent_states_obj[name] = children.map(({ name }) => name);
       }
       continue;
     }
