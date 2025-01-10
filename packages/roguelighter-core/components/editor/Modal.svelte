@@ -45,7 +45,7 @@
               leaveTo="opacity-0 scale-95"
             >
               <div
-                class="w-full max-w-md bg-base-700 transform overflow-hidden rounded p-8 text-left align-middle shadow-xl transition-all text-white"
+                class="w-full max-w-lg bg-base-700 transform overflow-hidden rounded p-8 text-left align-middle shadow-xl transition-all text-white"
                 use:dialog.modal
               >
                 {@render children?.()}

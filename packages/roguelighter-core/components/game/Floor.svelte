@@ -29,7 +29,7 @@
   let filter = $derived(settings?.filter || 'nearest');
 
   let map = new THREE.TextureLoader().load(texture_url, (texture) => {
-    texture.colorSpace = THREE.SRGBColorSpace;
+    // texture.colorSpace = THREE.SRGBColorSpace;
     texture.minFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
     texture.magFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
     texture.wrapS = THREE.ClampToEdgeWrapping; // prevents texture bleeding

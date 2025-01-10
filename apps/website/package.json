@@ -36,6 +36,7 @@
   "type": "module",
   "dependencies": {
     "@neoconfetti/svelte": "^2.2.1",
+    "svelte-headlessui": "^0.0.42",
     "marked": "^15.0.0",
     "roguelighter-core": "0.1.2"
   }

@@ -59,7 +59,7 @@
   let current_frame = $state(1);
 
   let map = new THREE.TextureLoader().load(texture_url, (texture) => {
-    texture.colorSpace = THREE.DisplayP3ColorSpace;
+    // texture.colorSpace = THREE.DisplayP3ColorSpace;
     texture.minFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
     texture.magFilter = filter == 'nearest' ? THREE.NearestFilter : THREE.LinearFilter;
     texture.wrapS = THREE.ClampToEdgeWrapping; // prevents texture bleeding
@@ -74,7 +74,6 @@
   sprite.scale.set(1, 1, 1);
   sprite.geometry.computeBoundingBox();
 
-  // TODO: add destroy function
   let separation_queue: Array<CollisionEvent> = $state([]);
   let collision_queue: Array<CollisionEvent> = $state([]);
 

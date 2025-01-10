@@ -33,6 +33,7 @@
   import { DEFAULT_SCENE_ID, TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
   import { SvelteSet } from 'svelte/reactivity';
   import WindowHandlers from './WindowHandlers.svelte';
+  import * as THREE from 'three';
 
   let {
     project,
@@ -158,7 +159,7 @@
 
 {#if scene}
   <main class="relative w-full h-full" style:background={settings.scene?.background || 'black'}>
-    <Canvas>
+    <Canvas colorSpace="srgb-linear" toneMapping={THREE.NoToneMapping}>
       <Scene
         {step}
         {player_pos}

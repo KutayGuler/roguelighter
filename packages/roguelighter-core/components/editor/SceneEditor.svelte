@@ -1,7 +1,3 @@
-<!-- <script module>
-
-</script> -->
-
 <script lang="ts">
   import Modal from './Modal.svelte';
   import type { Setup } from '../../types/game';
