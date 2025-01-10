@@ -1,0 +1,19 @@
+{
+  "title": "GUI - Text",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [],
+  "bg_asset_urls": [],
+  "overrides": {
+    "gui": {
+      "text_element": {
+        "text": "here is some text",
+        "classes": {
+          "default": ["absolute", "text-3xl", "top-4", "left-4"]
+        }
+      }
+    }
+  },
+  "replacer": []
+}

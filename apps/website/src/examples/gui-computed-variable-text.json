@@ -1,0 +1,23 @@
+{
+  "title": "GUI - Computed variables",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [],
+  "bg_asset_urls": [],
+  "overrides": {
+    "variables": {
+      "fruits": ["🍇", "🍉", "🍌"],
+      "fruits_count": "'CV_fruits'"
+    },
+    "gui": {
+      "text_element": {
+        "text": "here are {fruits_count} fruits: {fruits}",
+        "classes": {
+          "default": ["absolute", "text-3xl", "top-4", "left-4"]
+        }
+      }
+    }
+  },
+  "replacer": [["\"'CV_fruits'\"", "() => _.fruits.length"]]
+}

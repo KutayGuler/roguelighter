@@ -1,0 +1,24 @@
+{
+  "title": "GUI - Variable text",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [],
+  "bg_asset_urls": [],
+  "overrides": {
+    "variables": {
+      "grape": "🍇",
+      "watermelon": "🍉",
+      "banana": "🍌"
+    },
+    "gui": {
+      "text_element": {
+        "text": "here are some fruits: {grape}, {watermelon}, {banana}",
+        "classes": {
+          "default": ["absolute", "text-3xl", "top-4", "left-4"]
+        }
+      }
+    }
+  },
+  "replacer": []
+}

@@ -1,3293 +1,3250 @@
 {
-	"id": 0,
-	"name": "roguelighter",
-	"variant": "project",
-	"kind": 1,
-	"flags": {},
-	"children": [
-		{
-			"id": 57,
-			"name": "Engine",
-			"variant": "declaration",
-			"kind": 128,
-			"flags": {
-				"isExternal": true
-			},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "Base class for Svelte components with some minor dev-enhancements. Used when dev=true.\n\nCan be used to create strongly typed Svelte components.\n\n#### Example:\n\nYou have component library on npm called "
-					},
-					{
-						"kind": "code",
-						"text": "`component-library`"
-					},
-					{
-						"kind": "text",
-						"text": ", from which\nyou export a component called "
-					},
-					{
-						"kind": "code",
-						"text": "`MyComponent`"
-					},
-					{
-						"kind": "text",
-						"text": ". For Svelte+TypeScript users,\nyou want to provide typings. Therefore you create a "
-					},
-					{
-						"kind": "code",
-						"text": "`index.d.ts`"
-					},
-					{
-						"kind": "text",
-						"text": ":\n"
-					},
-					{
-						"kind": "code",
-						"text": "```ts\nimport { SvelteComponent } from \"svelte\";\nexport class MyComponent extends SvelteComponent<{foo: string}> {}\n```"
-					},
-					{
-						"kind": "text",
-						"text": "\nTyping this makes it possible for IDEs like VS Code with the Svelte extension\nto provide intellisense and to use the component like this in a Svelte file\nwith TypeScript:\n"
-					},
-					{
-						"kind": "code",
-						"text": "```svelte\n<script lang=\"ts\">\n\timport { MyComponent } from \"component-library\";\n</script>\n<MyComponent foo={'bar'} />\n```"
-					}
-				]
-			},
-			"children": [
-				{
-					"id": 58,
-					"name": "constructor",
-					"variant": "declaration",
-					"kind": 512,
-					"flags": {
-						"isExternal": true
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 144,
-							"character": 2
-						}
-					],
-					"signatures": [
-						{
-							"id": 59,
-							"name": "new Engine",
-							"variant": "signature",
-							"kind": 16384,
-							"flags": {
-								"isExternal": true
-							},
-							"sources": [
-								{
-									"fileName": "node_modules/svelte/types/index.d.ts",
-									"line": 144,
-									"character": 2
-								}
-							],
-							"typeParameter": [
-								{
-									"id": 60,
-									"name": "Props",
-									"variant": "typeParam",
-									"kind": 131072,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "reference",
-										"target": {
-											"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-											"qualifiedName": "Record"
-										},
-										"typeArguments": [
-											{
-												"type": "intrinsic",
-												"name": "string"
-											},
-											{
-												"type": "intrinsic",
-												"name": "any"
-											}
-										],
-										"name": "Record",
-										"package": "typescript"
-									},
-									"default": {
-										"type": "intrinsic",
-										"name": "any"
-									}
-								},
-								{
-									"id": 61,
-									"name": "Events",
-									"variant": "typeParam",
-									"kind": 131072,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "reference",
-										"target": {
-											"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-											"qualifiedName": "Record"
-										},
-										"typeArguments": [
-											{
-												"type": "intrinsic",
-												"name": "string"
-											},
-											{
-												"type": "intrinsic",
-												"name": "any"
-											}
-										],
-										"name": "Record",
-										"package": "typescript"
-									},
-									"default": {
-										"type": "intrinsic",
-										"name": "any"
-									}
-								},
-								{
-									"id": 62,
-									"name": "Slots",
-									"variant": "typeParam",
-									"kind": 131072,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "reference",
-										"target": {
-											"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-											"qualifiedName": "Record"
-										},
-										"typeArguments": [
-											{
-												"type": "intrinsic",
-												"name": "string"
-											},
-											{
-												"type": "intrinsic",
-												"name": "any"
-											}
-										],
-										"name": "Record",
-										"package": "typescript"
-									},
-									"default": {
-										"type": "intrinsic",
-										"name": "any"
-									}
-								}
-							],
-							"parameters": [
-								{
-									"id": 63,
-									"name": "options",
-									"variant": "param",
-									"kind": 32768,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "reference",
-										"target": {
-											"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-											"qualifiedName": "\"svelte\".ComponentConstructorOptions"
-										},
-										"typeArguments": [
-											{
-												"type": "reference",
-												"target": -1,
-												"name": "Props",
-												"refersToTypeParameter": true
-											}
-										],
-										"name": "ComponentConstructorOptions",
-										"package": "svelte",
-										"qualifiedName": "\"svelte\".ComponentConstructorOptions"
-									}
-								}
-							],
-							"type": {
-								"type": "reference",
-								"target": 57,
-								"typeArguments": [
-									{
-										"type": "reference",
-										"target": -1,
-										"name": "Props",
-										"refersToTypeParameter": true
-									},
-									{
-										"type": "reference",
-										"target": -1,
-										"name": "Events",
-										"refersToTypeParameter": true
-									},
-									{
-										"type": "reference",
-										"target": -1,
-										"name": "Slots",
-										"refersToTypeParameter": true
-									}
-								],
-								"name": "SvelteComponent",
-								"package": "svelte",
-								"qualifiedName": "\"svelte\".SvelteComponent"
-							},
-							"overwrites": {
-								"type": "reference",
-								"target": -1,
-								"name": "SvelteComponent_1<Props, Events>.constructor"
-							}
-						}
-					],
-					"overwrites": {
-						"type": "reference",
-						"target": -1,
-						"name": "SvelteComponent_1<Props, Events>.constructor"
-					}
-				},
-				{
-					"id": 71,
-					"name": "$$",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isExternal": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "### PRIVATE API\n\nDo not use, may change at any time"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 102,
-							"character": 2
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "any"
-					},
-					"inheritedFrom": {
-						"type": "reference",
-						"target": -1,
-						"name": "SvelteComponent_1.$$"
-					}
-				},
-				{
-					"id": 65,
-					"name": "$$events_def",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isExternal": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "For type checking capabilities only.\nDoes not exist at runtime.\n### DO NOT USE!"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 158,
-							"character": 2
-						}
-					],
-					"type": {
-						"type": "reference",
-						"target": -1,
-						"name": "Events",
-						"refersToTypeParameter": true
-					}
-				},
-				{
-					"id": 64,
-					"name": "$$prop_def",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isExternal": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "For type checking capabilities only.\nDoes not exist at runtime.\n### DO NOT USE!"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 151,
-							"character": 2
-						}
-					],
-					"type": {
-						"type": "reference",
-						"target": -1,
-						"name": "Props",
-						"refersToTypeParameter": true
-					}
-				},
-				{
-					"id": 72,
-					"name": "$$set",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isExternal": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "### PRIVATE API\n\nDo not use, may change at any time"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 109,
-							"character": 2
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "any"
-					},
-					"inheritedFrom": {
-						"type": "reference",
-						"target": -1,
-						"name": "SvelteComponent_1.$$set"
-					}
-				},
-				{
-					"id": 66,
-					"name": "$$slot_def",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isExternal": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "For type checking capabilities only.\nDoes not exist at runtime.\n### DO NOT USE!"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 165,
-							"character": 2
-						}
-					],
-					"type": {
-						"type": "reference",
-						"target": -1,
-						"name": "Slots",
-						"refersToTypeParameter": true
-					}
-				},
-				{
-					"id": 67,
-					"name": "$capture_state",
-					"variant": "declaration",
-					"kind": 2048,
-					"flags": {
-						"isExternal": true
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 167,
-							"character": 2
-						}
-					],
-					"signatures": [
-						{
-							"id": 68,
-							"name": "$capture_state",
-							"variant": "signature",
-							"kind": 4096,
-							"flags": {
-								"isExternal": true
-							},
-							"sources": [
-								{
-									"fileName": "node_modules/svelte/types/index.d.ts",
-									"line": 167,
-									"character": 2
-								}
-							],
-							"type": {
-								"type": "intrinsic",
-								"name": "void"
-							}
-						}
-					]
-				},
-				{
-					"id": 73,
-					"name": "$destroy",
-					"variant": "declaration",
-					"kind": 2048,
-					"flags": {
-						"isExternal": true
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 111,
-							"character": 2
-						}
-					],
-					"signatures": [
-						{
-							"id": 74,
-							"name": "$destroy",
-							"variant": "signature",
-							"kind": 4096,
-							"flags": {
-								"isExternal": true
-							},
-							"sources": [
-								{
-									"fileName": "node_modules/svelte/types/index.d.ts",
-									"line": 111,
-									"character": 2
-								}
-							],
-							"type": {
-								"type": "intrinsic",
-								"name": "void"
-							},
-							"inheritedFrom": {
-								"type": "reference",
-								"target": -1,
-								"name": "SvelteComponent_1.$destroy"
-							}
-						}
-					],
-					"inheritedFrom": {
-						"type": "reference",
-						"target": -1,
-						"name": "SvelteComponent_1.$destroy"
-					}
-				},
-				{
-					"id": 69,
-					"name": "$inject_state",
-					"variant": "declaration",
-					"kind": 2048,
-					"flags": {
-						"isExternal": true
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 169,
-							"character": 2
-						}
-					],
-					"signatures": [
-						{
-							"id": 70,
-							"name": "$inject_state",
-							"variant": "signature",
-							"kind": 4096,
-							"flags": {
-								"isExternal": true
-							},
-							"sources": [
-								{
-									"fileName": "node_modules/svelte/types/index.d.ts",
-									"line": 169,
-									"character": 2
-								}
-							],
-							"type": {
-								"type": "intrinsic",
-								"name": "void"
-							}
-						}
-					]
-				},
-				{
-					"id": 75,
-					"name": "$on",
-					"variant": "declaration",
-					"kind": 2048,
-					"flags": {
-						"isExternal": true
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 113,
-							"character": 2
-						}
-					],
-					"signatures": [
-						{
-							"id": 76,
-							"name": "$on",
-							"variant": "signature",
-							"kind": 4096,
-							"flags": {
-								"isExternal": true
-							},
-							"sources": [
-								{
-									"fileName": "node_modules/svelte/types/index.d.ts",
-									"line": 113,
-									"character": 2
-								}
-							],
-							"typeParameter": [
-								{
-									"id": 77,
-									"name": "K",
-									"variant": "typeParam",
-									"kind": 131072,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "intrinsic",
-										"name": "string"
-									}
-								}
-							],
-							"parameters": [
-								{
-									"id": 78,
-									"name": "type",
-									"variant": "param",
-									"kind": 32768,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "reference",
-										"target": -1,
-										"name": "K",
-										"refersToTypeParameter": true
-									}
-								},
-								{
-									"id": 79,
-									"name": "callback",
-									"variant": "param",
-									"kind": 32768,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "union",
-										"types": [
-											{
-												"type": "intrinsic",
-												"name": "undefined"
-											},
-											{
-												"type": "literal",
-												"value": null
-											},
-											{
-												"type": "reflection",
-												"declaration": {
-													"id": 80,
-													"name": "__type",
-													"variant": "declaration",
-													"kind": 65536,
-													"flags": {
-														"isExternal": true
-													},
-													"sources": [
-														{
-															"fileName": "node_modules/svelte/types/index.d.ts",
-															"line": 113,
-															"character": 67
-														}
-													],
-													"signatures": [
-														{
-															"id": 81,
-															"name": "__type",
-															"variant": "signature",
-															"kind": 4096,
-															"flags": {
-																"isExternal": true
-															},
-															"sources": [
-																{
-																	"fileName": "node_modules/svelte/types/index.d.ts",
-																	"line": 113,
-																	"character": 67
-																}
-															],
-															"parameters": [
-																{
-																	"id": 82,
-																	"name": "e",
-																	"variant": "param",
-																	"kind": 32768,
-																	"flags": {
-																		"isExternal": true
-																	},
-																	"type": {
-																		"type": "indexedAccess",
-																		"indexType": {
-																			"type": "reference",
-																			"target": -1,
-																			"name": "K",
-																			"refersToTypeParameter": true
-																		},
-																		"objectType": {
-																			"type": "reference",
-																			"target": -1,
-																			"name": "Events",
-																			"refersToTypeParameter": true
-																		}
-																	}
-																}
-															],
-															"type": {
-																"type": "intrinsic",
-																"name": "void"
-															}
-														}
-													]
-												}
-											}
-										]
-									}
-								}
-							],
-							"type": {
-								"type": "reflection",
-								"declaration": {
-									"id": 83,
-									"name": "__type",
-									"variant": "declaration",
-									"kind": 65536,
-									"flags": {
-										"isExternal": true
-									},
-									"sources": [
-										{
-											"fileName": "node_modules/svelte/types/index.d.ts",
-											"line": 113,
-											"character": 112
-										}
-									],
-									"signatures": [
-										{
-											"id": 84,
-											"name": "__type",
-											"variant": "signature",
-											"kind": 4096,
-											"flags": {
-												"isExternal": true
-											},
-											"sources": [
-												{
-													"fileName": "node_modules/svelte/types/index.d.ts",
-													"line": 113,
-													"character": 112
-												}
-											],
-											"type": {
-												"type": "intrinsic",
-												"name": "void"
-											}
-										}
-									]
-								}
-							},
-							"inheritedFrom": {
-								"type": "reference",
-								"target": -1,
-								"name": "SvelteComponent_1.$on"
-							}
-						}
-					],
-					"inheritedFrom": {
-						"type": "reference",
-						"target": -1,
-						"name": "SvelteComponent_1.$on"
-					}
-				},
-				{
-					"id": 85,
-					"name": "$set",
-					"variant": "declaration",
-					"kind": 2048,
-					"flags": {
-						"isExternal": true
-					},
-					"sources": [
-						{
-							"fileName": "node_modules/svelte/types/index.d.ts",
-							"line": 115,
-							"character": 2
-						}
-					],
-					"signatures": [
-						{
-							"id": 86,
-							"name": "$set",
-							"variant": "signature",
-							"kind": 4096,
-							"flags": {
-								"isExternal": true
-							},
-							"sources": [
-								{
-									"fileName": "node_modules/svelte/types/index.d.ts",
-									"line": 115,
-									"character": 2
-								}
-							],
-							"parameters": [
-								{
-									"id": 87,
-									"name": "props",
-									"variant": "param",
-									"kind": 32768,
-									"flags": {
-										"isExternal": true
-									},
-									"type": {
-										"type": "reference",
-										"target": {
-											"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-											"qualifiedName": "Partial"
-										},
-										"typeArguments": [
-											{
-												"type": "reference",
-												"target": -1,
-												"name": "Props",
-												"refersToTypeParameter": true
-											}
-										],
-										"name": "Partial",
-										"package": "typescript"
-									}
-								}
-							],
-							"type": {
-								"type": "intrinsic",
-								"name": "void"
-							},
-							"inheritedFrom": {
-								"type": "reference",
-								"target": -1,
-								"name": "SvelteComponent_1.$set"
-							}
-						}
-					],
-					"inheritedFrom": {
-						"type": "reference",
-						"target": -1,
-						"name": "SvelteComponent_1.$set"
-					}
-				}
-			],
-			"groups": [
-				{
-					"title": "Constructors",
-					"children": [
-						58
-					]
-				},
-				{
-					"title": "Properties",
-					"children": [
-						71,
-						65,
-						64,
-						72,
-						66
-					]
-				},
-				{
-					"title": "Methods",
-					"children": [
-						67,
-						73,
-						69,
-						75,
-						85
-					]
-				}
-			],
-			"sources": [
-				{
-					"fileName": "node_modules/svelte/types/index.d.ts",
-					"line": 142,
-					"character": 14
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 88,
-					"name": "Props",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {
-						"isExternal": true
-					},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-							"qualifiedName": "Record"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							},
-							{
-								"type": "intrinsic",
-								"name": "any"
-							}
-						],
-						"name": "Record",
-						"package": "typescript"
-					},
-					"default": {
-						"type": "intrinsic",
-						"name": "any"
-					}
-				},
-				{
-					"id": 89,
-					"name": "Events",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {
-						"isExternal": true
-					},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-							"qualifiedName": "Record"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							},
-							{
-								"type": "intrinsic",
-								"name": "any"
-							}
-						],
-						"name": "Record",
-						"package": "typescript"
-					},
-					"default": {
-						"type": "intrinsic",
-						"name": "any"
-					}
-				},
-				{
-					"id": 90,
-					"name": "Slots",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {
-						"isExternal": true
-					},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-							"qualifiedName": "Record"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							},
-							{
-								"type": "intrinsic",
-								"name": "any"
-							}
-						],
-						"name": "Record",
-						"package": "typescript"
-					},
-					"default": {
-						"type": "intrinsic",
-						"name": "any"
-					}
-				}
-			],
-			"indexSignature": {
-				"id": 91,
-				"name": "__index",
-				"variant": "signature",
-				"kind": 8192,
-				"flags": {
-					"isExternal": true
-				},
-				"sources": [
-					{
-						"fileName": "node_modules/svelte/types/index.d.ts",
-						"line": 142,
-						"character": 197
-					}
-				],
-				"parameters": [
-					{
-						"id": 92,
-						"name": "prop",
-						"variant": "param",
-						"kind": 32768,
-						"flags": {
-							"isExternal": true
-						},
-						"type": {
-							"type": "intrinsic",
-							"name": "string"
-						}
-					}
-				],
-				"type": {
-					"type": "intrinsic",
-					"name": "any"
-				}
-			},
-			"extendedTypes": [
-				{
-					"type": "reference",
-					"target": {
-						"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-						"qualifiedName": "\"svelte\".SvelteComponent_1"
-					},
-					"typeArguments": [
-						{
-							"type": "reference",
-							"target": -1,
-							"name": "Props",
-							"refersToTypeParameter": true
-						},
-						{
-							"type": "reference",
-							"target": -1,
-							"name": "Events",
-							"refersToTypeParameter": true
-						}
-					],
-					"name": "SvelteComponent_1",
-					"package": "svelte",
-					"qualifiedName": "\"svelte\".SvelteComponent_1"
-				}
-			]
-		},
-		{
-			"id": 31,
-			"name": "Errors",
-			"variant": "declaration",
-			"kind": 256,
-			"flags": {},
-			"children": [
-				{
-					"id": 32,
-					"name": "conflicting_tokens",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "TODO: DOC"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 722,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L722"
-						}
-					],
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "src/lib/types.ts",
-							"qualifiedName": "Error.ConflictingTokens"
-						},
-						"typeArguments": [
-							{
-								"type": "conditional",
-								"checkType": {
-									"type": "conditional",
-									"checkType": {
-										"type": "reference",
-										"target": {
-											"sourceFileName": "node_modules/hotscript/dist/internals/helpers.d.ts",
-											"qualifiedName": "IsNever"
-										},
-										"typeArguments": [
-											{
-												"type": "reference",
-												"target": {
-													"sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
-													"qualifiedName": "EmptyIntoPlaceholder"
-												},
-												"typeArguments": [
-													{
-														"type": "reference",
-														"target": -1,
-														"name": "GUI_Obj",
-														"refersToTypeParameter": true
-													}
-												],
-												"name": "EmptyIntoPlaceholder",
-												"package": "hotscript"
-											}
-										],
-										"name": "IsNever",
-										"package": "hotscript"
-									},
-									"extendsType": {
-										"type": "literal",
-										"value": true
-									},
-									"trueType": {
-										"type": "tuple",
-										"elements": [
-											{
-												"type": "reference",
-												"target": {
-													"sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
-													"qualifiedName": "EmptyIntoPlaceholder"
-												},
-												"typeArguments": [
-													{
-														"type": "reference",
-														"target": -1,
-														"name": "GUI_Obj",
-														"refersToTypeParameter": true
-													}
-												],
-												"name": "EmptyIntoPlaceholder",
-												"package": "hotscript"
-											}
-										]
-									},
-									"falseType": {
-										"type": "conditional",
-										"checkType": {
-											"type": "tuple",
-											"elements": [
-												{
-													"type": "reference",
-													"target": {
-														"sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
-														"qualifiedName": "EmptyIntoPlaceholder"
-													},
-													"typeArguments": [
-														{
-															"type": "reference",
-															"target": -1,
-															"name": "GUI_Obj",
-															"refersToTypeParameter": true
-														}
-													],
-													"name": "EmptyIntoPlaceholder",
-													"package": "hotscript"
-												}
-											]
-										},
-										"extendsType": {
-											"type": "tuple",
-											"elements": [
-												{
-													"type": "query",
-													"queryType": {
-														"type": "reference",
-														"target": {
-															"sourceFileName": "node_modules/hotscript/dist/internals/core/Core.d.ts",
-															"qualifiedName": "_"
-														},
-														"name": "_",
-														"package": "hotscript"
-													}
-												}
-											]
-										},
-										"trueType": {
-											"type": "tuple"
-										},
-										"falseType": {
-											"type": "tuple",
-											"elements": [
-												{
-													"type": "reference",
-													"target": {
-														"sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
-														"qualifiedName": "EmptyIntoPlaceholder"
-													},
-													"typeArguments": [
-														{
-															"type": "reference",
-															"target": -1,
-															"name": "GUI_Obj",
-															"refersToTypeParameter": true
-														}
-													],
-													"name": "EmptyIntoPlaceholder",
-													"package": "hotscript"
-												}
-											]
-										}
-									}
-								},
-								"extendsType": {
-									"type": "reference",
-									"target": -1,
-									"name": "args",
-									"refersToTypeParameter": true
-								},
-								"trueType": {
-									"type": "conditional",
-									"checkType": {
-										"type": "conditional",
-										"checkType": {
-											"type": "reference",
-											"target": -1,
-											"name": "args",
-											"refersToTypeParameter": true
-										},
-										"extendsType": {
-											"type": "reference",
-											"target": -1,
-											"name": "args",
-											"refersToTypeParameter": true
-										},
-										"trueType": {
-											"type": "reference",
-											"target": -1,
-											"name": "args",
-											"refersToTypeParameter": true
-										},
-										"falseType": {
-											"type": "intrinsic",
-											"name": "never"
-										}
-									},
-									"extendsType": {
-										"type": "tuple",
-										"elements": [
-											{
-												"type": "reference",
-												"target": -1,
-												"name": "obj",
-												"refersToTypeParameter": true
-											}
-										]
-									},
-									"trueType": {
-										"type": "reference",
-										"target": {
-											"sourceFileName": "node_modules/hotscript/dist/internals/objects/impl/objects.d.ts",
-											"qualifiedName": "TransformObjectDeep"
-										},
-										"typeArguments": [
-											{
-												"type": "reference",
-												"target": {
-													"sourceFileName": "node_modules/hotscript/dist/internals/objects/Objects.d.ts",
-													"qualifiedName": "MutableFn"
-												},
-												"name": "MutableFn",
-												"package": "hotscript"
-											},
-											{
-												"type": "reference",
-												"target": -1,
-												"name": "obj",
-												"refersToTypeParameter": true
-											}
-										],
-										"name": "TransformObjectDeep",
-										"package": "hotscript"
-									},
-									"falseType": {
-										"type": "intrinsic",
-										"name": "never"
-									}
-								},
-								"falseType": {
-									"type": "intrinsic",
-									"name": "never"
-								}
-							}
-						],
-						"name": "ConflictingTokens",
-						"package": "roguelighter",
-						"qualifiedName": "Error.ConflictingTokens"
-					}
-				}
-			],
-			"groups": [
-				{
-					"title": "Properties",
-					"children": [
-						32
-					]
-				}
-			],
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 713,
-					"character": 17,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L713"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 33,
-					"name": "SettingsObj",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 4,
-						"name": "Settings",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 34,
-					"name": "V",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 1,
-						"name": "Variables",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 35,
-					"name": "P",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "src/lib/types.ts",
-							"qualifiedName": "Agent"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							}
-						],
-						"name": "Agent",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 36,
-					"name": "AgentsObj",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 51,
-						"name": "Agents",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 37,
-					"name": "EventsObj",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 39,
-						"typeArguments": [
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "P",
-								"refersToTypeParameter": true
-							},
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "V",
-								"refersToTypeParameter": true
-							}
-						],
-						"name": "Events",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 38,
-					"name": "GUI_Obj",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 24,
-						"typeArguments": [
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "P",
-								"refersToTypeParameter": true
-							},
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "V",
-								"refersToTypeParameter": true
-							},
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "EventsObj",
-								"refersToTypeParameter": true
-							}
-						],
-						"name": "GUI",
-						"package": "roguelighter"
-					}
-				}
-			]
-		},
-		{
-			"id": 39,
-			"name": "Events",
-			"variant": "declaration",
-			"kind": 256,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "TODO: docs"
-					}
-				]
-			},
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 489,
-					"character": 17,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L489"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 40,
-					"name": "P",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "src/lib/types.ts",
-							"qualifiedName": "Agent"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							}
-						],
-						"name": "Agent",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 41,
-					"name": "V",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 1,
-						"name": "Variables",
-						"package": "roguelighter"
-					}
-				}
-			],
-			"indexSignature": {
-				"id": 42,
-				"name": "__index",
-				"variant": "signature",
-				"kind": 8192,
-				"flags": {},
-				"sources": [
-					{
-						"fileName": "src/lib/types.ts",
-						"line": 490,
-						"character": 2,
-						"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L490"
-					}
-				],
-				"parameters": [
-					{
-						"id": 43,
-						"name": "function_name",
-						"variant": "param",
-						"kind": 32768,
-						"flags": {},
-						"type": {
-							"type": "intrinsic",
-							"name": "string"
-						}
-					}
-				],
-				"type": {
-					"type": "array",
-					"elementType": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "src/lib/types.ts",
-							"qualifiedName": "EventExpression"
-						},
-						"typeArguments": [
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "P",
-								"refersToTypeParameter": true
-							},
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "V",
-								"refersToTypeParameter": true
-							}
-						],
-						"name": "EventExpression",
-						"package": "roguelighter"
-					}
-				}
-			}
-		},
-		{
-			"id": 24,
-			"name": "GUI",
-			"variant": "declaration",
-			"kind": 256,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "The object that contains all the GUI elements that will be in the game"
-					}
-				]
-			},
-			"children": [
-				{
-					"id": 25,
-					"name": "$pause_menu",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "TODO: doc"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 550,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L550"
-						}
-					],
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-							"qualifiedName": "Omit"
-						},
-						"typeArguments": [
-							{
-								"type": "reference",
-								"target": {
-									"sourceFileName": "src/lib/types.ts",
-									"qualifiedName": "GUI_Element"
-								},
-								"typeArguments": [
-									{
-										"type": "templateLiteral",
-										"head": "v.",
-										"tail": [
-											[
-												{
-													"type": "reference",
-													"target": {
-														"sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
-														"qualifiedName": "Extract"
-													},
-													"typeArguments": [
-														{
-															"type": "reference",
-															"target": {
-																"sourceFileName": "node_modules/hotscript/dist/internals/objects/impl/objects.d.ts",
-																"qualifiedName": "Keys"
-															},
-															"typeArguments": [
-																{
-																	"type": "conditional",
-																	"checkType": {
-																		"type": "conditional",
-																		"checkType": {
-																			"type": "reference",
-																			"target": {
-																				"sourceFileName": "node_modules/hotscript/dist/internals/helpers.d.ts",
-																				"qualifiedName": "Equal"
-																			},
-																			"typeArguments": [
-																				{
-																					"type": "reference",
-																					"target": -1,
-																					"name": "V",
-																					"refersToTypeParameter": true
-																				},
-																				{
-																					"type": "query",
-																					"queryType": {
-																						"type": "reference",
-																						"target": {
-																							"sourceFileName": "node_modules/hotscript/dist/internals/core/Core.d.ts",
-																							"qualifiedName": "_"
-																						},
-																						"name": "_",
-																						"package": "hotscript"
-																					}
-																				}
-																			],
-																			"name": "Equal",
-																			"package": "hotscript"
-																		},
-																		"extendsType": {
-																			"type": "literal",
-																			"value": true
-																		},
-																		"trueType": {
-																			"type": "tuple"
-																		},
-																		"falseType": {
-																			"type": "tuple",
-																			"elements": [
-																				{
-																					"type": "reference",
-																					"target": -1,
-																					"name": "V",
-																					"refersToTypeParameter": true
-																				}
-																			]
-																		}
-																	},
-																	"extendsType": {
-																		"type": "tuple",
-																		"elements": [
-																			{
-																				"type": "reference",
-																				"target": -1,
-																				"name": "arg",
-																				"refersToTypeParameter": true
-																			},
-																			{
-																				"type": "rest",
-																				"elementType": {
-																					"type": "array",
-																					"elementType": {
-																						"type": "intrinsic",
-																						"name": "any"
-																					}
-																				}
-																			}
-																		]
-																	},
-																	"trueType": {
-																		"type": "reference",
-																		"target": -1,
-																		"name": "arg",
-																		"refersToTypeParameter": true
-																	},
-																	"falseType": {
-																		"type": "intrinsic",
-																		"name": "never"
-																	}
-																}
-															],
-															"name": "Keys",
-															"package": "hotscript"
-														},
-														{
-															"type": "reference",
-															"target": {
-																"sourceFileName": "node_modules/hotscript/dist/internals/strings/Strings.d.ts",
-																"qualifiedName": "Strings.Stringifiable"
-															},
-															"name": "Stringifiable",
-															"package": "hotscript",
-															"qualifiedName": "Strings.Stringifiable"
-														}
-													],
-													"name": "Extract",
-													"package": "typescript"
-												},
-												""
-											]
-										]
-									},
-									{
-										"type": "typeOperator",
-										"operator": "keyof",
-										"target": {
-											"type": "reference",
-											"target": -1,
-											"name": "EventsObj",
-											"refersToTypeParameter": true
-										}
-									}
-								],
-								"name": "GUI_Element",
-								"package": "roguelighter"
-							},
-							{
-								"type": "union",
-								"types": [
-									{
-										"type": "literal",
-										"value": "visibility_depends_on"
-									},
-									{
-										"type": "literal",
-										"value": "type"
-									},
-									{
-										"type": "literal",
-										"value": "on_click"
-									}
-								]
-							}
-						],
-						"name": "Omit",
-						"package": "typescript"
-					}
-				}
-			],
-			"groups": [
-				{
-					"title": "Properties",
-					"children": [
-						25
-					]
-				}
-			],
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 545,
-					"character": 17,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L545"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 26,
-					"name": "P",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "src/lib/types.ts",
-							"qualifiedName": "Agent"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							}
-						],
-						"name": "Agent",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 27,
-					"name": "V",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 1,
-						"name": "Variables",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 28,
-					"name": "EventsObj",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 39,
-						"typeArguments": [
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "P",
-								"refersToTypeParameter": true
-							},
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "V",
-								"refersToTypeParameter": true
-							}
-						],
-						"name": "Events",
-						"package": "roguelighter"
-					}
-				}
-			],
-			"indexSignature": {
-				"id": 29,
-				"name": "__index",
-				"variant": "signature",
-				"kind": 8192,
-				"flags": {},
-				"sources": [
-					{
-						"fileName": "src/lib/types.ts",
-						"line": 555,
-						"character": 2,
-						"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L555"
-					}
-				],
-				"parameters": [
-					{
-						"id": 30,
-						"name": "key",
-						"variant": "param",
-						"kind": 32768,
-						"flags": {},
-						"type": {
-							"type": "intrinsic",
-							"name": "string"
-						}
-					}
-				],
-				"type": {
-					"type": "reference",
-					"target": {
-						"sourceFileName": "src/lib/types.ts",
-						"qualifiedName": "GUI_Element"
-					},
-					"typeArguments": [
-						{
-							"type": "reference",
-							"target": {
-								"sourceFileName": "src/lib/types.ts",
-								"qualifiedName": "GetVars"
-							},
-							"typeArguments": [
-								{
-									"type": "reference",
-									"target": -1,
-									"name": "V",
-									"refersToTypeParameter": true
-								}
-							],
-							"name": "GetVars",
-							"package": "roguelighter"
-						},
-						{
-							"type": "typeOperator",
-							"operator": "keyof",
-							"target": {
-								"type": "reference",
-								"target": -1,
-								"name": "EventsObj",
-								"refersToTypeParameter": true
-							}
-						}
-					],
-					"name": "GUI_Element",
-					"package": "roguelighter"
-				}
-			}
-		},
-		{
-			"id": 4,
-			"name": "Settings",
-			"variant": "declaration",
-			"kind": 256,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "Default settings for your game"
-					}
-				]
-			},
-			"children": [
-				{
-					"id": 9,
-					"name": "camera",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "Camera options"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 620,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L620"
-						}
-					],
-					"type": {
-						"type": "reflection",
-						"declaration": {
-							"id": 10,
-							"name": "__type",
-							"variant": "declaration",
-							"kind": 65536,
-							"flags": {},
-							"children": [
-								{
-									"id": 11,
-									"name": "zoom",
-									"variant": "declaration",
-									"kind": 1024,
-									"flags": {
-										"isOptional": true
-									},
-									"comment": {
-										"summary": [
-											{
-												"kind": "text",
-												"text": "Determines how close the camera will be to the scene"
-											}
-										]
-									},
-									"sources": [
-										{
-											"fileName": "src/lib/types.ts",
-											"line": 624,
-											"character": 4,
-											"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L624"
-										}
-									],
-									"type": {
-										"type": "intrinsic",
-										"name": "number"
-									}
-								}
-							],
-							"groups": [
-								{
-									"title": "Properties",
-									"children": [
-										11
-									]
-								}
-							],
-							"sources": [
-								{
-									"fileName": "src/lib/types.ts",
-									"line": 620,
-									"character": 11,
-									"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L620"
-								}
-							]
-						}
-					}
-				},
-				{
-					"id": 7,
-					"name": "duration",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "Default duration for animations"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 612,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L612"
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "number"
-					}
-				},
-				{
-					"id": 6,
-					"name": "easing",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "Default easing function for animations"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 608,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L608"
-						}
-					],
-					"type": {
-						"type": "union",
-						"types": [
-							{
-								"type": "literal",
-								"value": "linear"
-							},
-							{
-								"type": "literal",
-								"value": "backInOut"
-							},
-							{
-								"type": "literal",
-								"value": "backIn"
-							},
-							{
-								"type": "literal",
-								"value": "backOut"
-							},
-							{
-								"type": "literal",
-								"value": "bounceOut"
-							},
-							{
-								"type": "literal",
-								"value": "bounceInOut"
-							},
-							{
-								"type": "literal",
-								"value": "bounceIn"
-							},
-							{
-								"type": "literal",
-								"value": "circInOut"
-							},
-							{
-								"type": "literal",
-								"value": "circIn"
-							},
-							{
-								"type": "literal",
-								"value": "circOut"
-							},
-							{
-								"type": "literal",
-								"value": "cubicInOut"
-							},
-							{
-								"type": "literal",
-								"value": "cubicIn"
-							},
-							{
-								"type": "literal",
-								"value": "cubicOut"
-							},
-							{
-								"type": "literal",
-								"value": "elasticInOut"
-							},
-							{
-								"type": "literal",
-								"value": "elasticIn"
-							},
-							{
-								"type": "literal",
-								"value": "elasticOut"
-							},
-							{
-								"type": "literal",
-								"value": "expoInOut"
-							},
-							{
-								"type": "literal",
-								"value": "expoIn"
-							},
-							{
-								"type": "literal",
-								"value": "expoOut"
-							},
-							{
-								"type": "literal",
-								"value": "quadInOut"
-							},
-							{
-								"type": "literal",
-								"value": "quadIn"
-							},
-							{
-								"type": "literal",
-								"value": "quadOut"
-							},
-							{
-								"type": "literal",
-								"value": "quartInOut"
-							},
-							{
-								"type": "literal",
-								"value": "quartIn"
-							},
-							{
-								"type": "literal",
-								"value": "quartOut"
-							},
-							{
-								"type": "literal",
-								"value": "quintInOut"
-							},
-							{
-								"type": "literal",
-								"value": "quintIn"
-							},
-							{
-								"type": "literal",
-								"value": "quintOut"
-							},
-							{
-								"type": "literal",
-								"value": "sineInOut"
-							},
-							{
-								"type": "literal",
-								"value": "sineIn"
-							},
-							{
-								"type": "literal",
-								"value": "sineOut"
-							}
-						]
-					}
-				},
-				{
-					"id": 8,
-					"name": "filter",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "TODO: docs"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 616,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L616"
-						}
-					],
-					"type": {
-						"type": "union",
-						"types": [
-							{
-								"type": "literal",
-								"value": "linear"
-							},
-							{
-								"type": "literal",
-								"value": "nearest"
-							}
-						]
-					}
-				},
-				{
-					"id": 5,
-					"name": "fps",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"comment": {
-						"summary": [
-							{
-								"kind": "text",
-								"text": "Number of frames that will be played in a second"
-							}
-						]
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 604,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L604"
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "number"
-					}
-				},
-				{
-					"id": 12,
-					"name": "ready_for_export",
-					"variant": "declaration",
-					"kind": 1024,
-					"flags": {
-						"isOptional": true
-					},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 626,
-							"character": 2,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L626"
-						}
-					],
-					"type": {
-						"type": "intrinsic",
-						"name": "boolean"
-					}
-				}
-			],
-			"groups": [
-				{
-					"title": "Properties",
-					"children": [
-						9,
-						7,
-						6,
-						8,
-						5,
-						12
-					]
-				}
-			],
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 600,
-					"character": 17,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L600"
-				}
-			]
-		},
-		{
-			"id": 1,
-			"name": "Variables",
-			"variant": "declaration",
-			"kind": 256,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "TODO: docs"
-					}
-				]
-			},
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 482,
-					"character": 17,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L482"
-				}
-			],
-			"indexSignature": {
-				"id": 2,
-				"name": "__index",
-				"variant": "signature",
-				"kind": 8192,
-				"flags": {},
-				"sources": [
-					{
-						"fileName": "src/lib/types.ts",
-						"line": 483,
-						"character": 2,
-						"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L483"
-					}
-				],
-				"parameters": [
-					{
-						"id": 3,
-						"name": "variable_name",
-						"variant": "param",
-						"kind": 32768,
-						"flags": {},
-						"type": {
-							"type": "intrinsic",
-							"name": "string"
-						}
-					}
-				],
-				"type": {
-					"type": "intrinsic",
-					"name": "any"
-				}
-			}
-		},
-		{
-			"id": 51,
-			"name": "Agents",
-			"variant": "declaration",
-			"kind": 2097152,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "TODO: doc"
-					}
-				]
-			},
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 686,
-					"character": 12,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L686"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 56,
-					"name": "Assets",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"default": {
-						"type": "intrinsic",
-						"name": "string"
-					}
-				}
-			],
-			"type": {
-				"type": "reflection",
-				"declaration": {
-					"id": 52,
-					"name": "__type",
-					"variant": "declaration",
-					"kind": 65536,
-					"flags": {},
-					"children": [
-						{
-							"id": 53,
-							"name": "player",
-							"variant": "declaration",
-							"kind": 1024,
-							"flags": {},
-							"comment": {
-								"summary": [
-									{
-										"kind": "text",
-										"text": "Player agent settings"
-									}
-								]
-							},
-							"sources": [
-								{
-									"fileName": "src/lib/types.ts",
-									"line": 690,
-									"character": 2,
-									"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L690"
-								}
-							],
-							"type": {
-								"type": "reference",
-								"target": {
-									"sourceFileName": "src/lib/types.ts",
-									"qualifiedName": "Agent"
-								},
-								"typeArguments": [
-									{
-										"type": "reference",
-										"target": -1,
-										"name": "Assets",
-										"refersToTypeParameter": true
-									}
-								],
-								"name": "Agent",
-								"package": "roguelighter"
-							}
-						}
-					],
-					"groups": [
-						{
-							"title": "Properties",
-							"children": [
-								53
-							]
-						}
-					],
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 686,
-							"character": 38,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L686"
-						}
-					],
-					"indexSignature": {
-						"id": 54,
-						"name": "__index",
-						"variant": "signature",
-						"kind": 8192,
-						"flags": {},
-						"comment": {
-							"summary": [
-								{
-									"kind": "text",
-									"text": "Non-player agent settings"
-								}
-							]
-						},
-						"sources": [
-							{
-								"fileName": "src/lib/types.ts",
-								"line": 694,
-								"character": 2,
-								"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L694"
-							}
-						],
-						"parameters": [
-							{
-								"id": 55,
-								"name": "name",
-								"variant": "param",
-								"kind": 32768,
-								"flags": {},
-								"type": {
-									"type": "intrinsic",
-									"name": "string"
-								}
-							}
-						],
-						"type": {
-							"type": "reference",
-							"target": {
-								"sourceFileName": "src/lib/types.ts",
-								"qualifiedName": "Agent"
-							},
-							"typeArguments": [
-								{
-									"type": "reference",
-									"target": -1,
-									"name": "Assets",
-									"refersToTypeParameter": true
-								}
-							],
-							"name": "Agent",
-							"package": "roguelighter"
-						}
-					}
-				}
-			}
-		},
-		{
-			"id": 44,
-			"name": "Backgrounds",
-			"variant": "declaration",
-			"kind": 2097152,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "TODO: doc"
-					}
-				]
-			},
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 699,
-					"character": 12,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L699"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 48,
-					"name": "Assets",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"default": {
-						"type": "intrinsic",
-						"name": "string"
-					}
-				}
-			],
-			"type": {
-				"type": "reflection",
-				"declaration": {
-					"id": 45,
-					"name": "__type",
-					"variant": "declaration",
-					"kind": 65536,
-					"flags": {},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 699,
-							"character": 43,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L699"
-						}
-					],
-					"indexSignature": {
-						"id": 46,
-						"name": "__index",
-						"variant": "signature",
-						"kind": 8192,
-						"flags": {},
-						"sources": [
-							{
-								"fileName": "src/lib/types.ts",
-								"line": 699,
-								"character": 45,
-								"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L699"
-							}
-						],
-						"parameters": [
-							{
-								"id": 47,
-								"name": "name",
-								"variant": "param",
-								"kind": 32768,
-								"flags": {},
-								"type": {
-									"type": "intrinsic",
-									"name": "string"
-								}
-							}
-						],
-						"type": {
-							"type": "reference",
-							"target": -1,
-							"name": "Assets",
-							"refersToTypeParameter": true
-						}
-					}
-				}
-			}
-		},
-		{
-			"id": 49,
-			"name": "Collisions",
-			"variant": "declaration",
-			"kind": 2097152,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "TODO: doc"
-					}
-				]
-			},
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 734,
-					"character": 12,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L734"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 50,
-					"name": "B",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 44,
-						"name": "Backgrounds",
-						"package": "roguelighter"
-					}
-				}
-			],
-			"type": {
-				"type": "array",
-				"elementType": {
-					"type": "typeOperator",
-					"operator": "keyof",
-					"target": {
-						"type": "reference",
-						"target": -1,
-						"name": "B",
-						"refersToTypeParameter": true
-					}
-				}
-			}
-		},
-		{
-			"id": 17,
-			"name": "Conditions",
-			"variant": "declaration",
-			"kind": 2097152,
-			"flags": {},
-			"comment": {
-				"summary": [
-					{
-						"kind": "text",
-						"text": "TODO: docs"
-					}
-				]
-			},
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 512,
-					"character": 12,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L512"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 21,
-					"name": "P",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "src/lib/types.ts",
-							"qualifiedName": "Agent"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							}
-						],
-						"name": "Agent",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 22,
-					"name": "V",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 1,
-						"name": "Variables",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 23,
-					"name": "E",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 39,
-						"typeArguments": [
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "P",
-								"refersToTypeParameter": true
-							},
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "V",
-								"refersToTypeParameter": true
-							}
-						],
-						"name": "Events",
-						"package": "roguelighter"
-					}
-				}
-			],
-			"type": {
-				"type": "reflection",
-				"declaration": {
-					"id": 18,
-					"name": "__type",
-					"variant": "declaration",
-					"kind": 65536,
-					"flags": {},
-					"sources": [
-						{
-							"fileName": "src/lib/types.ts",
-							"line": 512,
-							"character": 95,
-							"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L512"
-						}
-					],
-					"indexSignature": {
-						"id": 19,
-						"name": "__index",
-						"variant": "signature",
-						"kind": 8192,
-						"flags": {},
-						"sources": [
-							{
-								"fileName": "src/lib/types.ts",
-								"line": 513,
-								"character": 2,
-								"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L513"
-							}
-						],
-						"parameters": [
-							{
-								"id": 20,
-								"name": "event_name",
-								"variant": "param",
-								"kind": 32768,
-								"flags": {},
-								"type": {
-									"type": "typeOperator",
-									"operator": "keyof",
-									"target": {
-										"type": "reference",
-										"target": 39,
-										"typeArguments": [
-											{
-												"type": "reference",
-												"target": -1,
-												"name": "P",
-												"refersToTypeParameter": true
-											},
-											{
-												"type": "reference",
-												"target": -1,
-												"name": "V",
-												"refersToTypeParameter": true
-											}
-										],
-										"name": "Events",
-										"package": "roguelighter"
-									}
-								}
-							}
-						],
-						"type": {
-							"type": "reference",
-							"target": {
-								"sourceFileName": "src/lib/types.ts",
-								"qualifiedName": "BinaryExpression"
-							},
-							"typeArguments": [
-								{
-									"type": "reference",
-									"target": -1,
-									"name": "V",
-									"refersToTypeParameter": true
-								}
-							],
-							"name": "BinaryExpression",
-							"package": "roguelighter"
-						}
-					}
-				}
-			}
-		},
-		{
-			"id": 13,
-			"name": "KeyBindings",
-			"variant": "declaration",
-			"kind": 2097152,
-			"flags": {},
-			"sources": [
-				{
-					"fileName": "src/lib/types.ts",
-					"line": 632,
-					"character": 12,
-					"url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L632"
-				}
-			],
-			"typeParameters": [
-				{
-					"id": 14,
-					"name": "P",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": {
-							"sourceFileName": "src/lib/types.ts",
-							"qualifiedName": "Agent"
-						},
-						"typeArguments": [
-							{
-								"type": "intrinsic",
-								"name": "string"
-							}
-						],
-						"name": "Agent",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 15,
-					"name": "V",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 1,
-						"name": "Variables",
-						"package": "roguelighter"
-					}
-				},
-				{
-					"id": 16,
-					"name": "F",
-					"variant": "typeParam",
-					"kind": 131072,
-					"flags": {},
-					"type": {
-						"type": "reference",
-						"target": 39,
-						"typeArguments": [
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "P",
-								"refersToTypeParameter": true
-							},
-							{
-								"type": "reference",
-								"target": -1,
-								"name": "V",
-								"refersToTypeParameter": true
-							}
-						],
-						"name": "Events",
-						"package": "roguelighter"
-					}
-				}
-			],
-			"type": {
-				"type": "mapped",
-				"parameter": "key",
-				"parameterType": {
-					"type": "reference",
-					"target": {
-						"sourceFileName": "src/lib/types.ts",
-						"qualifiedName": "KeyboardEventCode"
-					},
-					"name": "KeyboardEventCode",
-					"package": "roguelighter"
-				},
-				"templateType": {
-					"type": "union",
-					"types": [
-						{
-							"type": "typeOperator",
-							"operator": "keyof",
-							"target": {
-								"type": "reference",
-								"target": -1,
-								"name": "F",
-								"refersToTypeParameter": true
-							}
-						},
-						{
-							"type": "reference",
-							"target": {
-								"sourceFileName": "src/lib/types.ts",
-								"qualifiedName": "InternalEvents"
-							},
-							"name": "InternalEvents",
-							"package": "roguelighter"
-						}
-					]
-				},
-				"optionalModifier": "+"
-			}
-		}
-	],
-	"groups": [
-		{
-			"title": "Classes",
-			"children": [
-				57
-			]
-		},
-		{
-			"title": "Interfaces",
-			"children": [
-				31,
-				39,
-				24,
-				4,
-				1
-			]
-		},
-		{
-			"title": "Type Aliases",
-			"children": [
-				51,
-				44,
-				49,
-				17,
-				13
-			]
-		}
-	],
-	"packageName": "roguelighter",
-	"readme": [
-		{
-			"kind": "text",
-			"text": "# roguelighter\n\nlow code game engine for roguelikes"
-		}
-	],
-	"symbolIdMap": {
-		"0": {
-			"sourceFileName": "src/lib/index.ts",
-			"qualifiedName": ""
-		},
-		"1": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Variables"
-		},
-		"2": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Variables.__index"
-		},
-		"4": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Settings"
-		},
-		"5": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Settings.fps"
-		},
-		"6": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Settings.easing"
-		},
-		"7": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Settings.duration"
-		},
-		"8": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Settings.filter"
-		},
-		"9": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Settings.camera"
-		},
-		"10": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type"
-		},
-		"11": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type.zoom"
-		},
-		"12": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Settings.ready_for_export"
-		},
-		"13": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "KeyBindings"
-		},
-		"14": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "P"
-		},
-		"15": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "V"
-		},
-		"16": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "F"
-		},
-		"17": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Conditions"
-		},
-		"18": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type"
-		},
-		"19": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type.__index"
-		},
-		"21": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "P"
-		},
-		"22": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "V"
-		},
-		"23": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "E"
-		},
-		"24": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "GUI"
-		},
-		"25": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "GUI.$pause_menu"
-		},
-		"26": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "GUI.P"
-		},
-		"27": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "GUI.V"
-		},
-		"28": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "GUI.EventsObj"
-		},
-		"29": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "GUI.__index"
-		},
-		"31": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors"
-		},
-		"32": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors.conflicting_tokens"
-		},
-		"33": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors.SettingsObj"
-		},
-		"34": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors.V"
-		},
-		"35": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors.P"
-		},
-		"36": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors.AgentsObj"
-		},
-		"37": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors.EventsObj"
-		},
-		"38": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Errors.GUI_Obj"
-		},
-		"39": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Events"
-		},
-		"40": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Events.P"
-		},
-		"41": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Events.V"
-		},
-		"42": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Events.__index"
-		},
-		"44": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Backgrounds"
-		},
-		"45": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type"
-		},
-		"46": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type.__index"
-		},
-		"48": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Assets"
-		},
-		"49": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Collisions"
-		},
-		"50": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "B"
-		},
-		"51": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Agents"
-		},
-		"52": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type"
-		},
-		"53": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type.player"
-		},
-		"54": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "__type.__index"
-		},
-		"56": {
-			"sourceFileName": "src/lib/types.ts",
-			"qualifiedName": "Assets"
-		},
-		"57": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent"
-		},
-		"58": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.__constructor"
-		},
-		"59": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent"
-		},
-		"60": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.Props"
-		},
-		"61": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.Events"
-		},
-		"62": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.Slots"
-		},
-		"63": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "options"
-		},
-		"64": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.$$prop_def"
-		},
-		"65": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.$$events_def"
-		},
-		"66": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.$$slot_def"
-		},
-		"67": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.$capture_state"
-		},
-		"68": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.$capture_state"
-		},
-		"69": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.$inject_state"
-		},
-		"70": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.$inject_state"
-		},
-		"71": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$$"
-		},
-		"72": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$$set"
-		},
-		"73": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$destroy"
-		},
-		"74": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$destroy"
-		},
-		"75": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$on"
-		},
-		"76": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$on"
-		},
-		"77": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "K"
-		},
-		"78": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "type"
-		},
-		"79": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "callback"
-		},
-		"80": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "__type"
-		},
-		"81": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "__type"
-		},
-		"82": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "e"
-		},
-		"83": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "__type"
-		},
-		"84": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "__type"
-		},
-		"85": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$set"
-		},
-		"86": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent_1.$set"
-		},
-		"87": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "props"
-		},
-		"88": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.Props"
-		},
-		"89": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.Events"
-		},
-		"90": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.Slots"
-		},
-		"91": {
-			"sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
-			"qualifiedName": "\"svelte\".SvelteComponent.__index"
-		}
-	}
+  "id": 0,
+  "name": "roguelighter",
+  "variant": "project",
+  "kind": 1,
+  "flags": {},
+  "children": [
+    {
+      "id": 57,
+      "name": "Engine",
+      "variant": "declaration",
+      "kind": 128,
+      "flags": {
+        "isExternal": true
+      },
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Base class for Svelte components with some minor dev-enhancements. Used when dev=true.\n\nCan be used to create strongly typed Svelte components.\n\n#### Example:\n\nYou have component library on npm called "
+          },
+          {
+            "kind": "code",
+            "text": "`component-library`"
+          },
+          {
+            "kind": "text",
+            "text": ", from which\nyou export a component called "
+          },
+          {
+            "kind": "code",
+            "text": "`MyComponent`"
+          },
+          {
+            "kind": "text",
+            "text": ". For Svelte+TypeScript users,\nyou want to provide typings. Therefore you create a "
+          },
+          {
+            "kind": "code",
+            "text": "`index.d.ts`"
+          },
+          {
+            "kind": "text",
+            "text": ":\n"
+          },
+          {
+            "kind": "code",
+            "text": "```ts\nimport { SvelteComponent } from \"svelte\";\nexport class MyComponent extends SvelteComponent<{foo: string}> {}\n```"
+          },
+          {
+            "kind": "text",
+            "text": "\nTyping this makes it possible for IDEs like VS Code with the Svelte extension\nto provide intellisense and to use the component like this in a Svelte file\nwith TypeScript:\n"
+          },
+          {
+            "kind": "code",
+            "text": "```svelte\n<script lang=\"ts\">\n\timport { MyComponent } from \"component-library\";\n</script>\n<MyComponent foo={'bar'} />\n```"
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 58,
+          "name": "constructor",
+          "variant": "declaration",
+          "kind": 512,
+          "flags": {
+            "isExternal": true
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 144,
+              "character": 2
+            }
+          ],
+          "signatures": [
+            {
+              "id": 59,
+              "name": "new Engine",
+              "variant": "signature",
+              "kind": 16384,
+              "flags": {
+                "isExternal": true
+              },
+              "sources": [
+                {
+                  "fileName": "node_modules/svelte/types/index.d.ts",
+                  "line": 144,
+                  "character": 2
+                }
+              ],
+              "typeParameter": [
+                {
+                  "id": 60,
+                  "name": "Props",
+                  "variant": "typeParam",
+                  "kind": 131072,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "reference",
+                    "target": {
+                      "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+                      "qualifiedName": "Record"
+                    },
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "any"
+                      }
+                    ],
+                    "name": "Record",
+                    "package": "typescript"
+                  },
+                  "default": {
+                    "type": "intrinsic",
+                    "name": "any"
+                  }
+                },
+                {
+                  "id": 61,
+                  "name": "Events",
+                  "variant": "typeParam",
+                  "kind": 131072,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "reference",
+                    "target": {
+                      "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+                      "qualifiedName": "Record"
+                    },
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "any"
+                      }
+                    ],
+                    "name": "Record",
+                    "package": "typescript"
+                  },
+                  "default": {
+                    "type": "intrinsic",
+                    "name": "any"
+                  }
+                },
+                {
+                  "id": 62,
+                  "name": "Slots",
+                  "variant": "typeParam",
+                  "kind": 131072,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "reference",
+                    "target": {
+                      "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+                      "qualifiedName": "Record"
+                    },
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "any"
+                      }
+                    ],
+                    "name": "Record",
+                    "package": "typescript"
+                  },
+                  "default": {
+                    "type": "intrinsic",
+                    "name": "any"
+                  }
+                }
+              ],
+              "parameters": [
+                {
+                  "id": 63,
+                  "name": "options",
+                  "variant": "param",
+                  "kind": 32768,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "reference",
+                    "target": {
+                      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+                      "qualifiedName": "\"svelte\".ComponentConstructorOptions"
+                    },
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "target": -1,
+                        "name": "Props",
+                        "refersToTypeParameter": true
+                      }
+                    ],
+                    "name": "ComponentConstructorOptions",
+                    "package": "svelte",
+                    "qualifiedName": "\"svelte\".ComponentConstructorOptions"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "target": 57,
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "target": -1,
+                    "name": "Props",
+                    "refersToTypeParameter": true
+                  },
+                  {
+                    "type": "reference",
+                    "target": -1,
+                    "name": "Events",
+                    "refersToTypeParameter": true
+                  },
+                  {
+                    "type": "reference",
+                    "target": -1,
+                    "name": "Slots",
+                    "refersToTypeParameter": true
+                  }
+                ],
+                "name": "SvelteComponent",
+                "package": "svelte",
+                "qualifiedName": "\"svelte\".SvelteComponent"
+              },
+              "overwrites": {
+                "type": "reference",
+                "target": -1,
+                "name": "SvelteComponent_1<Props, Events>.constructor"
+              }
+            }
+          ],
+          "overwrites": {
+            "type": "reference",
+            "target": -1,
+            "name": "SvelteComponent_1<Props, Events>.constructor"
+          }
+        },
+        {
+          "id": 71,
+          "name": "$$",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isExternal": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "### PRIVATE API\n\nDo not use, may change at any time"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 102,
+              "character": 2
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "any"
+          },
+          "inheritedFrom": {
+            "type": "reference",
+            "target": -1,
+            "name": "SvelteComponent_1.$$"
+          }
+        },
+        {
+          "id": 65,
+          "name": "$$events_def",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isExternal": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "For type checking capabilities only.\nDoes not exist at runtime.\n### DO NOT USE!"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 158,
+              "character": 2
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "target": -1,
+            "name": "Events",
+            "refersToTypeParameter": true
+          }
+        },
+        {
+          "id": 64,
+          "name": "$$prop_def",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isExternal": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "For type checking capabilities only.\nDoes not exist at runtime.\n### DO NOT USE!"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 151,
+              "character": 2
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "target": -1,
+            "name": "Props",
+            "refersToTypeParameter": true
+          }
+        },
+        {
+          "id": 72,
+          "name": "$$set",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isExternal": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "### PRIVATE API\n\nDo not use, may change at any time"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 109,
+              "character": 2
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "any"
+          },
+          "inheritedFrom": {
+            "type": "reference",
+            "target": -1,
+            "name": "SvelteComponent_1.$$set"
+          }
+        },
+        {
+          "id": 66,
+          "name": "$$slot_def",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isExternal": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "For type checking capabilities only.\nDoes not exist at runtime.\n### DO NOT USE!"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 165,
+              "character": 2
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "target": -1,
+            "name": "Slots",
+            "refersToTypeParameter": true
+          }
+        },
+        {
+          "id": 67,
+          "name": "$capture_state",
+          "variant": "declaration",
+          "kind": 2048,
+          "flags": {
+            "isExternal": true
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 167,
+              "character": 2
+            }
+          ],
+          "signatures": [
+            {
+              "id": 68,
+              "name": "$capture_state",
+              "variant": "signature",
+              "kind": 4096,
+              "flags": {
+                "isExternal": true
+              },
+              "sources": [
+                {
+                  "fileName": "node_modules/svelte/types/index.d.ts",
+                  "line": 167,
+                  "character": 2
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
+        },
+        {
+          "id": 73,
+          "name": "$destroy",
+          "variant": "declaration",
+          "kind": 2048,
+          "flags": {
+            "isExternal": true
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 111,
+              "character": 2
+            }
+          ],
+          "signatures": [
+            {
+              "id": 74,
+              "name": "$destroy",
+              "variant": "signature",
+              "kind": 4096,
+              "flags": {
+                "isExternal": true
+              },
+              "sources": [
+                {
+                  "fileName": "node_modules/svelte/types/index.d.ts",
+                  "line": 111,
+                  "character": 2
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              "inheritedFrom": {
+                "type": "reference",
+                "target": -1,
+                "name": "SvelteComponent_1.$destroy"
+              }
+            }
+          ],
+          "inheritedFrom": {
+            "type": "reference",
+            "target": -1,
+            "name": "SvelteComponent_1.$destroy"
+          }
+        },
+        {
+          "id": 69,
+          "name": "$inject_state",
+          "variant": "declaration",
+          "kind": 2048,
+          "flags": {
+            "isExternal": true
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 169,
+              "character": 2
+            }
+          ],
+          "signatures": [
+            {
+              "id": 70,
+              "name": "$inject_state",
+              "variant": "signature",
+              "kind": 4096,
+              "flags": {
+                "isExternal": true
+              },
+              "sources": [
+                {
+                  "fileName": "node_modules/svelte/types/index.d.ts",
+                  "line": 169,
+                  "character": 2
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
+        },
+        {
+          "id": 75,
+          "name": "$on",
+          "variant": "declaration",
+          "kind": 2048,
+          "flags": {
+            "isExternal": true
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 113,
+              "character": 2
+            }
+          ],
+          "signatures": [
+            {
+              "id": 76,
+              "name": "$on",
+              "variant": "signature",
+              "kind": 4096,
+              "flags": {
+                "isExternal": true
+              },
+              "sources": [
+                {
+                  "fileName": "node_modules/svelte/types/index.d.ts",
+                  "line": 113,
+                  "character": 2
+                }
+              ],
+              "typeParameter": [
+                {
+                  "id": 77,
+                  "name": "K",
+                  "variant": "typeParam",
+                  "kind": 131072,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "parameters": [
+                {
+                  "id": 78,
+                  "name": "type",
+                  "variant": "param",
+                  "kind": 32768,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "reference",
+                    "target": -1,
+                    "name": "K",
+                    "refersToTypeParameter": true
+                  }
+                },
+                {
+                  "id": 79,
+                  "name": "callback",
+                  "variant": "param",
+                  "kind": 32768,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "undefined"
+                      },
+                      {
+                        "type": "literal",
+                        "value": null
+                      },
+                      {
+                        "type": "reflection",
+                        "declaration": {
+                          "id": 80,
+                          "name": "__type",
+                          "variant": "declaration",
+                          "kind": 65536,
+                          "flags": {
+                            "isExternal": true
+                          },
+                          "sources": [
+                            {
+                              "fileName": "node_modules/svelte/types/index.d.ts",
+                              "line": 113,
+                              "character": 67
+                            }
+                          ],
+                          "signatures": [
+                            {
+                              "id": 81,
+                              "name": "__type",
+                              "variant": "signature",
+                              "kind": 4096,
+                              "flags": {
+                                "isExternal": true
+                              },
+                              "sources": [
+                                {
+                                  "fileName": "node_modules/svelte/types/index.d.ts",
+                                  "line": 113,
+                                  "character": 67
+                                }
+                              ],
+                              "parameters": [
+                                {
+                                  "id": 82,
+                                  "name": "e",
+                                  "variant": "param",
+                                  "kind": 32768,
+                                  "flags": {
+                                    "isExternal": true
+                                  },
+                                  "type": {
+                                    "type": "indexedAccess",
+                                    "indexType": {
+                                      "type": "reference",
+                                      "target": -1,
+                                      "name": "K",
+                                      "refersToTypeParameter": true
+                                    },
+                                    "objectType": {
+                                      "type": "reference",
+                                      "target": -1,
+                                      "name": "Events",
+                                      "refersToTypeParameter": true
+                                    }
+                                  }
+                                }
+                              ],
+                              "type": {
+                                "type": "intrinsic",
+                                "name": "void"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "id": 83,
+                  "name": "__type",
+                  "variant": "declaration",
+                  "kind": 65536,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "sources": [
+                    {
+                      "fileName": "node_modules/svelte/types/index.d.ts",
+                      "line": 113,
+                      "character": 112
+                    }
+                  ],
+                  "signatures": [
+                    {
+                      "id": 84,
+                      "name": "__type",
+                      "variant": "signature",
+                      "kind": 4096,
+                      "flags": {
+                        "isExternal": true
+                      },
+                      "sources": [
+                        {
+                          "fileName": "node_modules/svelte/types/index.d.ts",
+                          "line": 113,
+                          "character": 112
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              },
+              "inheritedFrom": {
+                "type": "reference",
+                "target": -1,
+                "name": "SvelteComponent_1.$on"
+              }
+            }
+          ],
+          "inheritedFrom": {
+            "type": "reference",
+            "target": -1,
+            "name": "SvelteComponent_1.$on"
+          }
+        },
+        {
+          "id": 85,
+          "name": "$set",
+          "variant": "declaration",
+          "kind": 2048,
+          "flags": {
+            "isExternal": true
+          },
+          "sources": [
+            {
+              "fileName": "node_modules/svelte/types/index.d.ts",
+              "line": 115,
+              "character": 2
+            }
+          ],
+          "signatures": [
+            {
+              "id": 86,
+              "name": "$set",
+              "variant": "signature",
+              "kind": 4096,
+              "flags": {
+                "isExternal": true
+              },
+              "sources": [
+                {
+                  "fileName": "node_modules/svelte/types/index.d.ts",
+                  "line": 115,
+                  "character": 2
+                }
+              ],
+              "parameters": [
+                {
+                  "id": 87,
+                  "name": "props",
+                  "variant": "param",
+                  "kind": 32768,
+                  "flags": {
+                    "isExternal": true
+                  },
+                  "type": {
+                    "type": "reference",
+                    "target": {
+                      "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+                      "qualifiedName": "Partial"
+                    },
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "target": -1,
+                        "name": "Props",
+                        "refersToTypeParameter": true
+                      }
+                    ],
+                    "name": "Partial",
+                    "package": "typescript"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              "inheritedFrom": {
+                "type": "reference",
+                "target": -1,
+                "name": "SvelteComponent_1.$set"
+              }
+            }
+          ],
+          "inheritedFrom": {
+            "type": "reference",
+            "target": -1,
+            "name": "SvelteComponent_1.$set"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Constructors",
+          "children": [58]
+        },
+        {
+          "title": "Properties",
+          "children": [71, 65, 64, 72, 66]
+        },
+        {
+          "title": "Methods",
+          "children": [67, 73, 69, 75, 85]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "node_modules/svelte/types/index.d.ts",
+          "line": 142,
+          "character": 14
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 88,
+          "name": "Props",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {
+            "isExternal": true
+          },
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+              "qualifiedName": "Record"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "any"
+              }
+            ],
+            "name": "Record",
+            "package": "typescript"
+          },
+          "default": {
+            "type": "intrinsic",
+            "name": "any"
+          }
+        },
+        {
+          "id": 89,
+          "name": "Events",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {
+            "isExternal": true
+          },
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+              "qualifiedName": "Record"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "any"
+              }
+            ],
+            "name": "Record",
+            "package": "typescript"
+          },
+          "default": {
+            "type": "intrinsic",
+            "name": "any"
+          }
+        },
+        {
+          "id": 90,
+          "name": "Slots",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {
+            "isExternal": true
+          },
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+              "qualifiedName": "Record"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "any"
+              }
+            ],
+            "name": "Record",
+            "package": "typescript"
+          },
+          "default": {
+            "type": "intrinsic",
+            "name": "any"
+          }
+        }
+      ],
+      "indexSignature": {
+        "id": 91,
+        "name": "__index",
+        "variant": "signature",
+        "kind": 8192,
+        "flags": {
+          "isExternal": true
+        },
+        "sources": [
+          {
+            "fileName": "node_modules/svelte/types/index.d.ts",
+            "line": 142,
+            "character": 197
+          }
+        ],
+        "parameters": [
+          {
+            "id": 92,
+            "name": "prop",
+            "variant": "param",
+            "kind": 32768,
+            "flags": {
+              "isExternal": true
+            },
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ],
+        "type": {
+          "type": "intrinsic",
+          "name": "any"
+        }
+      },
+      "extendedTypes": [
+        {
+          "type": "reference",
+          "target": {
+            "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+            "qualifiedName": "\"svelte\".SvelteComponent_1"
+          },
+          "typeArguments": [
+            {
+              "type": "reference",
+              "target": -1,
+              "name": "Props",
+              "refersToTypeParameter": true
+            },
+            {
+              "type": "reference",
+              "target": -1,
+              "name": "Events",
+              "refersToTypeParameter": true
+            }
+          ],
+          "name": "SvelteComponent_1",
+          "package": "svelte",
+          "qualifiedName": "\"svelte\".SvelteComponent_1"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "name": "Errors",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "children": [
+        {
+          "id": 32,
+          "name": "conflicting_tokens",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "TODO: DOC"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 722,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L722"
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "src/lib/types.ts",
+              "qualifiedName": "Error.ConflictingTokens"
+            },
+            "typeArguments": [
+              {
+                "type": "conditional",
+                "checkType": {
+                  "type": "conditional",
+                  "checkType": {
+                    "type": "reference",
+                    "target": {
+                      "sourceFileName": "node_modules/hotscript/dist/internals/helpers.d.ts",
+                      "qualifiedName": "IsNever"
+                    },
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "target": {
+                          "sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
+                          "qualifiedName": "EmptyIntoPlaceholder"
+                        },
+                        "typeArguments": [
+                          {
+                            "type": "reference",
+                            "target": -1,
+                            "name": "GUI_Obj",
+                            "refersToTypeParameter": true
+                          }
+                        ],
+                        "name": "EmptyIntoPlaceholder",
+                        "package": "hotscript"
+                      }
+                    ],
+                    "name": "IsNever",
+                    "package": "hotscript"
+                  },
+                  "extendsType": {
+                    "type": "literal",
+                    "value": true
+                  },
+                  "trueType": {
+                    "type": "tuple",
+                    "elements": [
+                      {
+                        "type": "reference",
+                        "target": {
+                          "sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
+                          "qualifiedName": "EmptyIntoPlaceholder"
+                        },
+                        "typeArguments": [
+                          {
+                            "type": "reference",
+                            "target": -1,
+                            "name": "GUI_Obj",
+                            "refersToTypeParameter": true
+                          }
+                        ],
+                        "name": "EmptyIntoPlaceholder",
+                        "package": "hotscript"
+                      }
+                    ]
+                  },
+                  "falseType": {
+                    "type": "conditional",
+                    "checkType": {
+                      "type": "tuple",
+                      "elements": [
+                        {
+                          "type": "reference",
+                          "target": {
+                            "sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
+                            "qualifiedName": "EmptyIntoPlaceholder"
+                          },
+                          "typeArguments": [
+                            {
+                              "type": "reference",
+                              "target": -1,
+                              "name": "GUI_Obj",
+                              "refersToTypeParameter": true
+                            }
+                          ],
+                          "name": "EmptyIntoPlaceholder",
+                          "package": "hotscript"
+                        }
+                      ]
+                    },
+                    "extendsType": {
+                      "type": "tuple",
+                      "elements": [
+                        {
+                          "type": "query",
+                          "queryType": {
+                            "type": "reference",
+                            "target": {
+                              "sourceFileName": "node_modules/hotscript/dist/internals/core/Core.d.ts",
+                              "qualifiedName": "_"
+                            },
+                            "name": "_",
+                            "package": "hotscript"
+                          }
+                        }
+                      ]
+                    },
+                    "trueType": {
+                      "type": "tuple"
+                    },
+                    "falseType": {
+                      "type": "tuple",
+                      "elements": [
+                        {
+                          "type": "reference",
+                          "target": {
+                            "sourceFileName": "node_modules/hotscript/dist/internals/core/impl/MergeArgs.d.ts",
+                            "qualifiedName": "EmptyIntoPlaceholder"
+                          },
+                          "typeArguments": [
+                            {
+                              "type": "reference",
+                              "target": -1,
+                              "name": "GUI_Obj",
+                              "refersToTypeParameter": true
+                            }
+                          ],
+                          "name": "EmptyIntoPlaceholder",
+                          "package": "hotscript"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "extendsType": {
+                  "type": "reference",
+                  "target": -1,
+                  "name": "args",
+                  "refersToTypeParameter": true
+                },
+                "trueType": {
+                  "type": "conditional",
+                  "checkType": {
+                    "type": "conditional",
+                    "checkType": {
+                      "type": "reference",
+                      "target": -1,
+                      "name": "args",
+                      "refersToTypeParameter": true
+                    },
+                    "extendsType": {
+                      "type": "reference",
+                      "target": -1,
+                      "name": "args",
+                      "refersToTypeParameter": true
+                    },
+                    "trueType": {
+                      "type": "reference",
+                      "target": -1,
+                      "name": "args",
+                      "refersToTypeParameter": true
+                    },
+                    "falseType": {
+                      "type": "intrinsic",
+                      "name": "never"
+                    }
+                  },
+                  "extendsType": {
+                    "type": "tuple",
+                    "elements": [
+                      {
+                        "type": "reference",
+                        "target": -1,
+                        "name": "obj",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  },
+                  "trueType": {
+                    "type": "reference",
+                    "target": {
+                      "sourceFileName": "node_modules/hotscript/dist/internals/objects/impl/objects.d.ts",
+                      "qualifiedName": "TransformObjectDeep"
+                    },
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "target": {
+                          "sourceFileName": "node_modules/hotscript/dist/internals/objects/Objects.d.ts",
+                          "qualifiedName": "MutableFn"
+                        },
+                        "name": "MutableFn",
+                        "package": "hotscript"
+                      },
+                      {
+                        "type": "reference",
+                        "target": -1,
+                        "name": "obj",
+                        "refersToTypeParameter": true
+                      }
+                    ],
+                    "name": "TransformObjectDeep",
+                    "package": "hotscript"
+                  },
+                  "falseType": {
+                    "type": "intrinsic",
+                    "name": "never"
+                  }
+                },
+                "falseType": {
+                  "type": "intrinsic",
+                  "name": "never"
+                }
+              }
+            ],
+            "name": "ConflictingTokens",
+            "package": "roguelighter",
+            "qualifiedName": "Error.ConflictingTokens"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [32]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 713,
+          "character": 17,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L713"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 33,
+          "name": "SettingsObj",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 4,
+            "name": "Settings",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 34,
+          "name": "V",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 1,
+            "name": "Variables",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 35,
+          "name": "P",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "src/lib/types.ts",
+              "qualifiedName": "Agent"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ],
+            "name": "Agent",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 36,
+          "name": "AgentsObj",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 51,
+            "name": "Agents",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 37,
+          "name": "EventsObj",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 39,
+            "typeArguments": [
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "P",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "V",
+                "refersToTypeParameter": true
+              }
+            ],
+            "name": "Events",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 38,
+          "name": "GUI_Obj",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 24,
+            "typeArguments": [
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "P",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "V",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "EventsObj",
+                "refersToTypeParameter": true
+              }
+            ],
+            "name": "GUI",
+            "package": "roguelighter"
+          }
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "name": "Events",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "TODO: docs"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 489,
+          "character": 17,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L489"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 40,
+          "name": "P",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "src/lib/types.ts",
+              "qualifiedName": "Agent"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ],
+            "name": "Agent",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 41,
+          "name": "V",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 1,
+            "name": "Variables",
+            "package": "roguelighter"
+          }
+        }
+      ],
+      "indexSignature": {
+        "id": 42,
+        "name": "__index",
+        "variant": "signature",
+        "kind": 8192,
+        "flags": {},
+        "sources": [
+          {
+            "fileName": "src/lib/types.ts",
+            "line": 490,
+            "character": 2,
+            "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L490"
+          }
+        ],
+        "parameters": [
+          {
+            "id": 43,
+            "name": "function_name",
+            "variant": "param",
+            "kind": 32768,
+            "flags": {},
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ],
+        "type": {
+          "type": "array",
+          "elementType": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "src/lib/types.ts",
+              "qualifiedName": "EventExpression"
+            },
+            "typeArguments": [
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "P",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "V",
+                "refersToTypeParameter": true
+              }
+            ],
+            "name": "EventExpression",
+            "package": "roguelighter"
+          }
+        }
+      }
+    },
+    {
+      "id": 24,
+      "name": "GUI",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "The object that contains all the GUI elements that will be in the game"
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 25,
+          "name": "$pause_menu",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "TODO: doc"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 550,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L550"
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+              "qualifiedName": "Omit"
+            },
+            "typeArguments": [
+              {
+                "type": "reference",
+                "target": {
+                  "sourceFileName": "src/lib/types.ts",
+                  "qualifiedName": "GUI_Element"
+                },
+                "typeArguments": [
+                  {
+                    "type": "templateLiteral",
+                    "head": "v.",
+                    "tail": [
+                      [
+                        {
+                          "type": "reference",
+                          "target": {
+                            "sourceFileName": "node_modules/typescript/lib/lib.es5.d.ts",
+                            "qualifiedName": "Extract"
+                          },
+                          "typeArguments": [
+                            {
+                              "type": "reference",
+                              "target": {
+                                "sourceFileName": "node_modules/hotscript/dist/internals/objects/impl/objects.d.ts",
+                                "qualifiedName": "Keys"
+                              },
+                              "typeArguments": [
+                                {
+                                  "type": "conditional",
+                                  "checkType": {
+                                    "type": "conditional",
+                                    "checkType": {
+                                      "type": "reference",
+                                      "target": {
+                                        "sourceFileName": "node_modules/hotscript/dist/internals/helpers.d.ts",
+                                        "qualifiedName": "Equal"
+                                      },
+                                      "typeArguments": [
+                                        {
+                                          "type": "reference",
+                                          "target": -1,
+                                          "name": "V",
+                                          "refersToTypeParameter": true
+                                        },
+                                        {
+                                          "type": "query",
+                                          "queryType": {
+                                            "type": "reference",
+                                            "target": {
+                                              "sourceFileName": "node_modules/hotscript/dist/internals/core/Core.d.ts",
+                                              "qualifiedName": "_"
+                                            },
+                                            "name": "_",
+                                            "package": "hotscript"
+                                          }
+                                        }
+                                      ],
+                                      "name": "Equal",
+                                      "package": "hotscript"
+                                    },
+                                    "extendsType": {
+                                      "type": "literal",
+                                      "value": true
+                                    },
+                                    "trueType": {
+                                      "type": "tuple"
+                                    },
+                                    "falseType": {
+                                      "type": "tuple",
+                                      "elements": [
+                                        {
+                                          "type": "reference",
+                                          "target": -1,
+                                          "name": "V",
+                                          "refersToTypeParameter": true
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "extendsType": {
+                                    "type": "tuple",
+                                    "elements": [
+                                      {
+                                        "type": "reference",
+                                        "target": -1,
+                                        "name": "arg",
+                                        "refersToTypeParameter": true
+                                      },
+                                      {
+                                        "type": "rest",
+                                        "elementType": {
+                                          "type": "array",
+                                          "elementType": {
+                                            "type": "intrinsic",
+                                            "name": "any"
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "trueType": {
+                                    "type": "reference",
+                                    "target": -1,
+                                    "name": "arg",
+                                    "refersToTypeParameter": true
+                                  },
+                                  "falseType": {
+                                    "type": "intrinsic",
+                                    "name": "never"
+                                  }
+                                }
+                              ],
+                              "name": "Keys",
+                              "package": "hotscript"
+                            },
+                            {
+                              "type": "reference",
+                              "target": {
+                                "sourceFileName": "node_modules/hotscript/dist/internals/strings/Strings.d.ts",
+                                "qualifiedName": "Strings.Stringifiable"
+                              },
+                              "name": "Stringifiable",
+                              "package": "hotscript",
+                              "qualifiedName": "Strings.Stringifiable"
+                            }
+                          ],
+                          "name": "Extract",
+                          "package": "typescript"
+                        },
+                        ""
+                      ]
+                    ]
+                  },
+                  {
+                    "type": "typeOperator",
+                    "operator": "keyof",
+                    "target": {
+                      "type": "reference",
+                      "target": -1,
+                      "name": "EventsObj",
+                      "refersToTypeParameter": true
+                    }
+                  }
+                ],
+                "name": "GUI_Element",
+                "package": "roguelighter"
+              },
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "literal",
+                    "value": "visibility_depends_on"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "type"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "onclick"
+                  }
+                ]
+              }
+            ],
+            "name": "Omit",
+            "package": "typescript"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [25]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 545,
+          "character": 17,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L545"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 26,
+          "name": "P",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "src/lib/types.ts",
+              "qualifiedName": "Agent"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ],
+            "name": "Agent",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 27,
+          "name": "V",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 1,
+            "name": "Variables",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 28,
+          "name": "EventsObj",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 39,
+            "typeArguments": [
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "P",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "V",
+                "refersToTypeParameter": true
+              }
+            ],
+            "name": "Events",
+            "package": "roguelighter"
+          }
+        }
+      ],
+      "indexSignature": {
+        "id": 29,
+        "name": "__index",
+        "variant": "signature",
+        "kind": 8192,
+        "flags": {},
+        "sources": [
+          {
+            "fileName": "src/lib/types.ts",
+            "line": 555,
+            "character": 2,
+            "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L555"
+          }
+        ],
+        "parameters": [
+          {
+            "id": 30,
+            "name": "key",
+            "variant": "param",
+            "kind": 32768,
+            "flags": {},
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ],
+        "type": {
+          "type": "reference",
+          "target": {
+            "sourceFileName": "src/lib/types.ts",
+            "qualifiedName": "GUI_Element"
+          },
+          "typeArguments": [
+            {
+              "type": "reference",
+              "target": {
+                "sourceFileName": "src/lib/types.ts",
+                "qualifiedName": "GetVars"
+              },
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "target": -1,
+                  "name": "V",
+                  "refersToTypeParameter": true
+                }
+              ],
+              "name": "GetVars",
+              "package": "roguelighter"
+            },
+            {
+              "type": "typeOperator",
+              "operator": "keyof",
+              "target": {
+                "type": "reference",
+                "target": -1,
+                "name": "EventsObj",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "name": "GUI_Element",
+          "package": "roguelighter"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "Settings",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Default settings for your game"
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 9,
+          "name": "camera",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Camera options"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 620,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L620"
+            }
+          ],
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "id": 10,
+              "name": "__type",
+              "variant": "declaration",
+              "kind": 65536,
+              "flags": {},
+              "children": [
+                {
+                  "id": 11,
+                  "name": "zoom",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {
+                    "isOptional": true
+                  },
+                  "comment": {
+                    "summary": [
+                      {
+                        "kind": "text",
+                        "text": "Determines how close the camera will be to the scene"
+                      }
+                    ]
+                  },
+                  "sources": [
+                    {
+                      "fileName": "src/lib/types.ts",
+                      "line": 624,
+                      "character": 4,
+                      "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L624"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                }
+              ],
+              "groups": [
+                {
+                  "title": "Properties",
+                  "children": [11]
+                }
+              ],
+              "sources": [
+                {
+                  "fileName": "src/lib/types.ts",
+                  "line": 620,
+                  "character": 11,
+                  "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L620"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 7,
+          "name": "duration",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Default duration for animations"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 612,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L612"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          }
+        },
+        {
+          "id": 6,
+          "name": "easing",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Default easing function for animations"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 608,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L608"
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "literal",
+                "value": "linear"
+              },
+              {
+                "type": "literal",
+                "value": "backInOut"
+              },
+              {
+                "type": "literal",
+                "value": "backIn"
+              },
+              {
+                "type": "literal",
+                "value": "backOut"
+              },
+              {
+                "type": "literal",
+                "value": "bounceOut"
+              },
+              {
+                "type": "literal",
+                "value": "bounceInOut"
+              },
+              {
+                "type": "literal",
+                "value": "bounceIn"
+              },
+              {
+                "type": "literal",
+                "value": "circInOut"
+              },
+              {
+                "type": "literal",
+                "value": "circIn"
+              },
+              {
+                "type": "literal",
+                "value": "circOut"
+              },
+              {
+                "type": "literal",
+                "value": "cubicInOut"
+              },
+              {
+                "type": "literal",
+                "value": "cubicIn"
+              },
+              {
+                "type": "literal",
+                "value": "cubicOut"
+              },
+              {
+                "type": "literal",
+                "value": "elasticInOut"
+              },
+              {
+                "type": "literal",
+                "value": "elasticIn"
+              },
+              {
+                "type": "literal",
+                "value": "elasticOut"
+              },
+              {
+                "type": "literal",
+                "value": "expoInOut"
+              },
+              {
+                "type": "literal",
+                "value": "expoIn"
+              },
+              {
+                "type": "literal",
+                "value": "expoOut"
+              },
+              {
+                "type": "literal",
+                "value": "quadInOut"
+              },
+              {
+                "type": "literal",
+                "value": "quadIn"
+              },
+              {
+                "type": "literal",
+                "value": "quadOut"
+              },
+              {
+                "type": "literal",
+                "value": "quartInOut"
+              },
+              {
+                "type": "literal",
+                "value": "quartIn"
+              },
+              {
+                "type": "literal",
+                "value": "quartOut"
+              },
+              {
+                "type": "literal",
+                "value": "quintInOut"
+              },
+              {
+                "type": "literal",
+                "value": "quintIn"
+              },
+              {
+                "type": "literal",
+                "value": "quintOut"
+              },
+              {
+                "type": "literal",
+                "value": "sineInOut"
+              },
+              {
+                "type": "literal",
+                "value": "sineIn"
+              },
+              {
+                "type": "literal",
+                "value": "sineOut"
+              }
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "name": "filter",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "TODO: docs"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 616,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L616"
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "literal",
+                "value": "linear"
+              },
+              {
+                "type": "literal",
+                "value": "nearest"
+              }
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "name": "fps",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Number of frames that will be played in a second"
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 604,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L604"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          }
+        },
+        {
+          "id": 12,
+          "name": "ready_for_export",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 626,
+              "character": 2,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L626"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [9, 7, 6, 8, 5, 12]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 600,
+          "character": 17,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L600"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "Variables",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "TODO: docs"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 482,
+          "character": 17,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L482"
+        }
+      ],
+      "indexSignature": {
+        "id": 2,
+        "name": "__index",
+        "variant": "signature",
+        "kind": 8192,
+        "flags": {},
+        "sources": [
+          {
+            "fileName": "src/lib/types.ts",
+            "line": 483,
+            "character": 2,
+            "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L483"
+          }
+        ],
+        "parameters": [
+          {
+            "id": 3,
+            "name": "variable_name",
+            "variant": "param",
+            "kind": 32768,
+            "flags": {},
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ],
+        "type": {
+          "type": "intrinsic",
+          "name": "any"
+        }
+      }
+    },
+    {
+      "id": 51,
+      "name": "Agents",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "TODO: doc"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 686,
+          "character": 12,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L686"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 56,
+          "name": "Assets",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "default": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        }
+      ],
+      "type": {
+        "type": "reflection",
+        "declaration": {
+          "id": 52,
+          "name": "__type",
+          "variant": "declaration",
+          "kind": 65536,
+          "flags": {},
+          "children": [
+            {
+              "id": 53,
+              "name": "player",
+              "variant": "declaration",
+              "kind": 1024,
+              "flags": {},
+              "comment": {
+                "summary": [
+                  {
+                    "kind": "text",
+                    "text": "Player agent settings"
+                  }
+                ]
+              },
+              "sources": [
+                {
+                  "fileName": "src/lib/types.ts",
+                  "line": 690,
+                  "character": 2,
+                  "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L690"
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "target": {
+                  "sourceFileName": "src/lib/types.ts",
+                  "qualifiedName": "Agent"
+                },
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "target": -1,
+                    "name": "Assets",
+                    "refersToTypeParameter": true
+                  }
+                ],
+                "name": "Agent",
+                "package": "roguelighter"
+              }
+            }
+          ],
+          "groups": [
+            {
+              "title": "Properties",
+              "children": [53]
+            }
+          ],
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 686,
+              "character": 38,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L686"
+            }
+          ],
+          "indexSignature": {
+            "id": 54,
+            "name": "__index",
+            "variant": "signature",
+            "kind": 8192,
+            "flags": {},
+            "comment": {
+              "summary": [
+                {
+                  "kind": "text",
+                  "text": "Non-player agent settings"
+                }
+              ]
+            },
+            "sources": [
+              {
+                "fileName": "src/lib/types.ts",
+                "line": 694,
+                "character": 2,
+                "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L694"
+              }
+            ],
+            "parameters": [
+              {
+                "id": 55,
+                "name": "name",
+                "variant": "param",
+                "kind": 32768,
+                "flags": {},
+                "type": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            ],
+            "type": {
+              "type": "reference",
+              "target": {
+                "sourceFileName": "src/lib/types.ts",
+                "qualifiedName": "Agent"
+              },
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "target": -1,
+                  "name": "Assets",
+                  "refersToTypeParameter": true
+                }
+              ],
+              "name": "Agent",
+              "package": "roguelighter"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 44,
+      "name": "Backgrounds",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "TODO: doc"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 699,
+          "character": 12,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L699"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 48,
+          "name": "Assets",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "default": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        }
+      ],
+      "type": {
+        "type": "reflection",
+        "declaration": {
+          "id": 45,
+          "name": "__type",
+          "variant": "declaration",
+          "kind": 65536,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 699,
+              "character": 43,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L699"
+            }
+          ],
+          "indexSignature": {
+            "id": 46,
+            "name": "__index",
+            "variant": "signature",
+            "kind": 8192,
+            "flags": {},
+            "sources": [
+              {
+                "fileName": "src/lib/types.ts",
+                "line": 699,
+                "character": 45,
+                "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L699"
+              }
+            ],
+            "parameters": [
+              {
+                "id": 47,
+                "name": "name",
+                "variant": "param",
+                "kind": 32768,
+                "flags": {},
+                "type": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            ],
+            "type": {
+              "type": "reference",
+              "target": -1,
+              "name": "Assets",
+              "refersToTypeParameter": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 49,
+      "name": "Collisions",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "TODO: doc"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 734,
+          "character": 12,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L734"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 50,
+          "name": "B",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 44,
+            "name": "Backgrounds",
+            "package": "roguelighter"
+          }
+        }
+      ],
+      "type": {
+        "type": "array",
+        "elementType": {
+          "type": "typeOperator",
+          "operator": "keyof",
+          "target": {
+            "type": "reference",
+            "target": -1,
+            "name": "B",
+            "refersToTypeParameter": true
+          }
+        }
+      }
+    },
+    {
+      "id": 17,
+      "name": "Conditions",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "TODO: docs"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 512,
+          "character": 12,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L512"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 21,
+          "name": "P",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "src/lib/types.ts",
+              "qualifiedName": "Agent"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ],
+            "name": "Agent",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 22,
+          "name": "V",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 1,
+            "name": "Variables",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 23,
+          "name": "E",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 39,
+            "typeArguments": [
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "P",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "V",
+                "refersToTypeParameter": true
+              }
+            ],
+            "name": "Events",
+            "package": "roguelighter"
+          }
+        }
+      ],
+      "type": {
+        "type": "reflection",
+        "declaration": {
+          "id": 18,
+          "name": "__type",
+          "variant": "declaration",
+          "kind": 65536,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "src/lib/types.ts",
+              "line": 512,
+              "character": 95,
+              "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L512"
+            }
+          ],
+          "indexSignature": {
+            "id": 19,
+            "name": "__index",
+            "variant": "signature",
+            "kind": 8192,
+            "flags": {},
+            "sources": [
+              {
+                "fileName": "src/lib/types.ts",
+                "line": 513,
+                "character": 2,
+                "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L513"
+              }
+            ],
+            "parameters": [
+              {
+                "id": 20,
+                "name": "event_name",
+                "variant": "param",
+                "kind": 32768,
+                "flags": {},
+                "type": {
+                  "type": "typeOperator",
+                  "operator": "keyof",
+                  "target": {
+                    "type": "reference",
+                    "target": 39,
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "target": -1,
+                        "name": "P",
+                        "refersToTypeParameter": true
+                      },
+                      {
+                        "type": "reference",
+                        "target": -1,
+                        "name": "V",
+                        "refersToTypeParameter": true
+                      }
+                    ],
+                    "name": "Events",
+                    "package": "roguelighter"
+                  }
+                }
+              }
+            ],
+            "type": {
+              "type": "reference",
+              "target": {
+                "sourceFileName": "src/lib/types.ts",
+                "qualifiedName": "BinaryExpression"
+              },
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "target": -1,
+                  "name": "V",
+                  "refersToTypeParameter": true
+                }
+              ],
+              "name": "BinaryExpression",
+              "package": "roguelighter"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "KeyBindings",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "sources": [
+        {
+          "fileName": "src/lib/types.ts",
+          "line": 632,
+          "character": 12,
+          "url": "https://github.com/KutayGuler/roguelighter/blob/b63d35f/src/lib/types.ts#L632"
+        }
+      ],
+      "typeParameters": [
+        {
+          "id": 14,
+          "name": "P",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": {
+              "sourceFileName": "src/lib/types.ts",
+              "qualifiedName": "Agent"
+            },
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ],
+            "name": "Agent",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 15,
+          "name": "V",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 1,
+            "name": "Variables",
+            "package": "roguelighter"
+          }
+        },
+        {
+          "id": 16,
+          "name": "F",
+          "variant": "typeParam",
+          "kind": 131072,
+          "flags": {},
+          "type": {
+            "type": "reference",
+            "target": 39,
+            "typeArguments": [
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "P",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "target": -1,
+                "name": "V",
+                "refersToTypeParameter": true
+              }
+            ],
+            "name": "Events",
+            "package": "roguelighter"
+          }
+        }
+      ],
+      "type": {
+        "type": "mapped",
+        "parameter": "key",
+        "parameterType": {
+          "type": "reference",
+          "target": {
+            "sourceFileName": "src/lib/types.ts",
+            "qualifiedName": "KeyboardEventCode"
+          },
+          "name": "KeyboardEventCode",
+          "package": "roguelighter"
+        },
+        "templateType": {
+          "type": "union",
+          "types": [
+            {
+              "type": "typeOperator",
+              "operator": "keyof",
+              "target": {
+                "type": "reference",
+                "target": -1,
+                "name": "F",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "type": "reference",
+              "target": {
+                "sourceFileName": "src/lib/types.ts",
+                "qualifiedName": "InternalEvents"
+              },
+              "name": "InternalEvents",
+              "package": "roguelighter"
+            }
+          ]
+        },
+        "optionalModifier": "+"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "title": "Classes",
+      "children": [57]
+    },
+    {
+      "title": "Interfaces",
+      "children": [31, 39, 24, 4, 1]
+    },
+    {
+      "title": "Type Aliases",
+      "children": [51, 44, 49, 17, 13]
+    }
+  ],
+  "packageName": "roguelighter",
+  "readme": [
+    {
+      "kind": "text",
+      "text": "# roguelighter\n\nlow code game engine for roguelikes"
+    }
+  ],
+  "symbolIdMap": {
+    "0": {
+      "sourceFileName": "src/lib/index.ts",
+      "qualifiedName": ""
+    },
+    "1": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Variables"
+    },
+    "2": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Variables.__index"
+    },
+    "4": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Settings"
+    },
+    "5": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Settings.fps"
+    },
+    "6": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Settings.easing"
+    },
+    "7": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Settings.duration"
+    },
+    "8": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Settings.filter"
+    },
+    "9": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Settings.camera"
+    },
+    "10": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type"
+    },
+    "11": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type.zoom"
+    },
+    "12": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Settings.ready_for_export"
+    },
+    "13": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "KeyBindings"
+    },
+    "14": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "P"
+    },
+    "15": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "V"
+    },
+    "16": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "F"
+    },
+    "17": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Conditions"
+    },
+    "18": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type"
+    },
+    "19": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type.__index"
+    },
+    "21": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "P"
+    },
+    "22": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "V"
+    },
+    "23": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "E"
+    },
+    "24": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "GUI"
+    },
+    "25": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "GUI.$pause_menu"
+    },
+    "26": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "GUI.P"
+    },
+    "27": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "GUI.V"
+    },
+    "28": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "GUI.EventsObj"
+    },
+    "29": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "GUI.__index"
+    },
+    "31": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors"
+    },
+    "32": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors.conflicting_tokens"
+    },
+    "33": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors.SettingsObj"
+    },
+    "34": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors.V"
+    },
+    "35": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors.P"
+    },
+    "36": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors.AgentsObj"
+    },
+    "37": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors.EventsObj"
+    },
+    "38": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Errors.GUI_Obj"
+    },
+    "39": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Events"
+    },
+    "40": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Events.P"
+    },
+    "41": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Events.V"
+    },
+    "42": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Events.__index"
+    },
+    "44": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Backgrounds"
+    },
+    "45": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type"
+    },
+    "46": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type.__index"
+    },
+    "48": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Assets"
+    },
+    "49": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Collisions"
+    },
+    "50": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "B"
+    },
+    "51": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Agents"
+    },
+    "52": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type"
+    },
+    "53": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type.player"
+    },
+    "54": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "__type.__index"
+    },
+    "56": {
+      "sourceFileName": "src/lib/types.ts",
+      "qualifiedName": "Assets"
+    },
+    "57": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent"
+    },
+    "58": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.__constructor"
+    },
+    "59": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent"
+    },
+    "60": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.Props"
+    },
+    "61": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.Events"
+    },
+    "62": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.Slots"
+    },
+    "63": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "options"
+    },
+    "64": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.$$prop_def"
+    },
+    "65": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.$$events_def"
+    },
+    "66": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.$$slot_def"
+    },
+    "67": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.$capture_state"
+    },
+    "68": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.$capture_state"
+    },
+    "69": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.$inject_state"
+    },
+    "70": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.$inject_state"
+    },
+    "71": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$$"
+    },
+    "72": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$$set"
+    },
+    "73": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$destroy"
+    },
+    "74": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$destroy"
+    },
+    "75": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$on"
+    },
+    "76": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$on"
+    },
+    "77": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "K"
+    },
+    "78": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "type"
+    },
+    "79": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "callback"
+    },
+    "80": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "__type"
+    },
+    "81": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "__type"
+    },
+    "82": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "e"
+    },
+    "83": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "__type"
+    },
+    "84": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "__type"
+    },
+    "85": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$set"
+    },
+    "86": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent_1.$set"
+    },
+    "87": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "props"
+    },
+    "88": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.Props"
+    },
+    "89": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.Events"
+    },
+    "90": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.Slots"
+    },
+    "91": {
+      "sourceFileName": "node_modules/svelte/src/runtime/internal/public.d.ts",
+      "qualifiedName": "\"svelte\".SvelteComponent.__index"
+    }
+  }
 }

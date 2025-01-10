@@ -1,16 +1,34 @@
-import RunCSS from 'runcss';
 import JSON5 from 'json5';
 import ts from 'typescript';
-import { DEFAULT_DIR, function_regex } from './constants';
-import { join, documentDir } from '@tauri-apps/api/path';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
-import { FileEntry, readDir } from '@tauri-apps/api/fs';
-import { generate_boilerplate_types } from './generate_boilerplate_types';
-import { GameData, Agents, GUI } from './types/game';
-import { parse_errors } from './store';
+import {
+  SETUP_DECLARATION,
+  PROJECTS_DIR,
+  template_json_code,
+  PROCESS_IDENTIFIER,
+  FUNCTIONS_IDENTIFIER,
+  VARIABLES_IDENTIFIER,
+  DEFAULT_SCENE_INDEX,
+  DEFAULT_SCENE_ID
+} from './constants';
+import { join } from '@tauri-apps/api/path';
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { DirEntry, readDir } from '@tauri-apps/plugin-fs';
+import { Setup } from './types/game';
+import {
+  EntryObject,
+  ParseErrorObject,
+  RoguelighterDataFile,
+  RoguelighterProject
+} from './types/engine';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-export const { processClasses } = RunCSS();
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export const noop = () => {};
+
 export function generate_id() {
   return (Math.random() + 1).toString(36).substring(7);
 }
@@ -24,6 +42,7 @@ export function pos_to_xy(pos: number, scene_width: number) {
 }
 
 export function debounce(fn: Function, ms: number) {
+  // @ts-expect-error
   let timeout: NodeJS.Timeout;
   return function () {
     clearTimeout(timeout);
@@ -32,411 +51,334 @@ export function debounce(fn: Function, ms: number) {
   };
 }
 
-export function generate_ast(code: string) {
-  const ast = ts.createSourceFile(
-    'code.ts',
-    code,
-    {
-      languageVersion: ts.ScriptTarget.Latest
-    },
-    true,
-    ts.ScriptKind.TS
-  );
+const function_argument_appender = (context: ts.TransformationContext) => {
+  const createAdditionalParameters = () => {
+    return [
+      ts.factory.createIdentifier(VARIABLES_IDENTIFIER),
+      ts.factory.createIdentifier(FUNCTIONS_IDENTIFIER),
+      ts.factory.createIdentifier(PROCESS_IDENTIFIER)
+    ];
+  };
 
-  function ast_to_obj(node: ts.Node): any {
-    const result: any = {
-      kind: ts.SyntaxKind[node.kind],
-      text: node.getText(),
-      c: []
-    };
+  const visit: ts.Visitor = (node: ts.Node): ts.Node => {
+    node = ts.visitEachChild(node, visit, context);
 
-    ts.forEachChild(node, (child) => {
-      result.c.push(ast_to_obj(child));
-    });
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression;
 
-    return result;
-  }
+      if (ts.isPropertyAccessExpression(callee)) {
+        const object = callee.expression;
 
-  return ast_to_obj(ast);
-}
+        if (ts.isIdentifier(object) && object.text === FUNCTIONS_IDENTIFIER) {
+          const existingArgs = Array.from(node.arguments);
 
-export function code_string_to_json(code: string): string | GameData {
-  const transpiled = ts.transpile(code, { removeComments: true, strict: false });
+          const newArgs = ts.factory.createNodeArray([
+            ...existingArgs,
+            ...createAdditionalParameters()
+          ]);
 
-  function find_game_data_declaration(code: string) {
-    const regex = new RegExp(`\\b(game_data)\\b\\s*=\\s*([\\[{])`, 'g');
-    let game_data_declaration;
-    let match;
-
-    while ((match = regex.exec(code)) !== null) {
-      const start = match.index + match[0].length - 1;
-      const startChar = match[2];
-      const endChar = startChar === '{' ? '}' : ']';
-      let depth = 1;
-      let end = start;
-
-      while (depth > 0 && end < code.length) {
-        end++;
-        if (code[end] === startChar) depth++;
-        else if (code[end] === endChar) depth--;
-      }
-
-      if (depth === 0) {
-        game_data_declaration = `${match[1]}: ${code.substring(start, end + 1).trim()},\n`;
+          return ts.factory.createCallExpression(callee, node.typeArguments, newArgs);
+        }
       }
     }
 
-    return game_data_declaration;
-  }
+    return node;
+  };
 
-  let game_data_declaration = find_game_data_declaration(transpiled);
+  return (node: ts.Node) => ts.visitNode(node, visit);
+};
 
-  // turn function declarations into strings
-  game_data_declaration = game_data_declaration?.replace(function_regex, (match) => {
-    let modified = match.replaceAll('\n', ' ').replaceAll('"', '\\"');
-    return `"${modified}"`;
+const event_handler_parameter_appender = (context: ts.TransformationContext) => {
+  const visit: ts.Visitor = (node: ts.Node): ts.Node => {
+    if (ts.isPropertyAssignment(node)) {
+      const prop_name = node.name;
+
+      // @ts-expect-error
+      let prop_name_text = prop_name.text.toLowerCase();
+
+      if (prop_name_text.startsWith('on')) {
+        const initializer = node.initializer;
+
+        if (ts.isFunctionExpression(initializer)) {
+          if (['oncollision', 'onseparation'].includes(prop_name_text)) {
+            // holup
+          } else if (initializer.parameters.length === 0) {
+            const event_param = ts.factory.createParameterDeclaration(
+              undefined,
+              undefined,
+              '__event__',
+              undefined,
+              undefined
+            );
+
+            const updated_function = ts.factory.createFunctionExpression(
+              initializer.modifiers,
+              initializer.asteriskToken,
+              undefined,
+              initializer.typeParameters,
+              [event_param],
+              initializer.type,
+              initializer.body
+            );
+
+            return ts.factory.createPropertyAssignment(prop_name, updated_function);
+          }
+        }
+      }
+    }
+
+    // Continue traversing the AST
+    return ts.visitEachChild(node, visit, context);
+  };
+
+  return (node: ts.SourceFile) => ts.visitNode(node, visit);
+};
+
+const function_parameter_appender = (context: ts.TransformationContext) => {
+  const visit: ts.Visitor = (node) => {
+    if (ts.isFunctionExpression(node)) {
+      const variables_param = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        ts.factory.createIdentifier(VARIABLES_IDENTIFIER),
+        undefined
+      );
+
+      const functions_param = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        ts.factory.createIdentifier(FUNCTIONS_IDENTIFIER),
+        undefined
+      );
+
+      const process_param = ts.factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        ts.factory.createIdentifier(PROCESS_IDENTIFIER),
+        undefined
+      );
+
+      const updated_params = [...node.parameters, variables_param, functions_param, process_param];
+
+      const modified_function = ts.factory.updateFunctionExpression(
+        node,
+        node.modifiers,
+        node.asteriskToken,
+        node.name,
+        node.typeParameters,
+        updated_params,
+        node.type,
+        node.body
+      );
+
+      return modified_function;
+    }
+
+    return ts.visitEachChild(node, visit, context);
+  };
+
+  return (node: ts.SourceFile) => ts.visitNode(node, visit);
+};
+
+const function_stringifier = (context: ts.TransformationContext) => {
+  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+
+  const visit: ts.Visitor = (node: ts.Node): ts.Node => {
+    if (ts.isFunctionExpression(node)) {
+      // @ts-expect-error
+      const sourceFile = ts.getSourceFileOfNode(node);
+      const functionString = printer.printNode(ts.EmitHint.Unspecified, node, sourceFile);
+
+      return ts.factory.createStringLiteral(functionString);
+    }
+
+    if (ts.isMethodDeclaration(node)) {
+      const methodString = printer.printNode(
+        ts.EmitHint.Unspecified,
+        node,
+        // @ts-expect-error
+        ts.getSourceFileOfNode(node)
+      );
+
+      return ts.factory.createPropertyAssignment(
+        node.name,
+        ts.factory.createStringLiteral(methodString)
+      );
+    }
+
+    return ts.visitEachChild(node, visit, context);
+  };
+
+  return (node: ts.Node) => ts.visitNode(node, visit);
+};
+
+export function code_string_to_json(code: string): Setup | ParseErrorObject {
+  const { outputText } = ts.transpileModule(code, {
+    transformers: {
+      after: [
+        // @ts-expect-error
+        event_handler_parameter_appender,
+        // @ts-expect-error
+        function_argument_appender,
+        // @ts-expect-error
+        function_parameter_appender,
+        // @ts-expect-error
+        function_stringifier
+      ]
+    },
+    compilerOptions: { removeComments: true }
   });
 
-  let t = game_data_declaration as string;
+  let t = outputText;
+
+  let setup_or_error: Setup | ParseErrorObject;
 
   try {
-    t = t.replace(/([\w$]+): /g, '"$1": ');
+    t = t.replace(SETUP_DECLARATION, '');
     t = t.replaceAll("'", '"');
-    t = t.replace('},\n\n', '}');
-    t = `{
-      ${t}
-    }`;
+    t = t.replaceAll(/(?<!["'])\bundefined\b(?!["'])/g, `"!undefined!"`);
+    t = t.replaceAll('__undefined__', 'undefined');
+    t = t.replaceAll(/(?<!["'])\bnull\b(?!["'])/g, `"!null!"`);
+    t = t.replaceAll('__null__', 'null');
+    let closing_tag = t.lastIndexOf('};');
+    t = t.slice(0, closing_tag) + '\n}';
 
-    // BACKLOG: cannot parse undefined & null
-    return JSON5.parse(t).game_data;
+    setup_or_error = JSON5.parse(t, (key, val) => {
+      if (val == '!undefined!') return undefined;
+      if (val == '!null!') return null;
+      return val;
+    });
   } catch (e) {
-    console.log(t, e);
-    parse_errors.set({
-      json: t,
+    setup_or_error = {
+      code,
+      json_string: t,
       // @ts-expect-error
       error: e.toString()
-    });
-    return code;
+    };
   }
+
+  return setup_or_error;
 }
 
-// BACKLOG: fix indentation
-export function json_to_code_string(json: GameData) {
+export function json_to_code_string(json: Setup) {
   let str = ``;
 
   for (let [key, val] of Object.entries(json)) {
-    str += `${key}: ${JSON.stringify(val, null, '\t')},\n`;
+    str += `${key}: ${JSON5.stringify(val, null, '\t')},\n`;
   }
 
-  return `game_data = {
+  return `${SETUP_DECLARATION} {
   ${str.replace(/"([^"]+)":/g, '$1:')}}
   `;
 }
 
-export async function get_asset_urls(project_dir: string, agents: Agents<string>) {
-  let bg_asset_urls = new Map<string, string>();
-  let agent_asset_urls = new Map<string, any>();
+export async function process_entries_recursively(
+  parent: string,
+  entries: DirEntry[],
+  type: 'backgrounds' | 'agents'
+) {
+  let _entries: Array<EntryObject> = [];
 
-  const documentDirPath = await documentDir();
+  for (const entry of entries) {
+    // if (entry.isFile) continue;
 
-  const bg_file_path = await join(
-    documentDirPath,
-    `${DEFAULT_DIR}/${project_dir}/assets/backgrounds`
-  );
-  const bg_entries = await readDir(bg_file_path, { recursive: true });
+    const dir = await join(parent, entry.name);
 
-  let bg_children = [];
+    const name = entry.name.replace('http://asset.localhost/', '');
+    const simplified_name = name.split('.')[0];
 
-  for (let entry of bg_entries) {
-    bg_children.push(...get_children_assets(entry));
-  }
-
-  for (let [key, path] of bg_children) {
-    let source = convertFileSrc(path);
-    bg_asset_urls.set(key, source);
-  }
-
-  for (let [key, obj] of Object.entries(agents)) {
-    let url_obj = {};
-
-    for (let [_key, val] of Object.entries(obj.states)) {
-      const filePath = await join(
-        documentDirPath,
-        `${DEFAULT_DIR}/${project_dir}/assets/agents/${val.source}`
-      );
-      // @ts-expect-error
-      url_obj[_key] = convertFileSrc(filePath);
+    if (entry.isDirectory) {
+      const children = await process_entries_recursively(dir, await readDir(dir), type);
+      _entries.push(...children);
+      if (type == 'agents') {
+        // @ts-expect-error
+        // agent_states_obj[name] = children.map(({ name }) => name);
+      }
+      continue;
     }
 
-    agent_asset_urls.set(key, url_obj);
+    _entries.push({
+      name: simplified_name,
+      path: parent + '\\' + name,
+      type: type
+    });
   }
 
-  return {
-    backgrounds: bg_asset_urls,
-    agents: agent_asset_urls
-  };
+  return _entries;
 }
 
-export const template_json_code: GameData = {
-  settings: {
-    fps: 8,
-    easing: 'sineOut',
-    duration: 400,
-    camera: {
-      zoom: 20
-    }
-  },
-  collisions: ['floor_2'],
-  agents: {
-    player: {
-      states: {
-        default: {
-          source: 'elf_idle.png',
-          frame_count: 4
-        },
-        walk: {
-          source: 'elf_run.png',
-          frame_count: 4
-        }
-      }
-    },
-    orc: {
-      states: {
-        default: {
-          source: 'orc.png'
-        }
-      }
-    }
-  },
-  variables: {
-    variable_name: 3
-  },
-  events: {},
-  keybindings: {
-    Escape: '$toggle_pause_menu'
-  },
-  gui: {
-    $pause_menu: {
-      tokens: [
-        'absolute',
-        'bottom-0',
-        'w-full',
-        'h-full',
-        'bg-black/50',
-        'flex',
-        'flex-col',
-        'items-center',
-        'gap-2',
-        'pt-8'
-      ],
-      transition: { type: 'fade' },
-      children: {
-        continue: {
-          type: 'button',
-          tokens: [
-            'bg-amber-200',
-            'font-bold',
-            'p-4',
-            'hover:bg-purple-200',
-            'text-amber-600',
-            'w-1/2',
-            'rounded'
-          ],
-          on_click: '$close_pause_menu',
-          text: 'Continue' // add variable {v.var_name}
-        },
-        exit: {
-          type: 'button',
-          tokens: [
-            'bg-amber-200',
-            'font-bold',
-            'p-4',
-            'hover:bg-purple-200',
-            'text-amber-600',
-            'w-1/2',
-            'rounded'
-          ],
-          on_click: '$exit',
-          text: 'Exit' // add variable {v.var_name}
-        }
-      }
-    }
+export async function generate_asset_urls(
+  project_dir: string,
+  type: 'backgrounds' | 'agents',
+  document_path: string
+) {
+  let asset_urls = new Map<string, string>();
+
+  const file_path = await join(document_path, `${PROJECTS_DIR}/${project_dir}/assets/${type}`);
+  const entries = await readDir(file_path);
+  let children = await process_entries_recursively(file_path, entries, type);
+
+  for (let { name, path } of children) {
+    let source = convertFileSrc(path);
+    asset_urls.set(name, source);
   }
-};
+
+  return asset_urls;
+}
 
 export function generate_template_data() {
-  return JSON.stringify({
-    id: crypto.randomUUID(),
+  const project: RoguelighterDataFile = {
+    scene_index: DEFAULT_SCENE_INDEX,
+    starting_scene_id: DEFAULT_SCENE_ID,
     code: json_to_code_string(template_json_code),
-    scenes: new Map()
-  });
+    scenes: []
+  };
+  return JSON5.stringify(project);
 }
 
-export function get_tailwind_classes(gui: GUI) {
-  let set = new Set();
+const array_regex = /\[([^\]]*)\]/g;
+const token_regex = /"([^"]+)"/g;
 
-  for (let child of Object.values(gui)) {
-    for (let token of child.tokens) {
-      set.add(token);
-    }
+export function extract_tailwind_classes(stringified_gui: string) {
+  let tokens = new Set();
+  let match;
 
-    if (child.children) {
-      let returned_set = get_tailwind_classes(child.children);
-      for (let val of returned_set.values()) {
-        set.add(val);
+  const modifiers_regex = /"modifiers":\s*{([^}]*)}/;
+  const modifiers_match = modifiers_regex.exec(stringified_gui);
+
+  if (modifiers_match) {
+    const modifiers_content = modifiers_match[1];
+    const key_value_regex = /"([^"]+)":\s*\[([^\]]*)\]/g;
+    let key_value_match;
+
+    while ((key_value_match = key_value_regex.exec(modifiers_content)) !== null) {
+      const key = key_value_match[1];
+      const array_content = key_value_match[2];
+      let token_match;
+
+      while ((token_match = token_regex.exec(array_content)) !== null) {
+        tokens.add(`${key}:${token_match[1]}`);
       }
     }
   }
 
-  return set;
-}
+  while ((match = array_regex.exec(stringified_gui)) !== null) {
+    const array_content = match[0].slice(1, -1);
+    let token_match;
 
-function get_children_assets(entry: FileEntry, parent_name = ''): Array<Array<string>> {
-  let children = [];
-
-  for (let child of entry.children as FileEntry[]) {
-    if (child.children) {
-      children.push(...get_children_assets(child, entry.name));
-      continue;
-    }
-
-    if (parent_name) {
-      children.push([
-        `${parent_name}/${entry.name}/${child.name?.replace('.png', '')}`,
-        child.path
-      ]);
-    } else {
-      children.push([`${entry.name}/${child.name?.replace('.png', '')}`, child.path]);
+    while ((token_match = token_regex.exec(array_content)) !== null) {
+      tokens.add(token_match[1]);
     }
   }
 
-  return children;
+  return Array.from(tokens.values()).join(' ');
 }
 
-function retrieve_children_names(entry: FileEntry, parent_name = '') {
-  let children = '';
-
-  for (let child of entry.children as FileEntry[]) {
-    if (child.children) {
-      children += retrieve_children_names(child, entry.name);
-      continue;
-    }
-
-    if (parent_name) {
-      children += `| '${parent_name}/${entry.name}/${child.name}'`;
-    } else {
-      children += `| '${entry.name}/${child.name}'`;
-    }
-  }
-
-  return children;
-}
-
-export const filters: { [key: string]: ({ text }: { text: string }) => boolean } = {
-  events: ({ text }) => text.startsWith('events:'),
-  variables: ({ text }) => text.startsWith('variables:')
-  // agent_states: ({ text }) => text.startsWith('variables:'),
+export const filters: { [key in keyof Setup]?: ({ text }: { text: string }) => boolean } = {
+  functions: ({ text }) => text.startsWith('functions:'),
+  variables: ({ text }) => text.startsWith('variables:'),
+  gui: ({ text }) => text.startsWith('gui:')
 };
-
-function infer_type(kind: string) {
-  // BACKLOG: cannot infer the types of objects inside variables
-  if (kind === 'FirstLiteralToken') {
-    return 'number';
-  } else if (kind === 'StringLiteral') {
-    return 'string';
-  } else if (['TrueKeyword', 'FalseKeyword'].includes(kind)) {
-    return 'boolean';
-  } else if (kind === 'ObjectLiteralExpression') {
-    return 'object';
-  }
-
-  return 'undefined';
-}
-
-export function generate_types(code: string, assets_array: Array<FileEntry> = []) {
-  try {
-    const ast = generate_ast(code);
-    const prop_assignments = ast.c[0].c[0].c[2].c;
-    const event_functions = prop_assignments.filter(filters.events)[0].c[1].c;
-    const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
-
-    let events = '';
-    let variables = '';
-    let agent_states = '';
-    let user_functions_and_parameters = '';
-    let event_types: { [key: string]: string } = {};
-
-    for (let assignment of event_functions) {
-      let identifier = assignment.c[0].text;
-      let parameters = [];
-      let tuple_type = '[]';
-
-      events += `| '${identifier}'`;
-
-      // BACKLOG: also add regular function declaration
-      if (assignment.c[1].kind == 'ArrowFunction') {
-        parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
-      } else {
-        parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
-      }
-
-      if (parameters.length == 2) {
-        tuple_type = parameters[1].c[1].text;
-      }
-
-      event_types[identifier] = tuple_type;
-    }
-
-    for (let [key, val] of Object.entries(event_types)) {
-      user_functions_and_parameters += `| ["${key}", ${val}]`;
-    }
-
-    let assets = {
-      agents: `'ERROR: no assets found'`,
-      backgrounds: `'ERROR: no assets found'`
-    };
-
-    let variables_interface = '';
-
-    for (let assignment of variable_assignments) {
-      console.log(assignment.c[1]);
-      variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
-    }
-
-    // TODO: agent_states
-    // for (let key of Object.keys(game_data?.agents?.player?.states || {})) {
-    //   if (key === 'default') continue;
-    //   agent_states += `| '${key}'`;
-    // }
-
-    if (assets_array.length) {
-      assets.agents = '';
-      assets.backgrounds = '';
-
-      for (let asset of assets_array) {
-        if (asset.children) {
-          assets[asset.name as keyof typeof assets] += retrieve_children_names(asset);
-          continue;
-        }
-
-        assets[asset.name as keyof typeof assets] += `| '${asset.name}'`;
-      }
-    }
-
-    assets.agents = assets.agents.replaceAll('agents/', '');
-    assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
-
-    return generate_boilerplate_types({
-      assets,
-      events,
-      variables,
-      agent_states,
-      user_functions_and_parameters
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
 
 export function focus_trap(node: HTMLElement, enabled: boolean) {
   const elemWhitelist =
@@ -465,8 +407,10 @@ export function focus_trap(node: HTMLElement, enabled: boolean) {
     return focusableElems
       .filter((elem) => elem.tabIndex >= 0)
       .sort((a, b) => {
-        if (a.tabIndex === 0 && b.tabIndex > 0) return 1; // Move 0 to end of array
-        else if (a.tabIndex > 0 && b.tabIndex === 0) return -1; // Move 0 to end of array
+        if (a.tabIndex === 0 && b.tabIndex > 0)
+          return 1; // Move 0 to end of array
+        else if (a.tabIndex > 0 && b.tabIndex === 0)
+          return -1; // Move 0 to end of array
         else return a.tabIndex - b.tabIndex; // Sort non-zero values in ascending order
       });
   };
@@ -476,6 +420,7 @@ export function focus_trap(node: HTMLElement, enabled: boolean) {
   // Get element with smallest focusindex value, or first focusable element
   const getFocusTrapTarget = (elemFirst: HTMLElement) => {
     // Get elements with data-focusindex attribute
+    // @ts-expect-error
     const focusindexElements = [...node.querySelectorAll<FocusindexElement>('[data-focusindex]')];
     if (!focusindexElements || focusindexElements.length === 0) return elemFirst;
     // return smallest focusindex element or elemFirst
@@ -532,4 +477,29 @@ export function focus_trap(node: HTMLElement, enabled: boolean) {
       observer.disconnect();
     }
   };
+}
+
+export function replace_content_in_range(
+  str: string,
+  start_marker: string,
+  end_marker: string,
+  new_content: string
+) {
+  const startIdx = str.indexOf(start_marker);
+  const endIdx = str.indexOf(end_marker);
+
+  if (startIdx === -1 || endIdx === -1) {
+    return str; // Markers not found, return the original string
+  }
+
+  // Calculate the range between the markers
+  const rangeStart = startIdx + start_marker.length;
+  const rangeEnd = endIdx;
+
+  // Replace the content in the range
+  return str.slice(0, rangeStart) + new_content + str.slice(rangeEnd);
+  // return str.replace(
+  //   new RegExp(`(${start_marker})(.*?)(${end_marker})`, 's'),
+  //   `$1${new_content}$3`
+  // );
 }

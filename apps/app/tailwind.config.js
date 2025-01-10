@@ -8,8 +8,11 @@ export default {
   ],
   theme: {
     extend: {
-      primary: colors.emerald,
-      secondary: colors.amber
+      colors: {
+        base: colors.zinc,
+        primary: colors.emerald,
+        secondary: colors.amber
+      }
     }
   },
   plugins: []

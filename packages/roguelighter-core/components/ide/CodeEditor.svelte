@@ -1,49 +1,71 @@
+<script module>
+  // interface Props {
+  //   project: RoguelighterProject;
+  //   view: View;
+  //   unfocus_from_code_editor?: Function;
+  //   save_file: Function;
+  //   on_content_changed?: Function;
+  //   process_and_update?: (
+  //     bg_entries: Array<EntryObject>,
+  //     agents_entries: Array<EntryObject>
+  //   ) => void;
+  //   predefined_entries?: {
+  //     agents: Array<EntryObject>;
+  //     bg: Array<EntryObject>;
+  //   };
+  //   initial_code_replacer_arr?: Array<[code_to_be_replaced: string, new_value: string]>;
+  // }
+</script>
+
 <script lang="ts">
-  // BACKLOG: save folding information on code
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor';
-  // import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+  // @ts-expect-error
   import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-  import twWorker from 'monaco-tailwindcss/tailwindcss.worker?worker';
   // @ts-expect-error
   import { editorBackground } from 'monaco-editor/esm/vs/platform/theme/common/colorRegistry';
-  import { configureMonacoTailwindcss, tailwindcssData } from 'monaco-tailwindcss';
-  import { debounce, filters, generate_ast, generate_types, includes_any } from '../../utils';
-  import { watch } from 'tauri-plugin-fs-watch-api';
-  import { join, documentDir } from '@tauri-apps/api/path';
-  import { type FileEntry, readDir } from '@tauri-apps/api/fs';
-  import {
-    DEFAULT_DIR,
-    INTERNAL_EVENTS,
-    INTERNAL_GUI,
-    INTERNAL_TEXTS,
-    variables_regex
-  } from '../../constants';
-  import { current_project_name } from '../../store';
-  import type { View } from '../../types/engine';
-  import { formatDiagnostic } from 'typescript';
-  const dispatch = createEventDispatcher();
+  import { debounce, filters, includes_any, noop } from '../../utils';
+  import { TEMPLATE_LOGIC, variables_regex, DEFAULT_GUI_TYPE } from '../../constants';
+  import type { EntryObject } from '../../types/engine';
+  import ts from 'typescript';
+  import { generate_boilerplate_types } from '../../generate_boilerplate_types';
+  import { SvelteMap } from 'svelte/reactivity';
 
-  export let code: string;
-  export let view: View;
-  let editorElement: HTMLDivElement;
+  let {
+    project = $bindable(),
+    view = $bindable(),
+    predefined_entries,
+    unfocus_from_code_editor = noop,
+    save_file,
+    initial_code_replacer_arr = [],
+    on_content_changed = noop
+  }: Props = $props();
+  let editor_element: HTMLDivElement | undefined = $state();
   let editor: monaco.editor.IStandaloneCodeEditor;
   let model: monaco.editor.ITextModel;
-  let cached_entries: Array<FileEntry> = [];
-  let filePath = '';
+  let agents_entries: Array<EntryObject> = predefined_entries?.agents || [];
+  let bg_entries: Array<EntryObject> = predefined_entries?.bg || [];
+  let is_invalid_code = $state(false);
 
   export function set_code(new_code: string) {
-    code = new_code;
-    editor.setValue(code);
+    project.code = new_code;
+    editor.setValue(project.code);
   }
 
   export async function format_document() {
-    console.log('triggering');
     editor.trigger('anyString', 'editor.action.formatDocument', '');
-    console.log('triggered');
   }
 
-  async function load_code(code: string) {
+  export function process_and_update(
+    _bg_entries: Array<EntryObject>,
+    _agents_entries: Array<EntryObject>
+  ) {
+    bg_entries = _bg_entries;
+    agents_entries = _agents_entries;
+    update_types();
+  }
+
+  function load_code(code: string) {
     model = monaco.editor.createModel(code, 'typescript');
     monaco.editor.defineTheme('default', {
       base: 'vs-dark',
@@ -82,25 +104,177 @@
     });
     monaco.editor.setTheme('default');
     editor.setModel(model);
-
-    const entries = await readDir(filePath, { recursive: true });
-    cached_entries = entries;
     model.setValue(code);
-    update_types();
+  }
 
-    await watch(
-      filePath,
-      async () => {
-        const entries = await readDir(filePath, { recursive: true });
-        cached_entries = entries;
-        update_types();
+  function infer_type(kind: string) {
+    if (kind === 'FirstLiteralToken') {
+      return 'number';
+    } else if (kind === 'StringLiteral') {
+      return 'string';
+    } else if (['TrueKeyword', 'FalseKeyword'].includes(kind)) {
+      return 'boolean';
+    } else if (kind === 'ObjectLiteralExpression') {
+      return 'object';
+    } else if (kind === 'NullKeyword') {
+      return 'null';
+    } else if (kind === 'UndefinedKeyword') {
+      return 'undefined';
+    } else if (kind === 'FunctionExpression' || kind === 'ArrowFunction') {
+      return 'ComputedVariable';
+    }
+
+    return 'unknown';
+  }
+
+  function update_types() {
+    const models = monaco.editor.getModels();
+    let content_id = '';
+
+    for (let model of models) {
+      const value = model.getValue();
+      if (!value) continue;
+      if (value.includes('type Easing =')) {
+        model.setValue(generate_types(editor.getValue(), [...agents_entries, ...bg_entries]) || '');
+      } else {
+        content_id = model.id;
+      }
+    }
+  }
+
+  export function generate_types(code: string, cached_entries: Array<EntryObject> = []) {
+    try {
+      const ast = generate_ast(code);
+      const prop_assignments = ast.c[0].c[0].c[2].c;
+      const function_declarations = prop_assignments.filter(filters.functions)[0].c[1].c;
+      const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
+      const gui_assignments = prop_assignments.filter(filters.gui)[0].c[1].c;
+
+      let gui_keys = [];
+
+      for (let assignment of gui_assignments) {
+        gui_keys.push(assignment.text.split(':')[0]);
+      }
+
+      let gui_interface = ``;
+
+      for (let key of gui_keys) {
+        if (TEMPLATE_LOGIC.includes(key)) continue;
+        gui_interface += `\t${key}?: GUI_Element;\n`;
+      }
+
+      for (let template_logic of TEMPLATE_LOGIC) {
+        gui_interface += `\t${template_logic}?: { [name in keyof Variables]?: GUI_Element; };\n`;
+      }
+
+      if (!gui_interface.length) {
+        gui_interface = DEFAULT_GUI_TYPE;
+      }
+
+      let handlers = '';
+      let variables = '';
+      let handler_types: { [key: string]: string } = {};
+
+      for (let assignment of function_declarations) {
+        let identifier = assignment.c[0].text;
+
+        if (identifier == 'window') continue;
+
+        let parameters = [];
+
+        handlers += `| '${identifier}'`;
+
+        if (!assignment.c[1]) continue;
+
+        if (assignment.c[1].kind == 'ArrowFunction') {
+          parameters = assignment.c[1].c.filter(({ kind }) => kind == 'Parameter');
+        } else {
+          parameters = assignment.c.filter(({ kind }) => kind == 'Parameter');
+        }
+
+        handler_types[identifier] = '';
+
+        for (let p of parameters) {
+          handler_types[identifier] += p.text + ', ';
+        }
+      }
+
+      let assets = {
+        agents: `'ERROR: no assets found'`,
+        backgrounds: `'ERROR: no assets found'`
+      };
+
+      let variables_map = new SvelteMap();
+
+      for (let assignment of variable_assignments) {
+        if (!assignment.c[1]) continue;
+        variables += `${assignment.c[0].text}: ${infer_type(assignment.c[1].kind)};\n`;
+        variables_map.set(assignment.c[0].text, [
+          assignment.c[1].text,
+          infer_type(assignment.c[1].kind)
+        ]);
+      }
+
+      if (cached_entries.length) {
+        assets.agents = '';
+        assets.backgrounds = '';
+
+        for (let { type, name } of cached_entries) {
+          assets[type] += `| '${name}'`;
+        }
+      }
+
+      assets.agents = assets.agents.replaceAll('agents/', '');
+      assets.backgrounds = assets.backgrounds.replaceAll('backgrounds/', '');
+
+      const generated_type = generate_boilerplate_types({
+        assets,
+        handlers,
+        variables,
+        // @ts-expect-error
+        variables_map,
+        handler_types,
+        gui_interface
+      });
+
+      is_invalid_code = false;
+
+      return generated_type;
+    } catch (e) {
+      is_invalid_code = true;
+    }
+  }
+
+  function ast_to_obj(node: ts.Node): any {
+    const result: any = {
+      kind: ts.SyntaxKind[node.kind],
+      text: node.getText(),
+      c: []
+    };
+
+    ts.forEachChild(node, (child) => {
+      result.c.push(ast_to_obj(child));
+    });
+
+    return result;
+  }
+
+  function generate_ast(code: string) {
+    const ast = ts.createSourceFile(
+      'code.ts',
+      code,
+      {
+        languageVersion: ts.ScriptTarget.Latest
       },
-      { recursive: true }
+      true,
+      ts.ScriptKind.TS
     );
+
+    return ast_to_obj(ast);
   }
 
   function validate(model: monaco.editor.ITextModel) {
-    const ast = generate_ast(code);
+    const ast = generate_ast(project.code);
     const prop_assignments = ast.c[0].c[0].c[2].c;
     const variable_assignments = prop_assignments.filter(filters.variables)[0].c[1].c;
     let markers = [];
@@ -119,18 +293,11 @@
       };
       const content = model.getValueInRange(range).trim();
 
-      if (
-        content[0] == '$' &&
-        !includes_any(content, [...INTERNAL_EVENTS, ...INTERNAL_TEXTS, ...INTERNAL_GUI])
-      ) {
-        markers.push({
-          message: '$ prefix is reserved and cannot be used for custom property names.',
-          severity: monaco.MarkerSeverity.Error,
-          startLineNumber: range.startLineNumber,
-          startColumn: range.startColumn,
-          endLineNumber: range.endLineNumber,
-          endColumn: range.endColumn
-        });
+      let starts_with_statements = false;
+
+      for (let str of TEMPLATE_LOGIC) {
+        starts_with_statements = content.startsWith(str);
+        if (starts_with_statements) break;
       }
 
       const variables_matches = content.match(variables_regex);
@@ -138,16 +305,45 @@
       if (variables_matches) {
         for (let match of variables_matches) {
           const startColumn = content.indexOf(match);
-          const variable_name = match.replace('$var(', '').replace(')', '');
+          const variable_name = match.replace('{', '').replace('}', '');
 
-          if (!variable_keys.includes(variable_name)) {
+          let message = '';
+
+          if (variable_name == '') {
+            message = 'Expecting variable name inside curly brackets.';
+          } else if (
+            includes_any(variable_name, [
+              ' ',
+              '+',
+              '-',
+              '*',
+              '/',
+              '%',
+              '&',
+              '|',
+              '?',
+              '!',
+              '>',
+              '<',
+              '^',
+              '[',
+              ']',
+              '{',
+              '}'
+            ])
+          ) {
+          } else if (!variable_keys.includes(variable_name)) {
+            message = `Variable "${variable_name}" does not exist.`;
+          }
+
+          if (message) {
             markers.push({
-              message: `Variable "${variable_name}" does not exist.`,
-              severity: monaco.MarkerSeverity.Warning,
+              message,
+              severity: monaco.MarkerSeverity.Error,
               startLineNumber: range.startLineNumber,
-              startColumn: startColumn + 2,
+              startColumn: content.indexOf(variable_name),
               endLineNumber: range.endLineNumber,
-              endColumn: content.length + 2
+              endColumn: range.endColumn
             });
           }
         }
@@ -229,12 +425,12 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            /^(?:game_data|\tsettings|\tcollisions|\tagents|\tvariables|\tevents|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
+            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\tfunctions|\tstep|\twindow|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],
           [
-            /\b(if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)\b/g,
+            /(^|[^a-zA-Z0-9_])(\$if_\w*|\$for_\w*|if|for|switch|case|return|continue|break|try|catch|else|else\sif|do|while|finally|with|yield|of|throw)(?=$|[^a-zA-Z0-9_])/g,
             'kwClass'
           ],
           ...keys
@@ -268,33 +464,7 @@
     }
   }
 
-  onMount(async () => {
-    create_custom_tokenizer();
-
-    const documentDirPath = await documentDir();
-    filePath = await join(documentDirPath, `${DEFAULT_DIR}/${$current_project_name}/assets`);
-
-    self.MonacoEnvironment = {
-      getWorker(moduleID, label) {
-        // if (label == 'tailwindcss') {
-        //   return new twWorker();
-        // }
-
-        return new tsWorker();
-        // console.log(moduleID, label);
-        // switch (label) {
-        //   case 'typescript':
-        //     console.log('typescript');
-        //     return new tsWorker();
-        //   case 'tailwindcss':
-        //     console.log('tailwindcss');
-        //     return new twWorker();
-        //   default:
-        //     return new editorWorker();
-        // }
-      }
-    };
-
+  function set_language_settings() {
     monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 
     // monaco.languages.css.cssDefaults.setOptions({
@@ -310,12 +480,15 @@
     // compiler options
     monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true
+      allowNonTsExtensions: true,
+      strict: true
     });
 
-    monaco.editor.createModel(generate_types(code) || '', 'typescript');
+    monaco.editor.createModel(generate_types(project.code) || '', 'typescript');
+  }
 
-    editor = monaco.editor.create(editorElement, {
+  function set_editor_element_settings() {
+    editor = monaco.editor.create(editor_element as HTMLDivElement, {
       automaticLayout: true,
       theme: 'vs-dark',
       tabSize: 2,
@@ -326,14 +499,15 @@
 
     editor.onDidChangeModelContent(
       debounce(() => {
+        on_content_changed();
         update_types();
         try {
           validate(model);
         } catch (e) {
-          console.log(e);
+          is_invalid_code = true;
         }
-        code = editor.getValue();
-        dispatch('change');
+        project.code = editor.getValue();
+        save_file();
       }, 200)
     );
     editor.onKeyUp((e) => {
@@ -346,39 +520,69 @@
       }
     });
     editor.onKeyDown((e) => {
-      if (view == 'game') {
+      if (view != 'code') {
         e.preventDefault();
         return;
       }
-      if (e.code === 'Escape') {
-        dispatch('unfocus');
+      if (e.code === 'Escape' && e.shiftKey) {
+        e.preventDefault();
+        unfocus_from_code_editor();
       }
     });
+  }
 
-    await load_code(code);
-
-    format_document();
-  });
-
-  onDestroy(() => {
+  function dispose() {
     monaco?.editor.getModels().forEach((model) => model.dispose());
     editor?.dispose();
+  }
+
+  export function restart_ide() {
+    dispose();
+    set_language_settings();
+    set_editor_element_settings();
+    load_code(project.code);
+    format_document();
+  }
+
+  onMount(async () => {
+    create_custom_tokenizer();
+
+    self.MonacoEnvironment = {
+      getWorker(moduleID, label) {
+        if (label == 'typescript' || label == 'editorWorkerService') {
+          return new tsWorker();
+        }
+      }
+    };
+
+    for (let [to_be_replaced, new_code] of initial_code_replacer_arr) {
+      project.code.replace(to_be_replaced, new_code);
+    }
+
+    set_language_settings();
+    set_editor_element_settings();
+    load_code(project.code);
+    setTimeout(() => {
+      format_document();
+    }, 100);
   });
 
-  function update_types() {
-    const models = monaco.editor.getModels();
-    let content_id = '';
-
-    for (let model of models) {
-      const value = model.getValue();
-      if (!value) continue;
-      if (value.includes('type Easing =')) {
-        model.setValue(generate_types(editor.getValue(), cached_entries) || '');
-      } else {
-        content_id = model.id;
-      }
-    }
-  }
+  onDestroy(dispose);
 </script>
 
-<div class="h-full" bind:this={editorElement} />
+<div class="h-full" bind:this={editor_element}></div>
+<div
+  class:is_invalid_code
+  class="absolute bottom-0 bg-black/50 z-50 isolate w-full h-fit flex flex-row items-end justify-between px-1"
+>
+  <span class="text-base-400 text-xs text-center pb-1.5 pl-1.5">
+    {project.name}
+  </span>
+  <button onclick={restart_ide} class="text-base-300 text-sm py-1">restart</button>
+</div>
+
+<style>
+  .is_invalid_code {
+    @apply bg-red-500/50;
+  }
+</style>

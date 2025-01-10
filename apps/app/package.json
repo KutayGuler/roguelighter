@@ -2,8 +2,8 @@
   "name": "app",
   "version": "0.1.2",
   "scripts": {
-    "start": "vite dev",
-    "dev": "tauri dev && typegen",
+    "start": "vite dev --force",
+    "dev": "tauri dev",
     "typegen": "cd ../.. && node generate_types.js",
     "build": "vite build",
     "package": "svelte-kit sync && svelte-package && publint",
@@ -36,34 +36,36 @@
   ],
   "license": "MIT",
   "homepage": "roguelighter.vercel.app",
-  "peerDependencies": {
-    "svelte": "^4.0.5"
-  },
   "devDependencies": {
-    "@shikijs/monaco": "^1.10.3",
-    "@sveltejs/adapter-auto": "^2.0.0",
-    "@sveltejs/adapter-static": "^2.0.3",
-    "@sveltejs/kit": "^2.4.0",
+    "@sveltejs/adapter-static": "^3.0.5",
+    "@sveltejs/kit": "^2.15.2",
     "@sveltejs/package": "^2.2.2",
-    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@types/three": "^0.157.2",
     "autoprefixer": "^10.4.15",
+    "clsx": "^2.1.1",
     "postcss": "^8.4.29",
     "publint": "^0.2.5",
-    "svelte": "^4.0.5",
-    "svelte-check": "^3.4.3",
-    "tailwindcss": "^3.3.3",
+    "svelte": "^5.14.1",
+    "svelte-check": "^4.0.5",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss": "^3.4.15",
     "tslib": "^2.4.1",
-    "typedoc": "^0.25.4",
-    "typescript": "^5.2.2",
-    "vite": "^5.3.5"
+    "typedoc": "^0.26.11",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.0"
   },
   "type": "module",
   "dependencies": {
+    "@tauri-apps/api": "^2.0.3",
+    "@tauri-apps/cli": "^2.0.4",
+    "@tauri-apps/plugin-fs": "^2.0.1",
+    "@tauri-apps/plugin-process": "^2.0.0",
+    "@tauri-apps/plugin-shell": "^2.0.0",
     "json5": "^2.2.3",
     "monaco-tailwindcss": "^0.6.1",
     "roguelighter-core": "0.1.2",
-    "tauri-plugin-fs-watch-api": "github:tauri-apps/tauri-plugin-fs-watch#v1",
+    "svelte-writable-derived": "^3.1.1",
     "tippy.js": "^6.3.7"
   }
 }

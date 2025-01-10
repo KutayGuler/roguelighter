@@ -1,0 +1,27 @@
+{
+  "code": "setup = {\n  settings: {},\n  agents: {\n    player: {\n      states: {\n        idle: {\n          frame_count: 4\n\n        }\n      }\n    }\n  },\n  variables: {\n  },\n  functions: {},\n  step: (delta, $player) => {\n  },\n  window: {},\n  gui: {},\n}\n",
+  "scenes": [
+    [
+      0,
+      {
+        "name": "home",
+        "backgrounds": [
+          [1, "floor_1"],
+          [2, "floor_1"],
+          [0, "floor_1"],
+          [10, "floor_1"],
+          [11, "floor_1"],
+          [12, "floor_1"],
+          [20, "floor_1"],
+          [21, "floor_1"],
+          [22, "floor_1"]
+        ],
+        "agents": [[11, "player"]],
+        "width": 10,
+        "height": 10
+      }
+    ]
+  ],
+  "starting_scene_id": 0,
+  "scene_index": 0
+}

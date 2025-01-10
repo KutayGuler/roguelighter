@@ -1,58 +1,76 @@
+<script module>
+  interface Props {
+    project: RoguelighterProject;
+    current_scene_id?: number;
+    bg_asset_urls: BackgroundAssetUrls;
+    agent_asset_urls: AgentAssetUrls;
+    on_exit: Function;
+    DEV?: boolean;
+    exit_dev?: Function;
+    on_error: OnError;
+  }
+</script>
+
 <script lang="ts">
-  // TODO LATER: introduce helpers
-  // TODO LATER: introduce constants
   import { Canvas } from '@threlte/core';
   import GuiElement from './GuiElement.svelte';
   import Scene from './Scene.svelte';
   import type {
-    WritableProps,
-    PlayerPositions,
-    KeyboardEventCode,
-    GameData
+    Setup,
+    GUI_Element,
+    GUI,
+    Functions,
+    WindowHandlers as TWindowHandlers
   } from '../../types/game';
-  import { tweened, type Tweened } from 'svelte/motion';
-  import * as easings from 'svelte/easing';
-  import { DEFAULT_DURATION, DEFAULT_EASING } from '../../constants';
-  import { exit } from '@tauri-apps/api/process';
-  import { code_string_to_json, pos_to_xy } from '../../utils';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { code_string_to_json, noop, pos_to_xy } from '../../utils';
   import type {
     AgentAssetUrls,
     BackgroundAssetUrls,
+    OnError,
     PlayableScene,
     RoguelighterProject
   } from '../../types/engine';
-  const dispatch = createEventDispatcher();
+  import { DEFAULT_SCENE_ID, TEMPLATE_FOR_LOOP, TEMPLATE_IF_STATEMENT } from '../../constants';
+  import { SvelteSet } from 'svelte/reactivity';
+  import WindowHandlers from './WindowHandlers.svelte';
+  import * as THREE from 'three';
 
-  // BACKLOG: try catch for user defined functions
-  // BACKLOG: introduce objects
-  // BACKLOG: introduce agents[agent_name].props
-  // BACKLOG: dev_only scenes
-  // BACKLOG: portals can only go through their realms (dev_only, game_only)
+  let {
+    project,
+    bg_asset_urls,
+    agent_asset_urls,
+    DEV = false,
+    on_exit,
+    on_error,
+    current_scene_id = DEFAULT_SCENE_ID
+  }: Props = $props();
 
-  export let project: RoguelighterProject;
-  export let current_scene_id: number;
-  export let bg_asset_urls: BackgroundAssetUrls;
-  export let agent_asset_urls: AgentAssetUrls;
-  export let DEV = false;
+  let {
+    variables: variables_obj,
+    agents,
+    settings,
+    functions: functions_obj,
+    window: window_handlers_obj,
+    step: step_fn_str,
+    gui,
+    __dev_only
+  } = $state(code_string_to_json(project.code) as Setup);
 
-  let _ = code_string_to_json(project.code) as GameData;
-  let { variables, agents, settings, events, gui, keybindings, collisions, __dev_only } = _;
-
-  for (let [key, val] of Object.entries(events)) {
-    if (typeof val === 'string') {
-      const fn_str = val;
-      const fn = new Function('return ' + fn_str)();
-      events[key] = fn;
-    }
-  }
-
-  const DURATION = settings.duration || DEFAULT_DURATION;
-  const EASING = settings.easing || DEFAULT_EASING;
+  let step = new Function('return ' + step_fn_str)();
+  let functions: Functions = $state({});
+  let window_handlers: TWindowHandlers = $state({});
+  let variables = $state({});
+  let computed_variable_names = $state(new SvelteSet());
 
   let unmodified_scenes = structuredClone(project.scenes);
-  let scene: PlayableScene;
+  let scene: PlayableScene = $state() as PlayableScene;
   let scenes = new Map<number, PlayableScene>();
+  let scene_just_changed = $state(false);
+  let player_pos = $state(0);
+
+  const PROCESS = {
+    exit: on_exit
+  };
 
   function transform_scenes() {
     for (let [id, scene] of unmodified_scenes) {
@@ -61,12 +79,18 @@
 
       for (let [pos, name] of scene.agents.entries()) {
         let [x, y] = pos_to_xy(pos, scene.width);
+        const agent = agents[name];
 
         transformed_scene.agents.set(pos, {
+          // @ts-expect-error
           name,
           x,
           y,
-          states: agents[name].states,
+          states: agent.states,
+          oncollision:
+            'oncollision' in agent ? new Function('return ' + agent.oncollision)() : noop,
+          onseparation:
+            'onseparation' in agent ? new Function('return ' + agent.onseparation)() : noop,
           state: 'default'
         });
 
@@ -85,134 +109,104 @@
     scene = scenes.get(current_scene_id) as PlayableScene;
   }
 
-  let player_pos = 0;
-  let game_paused = false;
+  function instantiate() {
+    for (let [key, fn_str] of Object.entries(window_handlers_obj)) {
+      // @ts-expect-error
+      window_handlers[key] = new Function('return ' + fn_str)();
+    }
 
-  const f = {
-    $open_pause_menu() {
-      window.dispatchEvent(new Event('paused'));
-      variables.$pause_menu = true;
-      game_paused = true;
-    },
-    $close_pause_menu() {
-      window.dispatchEvent(new Event('unpaused'));
-      variables.$pause_menu = false;
-      game_paused = false;
-    },
-    $toggle_pause_menu() {
-      if (game_paused) {
-        f.$close_pause_menu();
+    for (let [key, fn_str] of Object.entries(functions_obj)) {
+      functions[key] = new Function('return ' + fn_str)();
+    }
+
+    for (let [variable_name, value] of Object.entries(variables_obj)) {
+      if (typeof value == 'string' && value.startsWith('function')) {
+        const fn = new Function('return ' + value)();
+        // @ts-expect-error
+        variables[variable_name] = fn;
+        computed_variable_names.add(variable_name);
       } else {
-        f.$open_pause_menu();
-      }
-    },
-    $exit: async () => {
-      if (DEV) {
-        dispatch('exit');
-      } else {
-        await exit();
+        // @ts-expect-error
+        variables[variable_name] = value;
       }
     }
-  } as const;
 
-  let special_keys: Array<KeyboardEventCode> = [];
-
-  for (let [key, event_name] of Object.entries(keybindings)) {
-    if ((event_name as string)[0] == '$') {
-      special_keys.push(key as KeyboardEventCode);
-    }
+    let internal_variables = {};
+    Object.assign(variables_obj, internal_variables);
+    transform_scenes();
   }
 
-  let internal_variables = { $pause_menu: false };
-  Object.assign(variables, internal_variables);
-  Object.assign(events, f);
-
-  // for (let [key, fn] of Object.entries(events)) {
-  //   if (key[0] == '$') {
-  //     _.e[key] = events[key];
-  //     continue;
-  //   }
-
-  //   // binding keys to events
-  //   _.e[key] = async () => {
-  //     const [str, _args] = fn;
-  //     const split = str.split(' ');
-  //     const type = split[0];
-  //     split.shift();
-  //     // @ts-expect-error
-  //     await f[type](...split, _args);
-  //   };
-  // }
-
-  function handle(kbd_event: KeyboardEvent) {
-    let event_code = kbd_event.code;
-
-    if (kbd_event.ctrlKey) {
-      event_code = 'Control_' + kbd_event.code;
-    } else if (kbd_event.shiftKey) {
-      event_code = 'Shift_' + kbd_event.code;
-    } else if (kbd_event.altKey) {
-      event_code = 'Alt_' + kbd_event.code;
-    }
-
-    let event_name = keybindings[event_code as KeyboardEventCode];
-
-    if (DEV && __dev_only?.keybindings && !event_name) {
-      event_name = __dev_only?.keybindings[event_code as KeyboardEventCode];
-    }
-
-    if (!event_name || game_paused) return;
-
-    if (Array.isArray(event_name)) {
-      events[event_name[0]](_, event_name[1]);
+  function get_variable_value(variable_name: string) {
+    if (computed_variable_names.has(variable_name)) {
+      // @ts-expect-error
+      return variables[variable_name](variables, functions, PROCESS);
     } else {
-      events[event_name](_);
+      // @ts-expect-error
+      return variables[variable_name];
     }
-
-    variables = variables;
   }
 
-  let scene_just_changed = false;
-
-  function change_scene(e: CustomEvent) {
-    const { to_scene_id, to_position } = e.detail;
-    let player = scene.agents.get(player_pos);
-    if (!player) return;
-
-    scene = scenes.get(to_scene_id) as PlayableScene;
-    player_pos = to_position;
-    let [x, y] = pos_to_xy(player_pos, scene.width);
-    Object.assign(player, {
-      name: 'player',
-      x,
-      y
-    });
-    scene.agents.set(to_position, player);
-    scene_just_changed = true;
-  }
-
-  transform_scenes();
+  instantiate();
 </script>
 
-<svelte:window on:keydown={handle} />
+<WindowHandlers
+  {window_handlers}
+  bind:variables
+  bind:functions
+  {PROCESS}
+  on_window_handler_failed={(e: any) => on_error('WINDOW_HANDLER_FAILED', e)}
+></WindowHandlers>
 
-<main class="flex items-center justify-center w-full h-full bg-black">
-  <section class="relative flex flex-col w-full h-full">
-    {#if scene}
-      <Canvas>
-        <Scene
-          on:change_scene={change_scene}
-          {player_pos}
-          {settings}
-          {scene}
-          {scene_just_changed}
-          {bg_asset_urls}
-          {agent_asset_urls}
-        />
-      </Canvas>
-    {/if}
-    {#each Object.entries(gui) as [name, guiElement]}
-      <GuiElement {events} {name} {variables} {guiElement} />
-    {/each}
-  </section>
-</main>
+{#if scene}
+  <main class="relative w-full h-full" style:background={settings.scene?.background || 'black'}>
+    <Canvas colorSpace="srgb-linear" toneMapping={THREE.NoToneMapping}>
+      <Scene
+        {step}
+        {player_pos}
+        {settings}
+        {scene}
+        {scene_just_changed}
+        {bg_asset_urls}
+        {agent_asset_urls}
+        bind:variables
+        bind:functions
+        {PROCESS}
+        {on_error}
+      />
+    </Canvas>
+
+    {#snippet children_handler(nested_obj: GUI | GUI_Element)}
+      {#each Object.entries(nested_obj) as [name, element_or_if_or_for]}
+        {#if [TEMPLATE_IF_STATEMENT, TEMPLATE_FOR_LOOP].includes(name)}
+          {@const is_in_if_block = name == TEMPLATE_IF_STATEMENT}
+          {@const is_in_for_block = name == TEMPLATE_FOR_LOOP}
+          {#each Object.entries(element_or_if_or_for) as [name, gui_element]}
+            <GuiElement
+              bind:variables
+              bind:functions
+              {PROCESS}
+              {is_in_if_block}
+              {is_in_for_block}
+              {get_variable_value}
+              {children_handler}
+              {name}
+              {gui_element}
+            />
+          {/each}
+        {:else}
+          <GuiElement
+            bind:variables
+            bind:functions
+            {PROCESS}
+            gui_element={element_or_if_or_for}
+            {get_variable_value}
+            {children_handler}
+            {name}
+          />
+        {/if}
+      {/each}
+    {/snippet}
+
+    {@render children_handler(gui)}
+  </main>
+{/if}

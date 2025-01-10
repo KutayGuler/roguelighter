@@ -1,0 +1,86 @@
+{
+  "title": "GUI - $for syntax",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [],
+  "bg_asset_urls": [],
+  "overrides": {
+    "variables": {
+      "fruits": ["🍇", "🍉", "🍌"],
+      "fruits_count": "'CV_fruits'",
+      "too_many_fruits": "'CV_too_many'"
+    },
+    "gui": {
+      "text_element": {
+        "text": "here are {fruits_count} fruits: {fruits}",
+        "classes": {
+          "default": ["absolute", "text-3xl", "top-4", "left-4"]
+        }
+      },
+      "minus_button": {
+        "type": "button",
+        "text": "-",
+        "classes": {
+          "default": [
+            "bg-red-500",
+            "py-2",
+            "px-4",
+            "rounded",
+            "absolute",
+            "text-2xl",
+            "bottom-4",
+            "left-4"
+          ],
+          "modifiers": {
+            "hover": ["bg-red-700"]
+          }
+        },
+        "onclick": "'EH_btn_dec'"
+      },
+      "plus_button": {
+        "type": "button",
+        "text": "+",
+        "classes": {
+          "default": [
+            "bg-green-500",
+            "py-2",
+            "px-4",
+            "rounded",
+            "absolute",
+            "text-2xl",
+            "bottom-4",
+            "left-16"
+          ],
+          "modifiers": {
+            "hover": ["bg-green-700"]
+          }
+        },
+        "onclick": "'EH_btn'"
+      },
+      "$if": {
+        "too_many_fruits": {
+          "text": "You have too many fruits!",
+          "classes": {
+            "default": [
+              "bg-red-500",
+              "py-2",
+              "px-4",
+              "rounded",
+              "absolute",
+              "text-2xl",
+              "bottom-20",
+              "left-4"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "replacer": [
+    ["\"'CV_fruits'\"", "() => _.fruits.length"],
+    ["\"'CV_too_many'\"", "() => _.fruits.length > 5"],
+    ["\"'EH_btn'\"", "() => _.fruits.push(_.fruits[Math.floor(Math.random() * _.fruits.length)])"],
+    ["\"'EH_btn_dec'\"", "() => _.fruits.pop()"]
+  ]
+}

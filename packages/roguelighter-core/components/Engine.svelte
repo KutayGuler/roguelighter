@@ -1,54 +1,71 @@
 <script lang="ts">
+  import JSON5 from 'json5';
   import CodeEditor from './ide/CodeEditor.svelte';
   import SceneEditor from './editor/SceneEditor.svelte';
   import Game from './game/Game.svelte';
-  import Toast from './editor/Toast.svelte';
-  import { current_project_name, errors, notifications, parse_errors } from '../store';
   import {
-    debounce,
-    get_asset_urls,
-    get_tailwind_classes,
     code_string_to_json,
-    processClasses
+    generate_asset_urls,
+    process_entries_recursively,
+    extract_tailwind_classes
   } from '../utils';
-  import { DEFAULT_DIR, DEFAULT_EXPORT_DIR, MAPS, dir } from '../constants';
-  import { writeTextFile } from '@tauri-apps/api/fs';
-  import { join, documentDir } from '@tauri-apps/api/path';
-  import { Command } from '@tauri-apps/api/shell';
-  import Options from './Options.svelte';
-  import GuiEditor from './ide/GuiEditor.svelte';
-  import type { RoguelighterDataFile, RoguelighterProject, View } from '../types/engine';
-  import type { GameData } from '../types/game';
-  import { SvelteComponent } from 'svelte';
+  import { DEFAULT_SCENE_ID, EXPORT_DIR, MAPS, PROJECTS_DIR, baseDir } from '../constants';
+  import { exit } from '@tauri-apps/plugin-process';
+  import { readDir, watchImmediate, writeTextFile } from '@tauri-apps/plugin-fs';
+  import { join } from '@tauri-apps/api/path';
+  import { Command } from '@tauri-apps/plugin-shell';
+  import type { OnError, ParseErrorObject, RoguelighterProject } from '../types/engine';
+  import type { RoguelighterDataFile, View } from '../types/engine';
+  import type { Setup } from '../types/game';
+  import { onDestroy } from 'svelte';
 
-  // BACKLOG: vite includes error
-  // BACKLOG: sometimes editor styles not loading up
+  interface Props {
+    DEV?: boolean;
+    isWeb?: boolean;
+    project: RoguelighterProject;
+    document_path: string;
+    process_classes: Function;
+    exportCSS: Function;
+    on_error: OnError;
+  }
 
-  export let project: RoguelighterProject;
-  let options_open = false;
-  let current_scene_id = 0;
-  let view: View = 'code';
-  let previousView: View = 'scene';
-  let code_button: HTMLButtonElement;
-  let scene_button: HTMLButtonElement;
-  let agents: GameData['agents'];
-  let code_editor: any;
+  let {
+    project = $bindable(),
+    DEV = true,
+    isWeb = false,
+    document_path,
+    process_classes,
+    exportCSS,
+    on_error
+  }: Props = $props();
+  let current_scene_id = $state(DEFAULT_SCENE_ID);
+
+  let view: View = $state('code');
+  let previousView: View = $state('scene');
+  let code_button: HTMLButtonElement | undefined = $state();
+  let scene_button: HTMLButtonElement | undefined = $state();
+  // @ts-expect-error
+  let agents: Setup['agents'] = $state();
+  let code_editor: any = $state();
+  let initialized = $state(false);
+  let code_with_errors = $state('');
+  let error_line = $state(0);
+  let parse_errors: ParseErrorObject = $state({ code: '', json_string: '', error: '' });
+  let agents_file_path = '';
+  let bg_file_path = '';
+  let bg_entries, agents_entries;
 
   function switch_to_game() {
     let current_scene = project.scenes.get(current_scene_id);
+
     if (view == 'scene') {
       if (!current_scene) {
-        notifications.danger('No scene is selected, cannot start the game');
-        return;
-      }
-
-      if (![...current_scene.agents.values()].includes('player')) {
-        notifications.danger('Player is not in the scene, cannot start the game');
+        on_error('NO_SCENE_IS_SELECTED', '');
         return;
       }
     }
 
-    view = 'game';
+    change_view('game');
   }
 
   function handle(e: KeyboardEvent) {
@@ -72,21 +89,10 @@
     }
   }
 
-  let bg_asset_urls = new Map<string, string>();
-  let agent_asset_urls = new Map<string, any>();
+  let bg_asset_urls = $state(new Map<string, string>());
+  let agent_asset_urls = $state(new Map<string, any>());
 
-  async function calc_asset_urls(parsed: GameData) {
-    try {
-      ({ backgrounds: bg_asset_urls, agents: agent_asset_urls } = await get_asset_urls(
-        $current_project_name,
-        parsed.agents
-      ));
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  function save_file() {
+  export function save_file(code?: string) {
     let scenes = structuredClone(project.scenes);
 
     for (let scene of scenes.values()) {
@@ -96,14 +102,20 @@
       }
     }
 
-    let obj: RoguelighterDataFile = { code: project.code, scenes: Array.from(scenes) };
-    let file_contents = JSON.stringify(obj);
+    let obj: RoguelighterDataFile = {
+      code: code || project.code,
+      scenes: Array.from(scenes),
+      starting_scene_id: project.starting_scene_id,
+      scene_index: project.scene_index
+    };
+    let file_contents = JSON5.stringify(obj);
 
-    writeTextFile(`${DEFAULT_DIR}\\${$current_project_name}\\data.json`, file_contents, { dir });
+    writeTextFile(`${PROJECTS_DIR}\\${project.name}\\data.json`, file_contents, {
+      baseDir
+    });
   }
 
   const commands: Array<string> = [
-    // BACKLOG:
     // # Create Roguelighter Exports/cache
     // # git clone --filter=blob:none --sparse https://github.com/roguelighter
     // # git sparse-checkout add apps/export-app
@@ -120,36 +132,41 @@
     // 'export'
   ];
 
+  async function copy_assets() {}
+
   async function export_game() {
-    const documents = await documentDir();
-    const project_path = await join(documents, `${DEFAULT_DIR}/${$current_project_name}`);
+    const project_path = await join(document_path, `${PROJECTS_DIR}/${project.name}`);
 
     const bat_name = 'export';
     const bat_content = `
 cd ../..
 
-if not exist "${DEFAULT_EXPORT_DIR}" (
-  mkdir "${DEFAULT_EXPORT_DIR}"
-  cd "${DEFAULT_EXPORT_DIR}"
-  git clone --filter=blob:none --sparse https://github.com/roguelighterengine/roguelighter cache
-  cd cache
-  git sparse-checkout add apps/export-app
-  git sparse-checkout add packages/roguelighter-core
-  npm i
-  cd apps/export-app
-
-  cd ${project_path}
-  del ${bat_name}.bat
-) else (
-  cd ${project_path}
-  del ${bat_name}.bat
+if not exist "${EXPORT_DIR}" (
+  mkdir "${EXPORT_DIR}"
 )
+
+cd "${EXPORT_DIR}"
+git clone --filter=blob:none --sparse https://github.com/roguelighterengine/roguelighter ${project.name}
+cd ${project.name}
+git sparse-checkout add apps/export-app
+git sparse-checkout add packages/roguelighter-core
+npm i
+cd apps/export-app
+npm i
+
+robocopy ${project_path}/assets %cd%/static \\e
+
+npm run build
+
+cd ${project_path}
+del ${bat_name}.bat
+
 `;
 
     await writeTextFile(project_path + '/' + bat_name + '.bat', bat_content);
 
     for (let command of commands) {
-      let c = new Command('cmd', ['/C', command], { cwd: project_path, encoding: 'utf-8' });
+      let c = Command.create('cmd', ['/C', command], { cwd: project_path, encoding: 'utf-8' });
       c.on('close', (data) => {
         console.log(`command finished with code ${data.code} and signal ${data.signal}`);
       });
@@ -160,28 +177,42 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
     }
   }
 
-  let initialized = false;
-
-  function recalculate() {
+  async function recalculate() {
     let parsed = code_string_to_json(project.code);
+    if (!parsed) throw new Error('Parsing result is undefined');
 
-    if (typeof parsed == 'object') {
-      processClasses(Array.from(get_tailwind_classes(parsed.gui).values()).join(' '));
-      calc_asset_urls(parsed);
-      agents = parsed.agents;
-      initialized = true;
+    if ((parsed as ParseErrorObject).error) {
+      parse_errors = parsed as ParseErrorObject;
+      code_with_errors = (parsed as ParseErrorObject).code;
+      error_line = parseInt(parse_errors.error?.split('at')[1]?.split(':')[0]) || 0;
+      return;
     }
+
+    const extracted_classes = extract_tailwind_classes(JSON5.stringify((parsed as Setup).gui));
+    // console.log(extracted_classes);
+    process_classes(extracted_classes);
+    // console.log(exportCSS());
+
+    [agent_asset_urls, bg_asset_urls] = await Promise.all([
+      generate_asset_urls(project.name, 'agents', document_path),
+      generate_asset_urls(project.name, 'backgrounds', document_path)
+    ]);
+    agents = (parsed as Setup).agents;
+    initialized = true;
   }
 
-  $: view, save_file(), recalculate();
+  function change_view(v: View) {
+    previousView = view;
+    view = v;
+    save_file();
+    recalculate();
+  }
 
   function highlight(pre: HTMLPreElement) {
     const lines = pre.textContent?.split('\n');
+    if (!lines || !parse_errors.error || !parse_errors.error.includes('at')) return;
 
-    if (!$parse_errors.error || !$parse_errors.error.includes('at')) return;
-    console.log($parse_errors.error);
-
-    let line_number = parseInt($parse_errors?.error?.split('at')[1].split(':')[0]) || 0;
+    let line_number = parseInt(parse_errors?.error?.split('at')[1].split(':')[0]) || 0;
 
     const line = lines[line_number - 1];
 
@@ -193,17 +224,60 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
       pre.innerHTML = text;
     }
   }
+
+  function unfocus_from_code_editor() {
+    code_button?.focus();
+  }
+
+  function unfocus_from_scene_editor() {
+    scene_button?.focus();
+  }
+
+  let unwatch: any;
+
+  (async () => {
+    if (!isWeb) {
+      agents_file_path = await join(
+        document_path as string,
+        `${PROJECTS_DIR}/${project.name}/assets/agents`
+      );
+      bg_file_path = await join(
+        document_path as string,
+        `${PROJECTS_DIR}/${project.name}/assets/backgrounds`
+      );
+    }
+
+    unwatch = await watchImmediate(
+      [bg_file_path, agents_file_path],
+      async () => {
+        if (code_editor) {
+          [bg_entries, agents_entries] = await Promise.all([
+            process_entries_recursively(bg_file_path, await readDir(bg_file_path), 'backgrounds'),
+            process_entries_recursively(agents_file_path, await readDir(agents_file_path), 'agents')
+          ]);
+
+          code_editor.process_and_update(bg_entries, agents_entries);
+        }
+      },
+      {
+        recursive: true
+      }
+    );
+  })();
+  onDestroy(() => unwatch());
+
+  recalculate();
 </script>
 
-<svelte:window on:keydown={handle} />
+<svelte:window onkeydown={handle} />
 
 {#if initialized}
   <main class="relative flex flex-col w-full h-full overflow-hidden select-none">
-    <Options bind:open={options_open}></Options>
     <nav
-      class="absolute top-0 z-40 bg-zinc-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-zinc-200"
+      class:opacity-50={view == 'game'}
+      class="absolute top-0 z-40 bg-base-800 w-full h-12 flex flex-row items-center justify-between p-2 px-4 text-base-200"
     >
-      <a href="/" class=""
+      <a aria-label="Home" href="/" class=""
         ><svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -216,7 +290,7 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
             stroke-linecap="round"
             stroke-linejoin="round"
             d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125
-           1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+            1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
           />
         </svg>
       </a>
@@ -225,110 +299,112 @@ if not exist "${DEFAULT_EXPORT_DIR}" (
           bind:this={code_button}
           class:btn-primary={view == 'code'}
           class="btn-outline"
-          on:click={() => {
+          onclick={() => {
             previousView = view;
-            view = 'code';
+            change_view('code');
           }}
           >Code
         </button>
-
-        <!-- <button
-          class:btn-primary={view == 'gui'}
-          class="btn-outline"
-          on:click={() => {
-            previousView = view;
-            view = 'gui';
-          }}
-          >GUI
-        </button> -->
         <button
           bind:this={scene_button}
           class:btn-primary={view == 'scene'}
           class="btn-outline"
-          on:click={() => {
-            previousView = view;
-            view = 'scene';
+          onclick={() => {
+            change_view('scene');
           }}>Scene</button
         >
-        <button
-          class:btn-primary={view == 'logs'}
-          class="btn-outline"
-          on:click={() => {
-            previousView = view;
-            view = 'logs';
-          }}
-          >Logs
-        </button>
       </div>
-      <button on:click={() => (options_open = true)}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="size-6"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-          />
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-          />
-        </svg>
-      </button>
+      <button>Export</button>
     </nav>
     {#if view == 'scene'}
       <SceneEditor
+        bind:agents
+        bind:project
         bind:bg_asset_urls
         bind:agent_asset_urls
         bind:current_scene_id
-        bind:project
-        bind:agents
-        on:change={debounce(save_file, 100)}
-        on:switch_view={switch_to_game}
-        on:unfocus={() => scene_button.focus()}
+        {save_file}
+        {switch_to_game}
+        {unfocus_from_scene_editor}
       />
     {:else if view == 'game'}
-      <Game
-        DEV
-        {bg_asset_urls}
-        {agent_asset_urls}
-        {current_scene_id}
-        {project}
-        on:exit={() => (view = 'scene')}
-      />
+      <svelte:boundary>
+        <Game
+          DEV
+          {project}
+          {bg_asset_urls}
+          {agent_asset_urls}
+          {current_scene_id}
+          {on_error}
+          on_exit={DEV ? () => change_view('scene') : exit}
+        />
+
+        {#snippet failed(error, reset)}
+          <div class="pl-4 pt-16">
+            <p>An error occured while running the game</p>
+            <pre class="text-xs">{error}</pre>
+            <button class="self-start btn-secondary !px-8 mt-4" onclick={reset}>Retry</button>
+          </div>
+        {/snippet}
+      </svelte:boundary>
     {/if}
     <div
       class="absolute top-12 left-0 h-screen w-screen {view == 'code' ? 'z-10' : '-z-10 hidden'}"
     >
-      <!-- <GuiEditor></GuiEditor> -->
       <CodeEditor
-        bind:this={code_editor}
         bind:view
-        bind:code={project.code}
-        on:unfocus={() => code_button.focus()}
-        on:change={save_file}
+        bind:project
+        bind:this={code_editor}
+        {unfocus_from_code_editor}
+        {save_file}
       ></CodeEditor>
     </div>
-    <Toast />
   </main>
 {:else}
-  <!-- BACKLOG: add button to go back -->
-  <main class="bg-zinc-700 h-full text-white p-4 flex flex-col gap-2">
-    <p>Engine has not been initialized.</p>
-    {#if $parse_errors.error}
-      <pre class="overflow-auto h-full w-full bg-zinc-800 rounded p-2" use:highlight>
-        {@html $parse_errors.json}
-      </pre>
-      <div class="inline-flex justify-between">
-        <p class="text-red-400">{$parse_errors.error}</p>
-        <a class="btn-outline" href="#error">Show error line </a>
+  <main class="bg-base-700 h-full text-white p-4 flex flex-col gap-2">
+    <p>Engine has failed no initialize.</p>
+    <a href="/" class="text-emerald-400 underline">Back to home</a>
+    {#if parse_errors.error}
+      {@const line_count = parse_errors.code.split('\n').length}
+      <div
+        class="relative overflow-y-auto overflow-x-hidden h-full w-full bg-base-800 rounded p-2 pl-12"
+      >
+        it do be like that
+        <!-- not working due to svelte parsing error -->
+        <!-- <pre
+          class="absolute top-4 left-12 bg-transparent z-[10] w-full"
+          contenteditable
+          use:highlight
+          bind:innerText={code_with_errors}></pre> -->
+        {#each { length: line_count }, i}
+          <div
+            id={i.toString()}
+            class:is_error_line={error_line == i}
+            class="z-[9] absolute left-2 text-sm mono text-base-500 w-full"
+            style="top: {i * 24 + 16}px;"
+          >
+            {i}
+          </div>
+        {/each}
       </div>
+
+      <div class="inline-flex justify-between">
+        <p class="text-red-400">{parse_errors.error}</p>
+        <a class="btn-outline" href="#{error_line}">Show error line </a>
+      </div>
+      <button
+        onclick={() => {
+          project.code = code_with_errors;
+          save_file();
+          recalculate();
+        }}>Save changes</button
+      >
     {/if}
   </main>
 {/if}
+
+<style>
+  .is_error_line {
+    @apply bg-red-400/50;
+  }
+</style>

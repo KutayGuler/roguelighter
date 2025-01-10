@@ -10,7 +10,7 @@
     "sourceMap": true,
     "strict": true,
     "incremental": true,
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
     "target": "ES2023"
   },
   "exclude": ["node_modules"]

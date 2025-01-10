@@ -1,0 +1,87 @@
+{
+  "title": "Agents - Collision",
+  "project": {
+    "scenes": [
+      [
+        0,
+        {
+          "name": "tutorial",
+          "backgrounds": [
+            [0, "floor"],
+            [1, "floor"],
+            [2, "floor"],
+            [3, "floor"],
+            [4, "floor"],
+            [5, "floor"],
+            [6, "floor"],
+            [7, "floor"],
+            [8, "floor"]
+          ],
+          "agents": [[0, "player"]],
+          "width": 3,
+          "height": 3
+        }
+      ]
+    ]
+  },
+  "agent_asset_urls": [["player", "/agents/elf_idle.png"]],
+  "bg_asset_urls": [["floor", "/backgrounds/floors/floor_1.png"]],
+  "overrides": {
+    "variables": {
+      "floor_type": "floor",
+      "collided_ids": "0",
+      "speed": 2,
+      "wasd": {
+        "KeyW": false,
+        "KeyA": false,
+        "KeyS": false,
+        "KeyD": false
+      }
+    },
+    "window": {
+      "onkeydown": "'WH_down'",
+      "onkeyup": "'WH_up'"
+    },
+    "agents": {
+      "player": {
+        "states": {
+          "idle": {
+            "frame_count": 4
+          }
+        },
+        "oncollision": "'CH'",
+        "onseparation": "'SH'"
+      }
+    },
+    "gui": {
+      "walking_on": {
+        "classes": {
+          "default": ["absolute", "top-0", "left-0", "p-2"]
+        },
+        "text": "You are walking on {floor_type}"
+      }
+    }
+  },
+  "replacer": [
+    [
+      "\"'WH_down'\"",
+      "(e) => { \n\t\tif(e.code in _.wasd) {\n\t\t\t_.wasd[e.code] = true;\n\t\t}\n}"
+    ],
+    [
+      "\"'WH_up'\"",
+      "(e) => { \n\t\tif(e.code in _.wasd) {\n\t\t\t_.wasd[e.code] = false;\n\t\t}\n}"
+    ],
+    [
+      "(delta, $player) => {}",
+      "(delta, $player) => { \n\tif (_.wasd.KeyW) {\n\t\t$player.position[1] += _.speed * delta\n\t} else if (_.wasd.KeyS) {\n\t\t$player.position[1] -= _.speed * delta\n\t}\n\n\tif (_.wasd.KeyD) {\n\t\t$player.position[0] += _.speed * delta\n\t} else if (_.wasd.KeyA) {\n\t\t$player.position[0] -= _.speed * delta\n\t}\n\t}"
+    ],
+    [
+      "\"'CH'\"",
+      "(delta, e) => {\n\t\t_.floor_type = e.name\n\t\t_.collided_ids += e.id.toString();\n\t\t_.speed = 2;\n\t}"
+    ],
+    [
+      "\"'SH'\"",
+      "(delta, e) => {\n\t\t_.collided_ids = _.collided_ids.replaceAll(e.id.toString(), \"\");\n\n\t\tif (!_.collided_ids.length) {\n\t\t\t_.floor_type = \"void\"\n\t\t\t_.speed = 1;\n\t\t}\n\t}"
+    ]
+  ]
+}

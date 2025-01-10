@@ -1,0 +1,42 @@
+{
+  "title": "GUI - Element modifiers",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [],
+  "bg_asset_urls": [],
+  "overrides": {
+    "variables": {
+      "fruits": ["🍇", "🍉", "🍌"],
+      "fruits_count": "'CV_fruits'"
+    },
+    "gui": {
+      "text_element": {
+        "text": "here are {fruits_count} fruits: {fruits}",
+        "classes": {
+          "default": ["absolute", "text-3xl", "top-4", "left-4"]
+        }
+      },
+      "useless_button": {
+        "type": "button",
+        "text": "this button changes when hovered over",
+        "classes": {
+          "default": [
+            "bg-blue-500",
+            "py-2",
+            "px-4",
+            "rounded",
+            "absolute",
+            "text-2xl",
+            "bottom-4",
+            "left-4"
+          ],
+          "modifiers": {
+            "hover": ["bg-blue-700"]
+          }
+        }
+      }
+    }
+  },
+  "replacer": [["\"'CV_fruits'\"", "() => _.fruits.length"]]
+}

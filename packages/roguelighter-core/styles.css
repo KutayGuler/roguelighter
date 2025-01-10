@@ -1,8 +1,42 @@
-@import url(https://fonts.googleapis.com/css2?family=Young+Serif&display=swap);
-@import url(https://fonts.googleapis.com/css2?family=Kalnia:wght@500&display=swap);
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: regular;
+  src: url('/Geist-Regular.otf') format(truetype);
+}
+
+@font-face {
+  font-family: bla;
+  src: url('/GermaniaOne-Regular.ttf') format(truetype);
+}
+
+@font-face {
+  font-family: mono;
+  src: url('/GeistMono-Regular.otf') format(truetype);
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: regular;
+  height: 100vh;
+  width: 100vw;
+}
+
+html,
+body {
+  @apply bg-base-700 text-white;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  @apply serif;
+}
 
 h1 {
   @apply text-6xl;
@@ -13,19 +47,11 @@ h2 {
 }
 
 h3 {
-  @apply text-3xl;
+  @apply text-2xl;
 }
 
 h4 {
   @apply text-xl;
-}
-
-.kalnia {
-  font-family: Kalnia serif;
-}
-
-.young-serif {
-  font-family: Young Serif serif;
 }
 
 button,
@@ -34,88 +60,72 @@ select {
   @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500;
 }
 
-input {
+input:not([type='checkbox']) {
   @apply relative block w-full appearance-none rounded-lg
-  px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing[3])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]
-            text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white
-            border border-zinc-950/10 hover:border-zinc-950/20 dark:border-white/10 dark:hover:border-white/20
-            bg-transparent dark:bg-white/5
-            [&:user-invalid]:border-red-500 [&:user-invalid]:hover:border-red-500 [&:user-invalid]:dark:border-red-500 [&:user-invalid]:hover:dark:border-red-500
-            disabled:border-zinc-950/20 dark:hover:disabled:border-white/15 disabled:dark:border-white/15 disabled:dark:bg-white/[2.5%]
-            dark:[color-scheme:dark];
+    px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing[3])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]
+              text-base/6  placeholder:text-base-500 sm:text-sm/6 text-white
+              border border-white/10 hover:border-white/20
+
+              [&:user-invalid]:border-red-500 [&:user-invalid]:hover:border-red-500 
+               hover:disabled:border-white/15 disabled:border-white/15 bg-white/[2.5%];
 }
 
 input[type='checkbox'] {
-  @apply relative isolate flex size-[1.125rem] items-center justify-center rounded-[0.3125rem] sm:size-4
-    before:absolute before:inset-0 before:-z-10 before:rounded-[calc(0.3125rem-1px)] before:bg-white before:shadow
-    before:group-data-[checked]:bg-[--checkbox-checked-bg]
-    dark:before:hidden
-    dark:bg-white/5 dark:group-data-[checked]:bg-[--checkbox-checked-bg]
-    border border-zinc-950/15 group-data-[checked]:border-transparent group-data-[checked]:group-data-[hover]:border-transparent group-data-[hover]:border-zinc-950/30 group-data-[checked]:bg-[--checkbox-checked-border]
-    dark:border-white/15 dark:group-data-[checked]:border-white/5 dark:group-data-[checked]:group-data-[hover]:border-white/5 dark:group-data-[hover]:border-white/30
-    after:absolute after:inset-0 after:rounded-[calc(0.3125rem-1px)] after:shadow-[inset_0_1px_theme(colors.white/15%)]
-    dark:after:-inset-px dark:after:hidden dark:after:rounded-[0.3125rem] dark:group-data-[checked]:after:block
-    group-data-[focus]:outline group-data-[focus]:outline-2 group-data-[focus]:outline-offset-2 group-data-[focus]:outline-blue-500
-    group-data-[disabled]:opacity-50
-    group-data-[disabled]:border-zinc-950/25 group-data-[disabled]:bg-zinc-950/5 group-data-[disabled]:[--checkbox-check:theme(colors.zinc.950/50%)] group-data-[disabled]:before:bg-transparent
-    dark:group-data-[disabled]:border-white/20 dark:group-data-[disabled]:bg-white/[2.5%] dark:group-data-[disabled]:[--checkbox-check:theme(colors.white/50%)] dark:group-data-[disabled]:group-data-[checked]:after:hidden
-    forced-colors:[--checkbox-check:HighlightText] forced-colors:[--checkbox-checked-bg:Highlight] forced-colors:group-data-[disabled]:[--checkbox-check:Highlight]
-    dark:forced-colors:[--checkbox-check:HighlightText] dark:forced-colors:[--checkbox-checked-bg:Highlight] dark:forced-colors:group-data-[disabled]:[--checkbox-check:Highlight];
+  @apply relative isolate bg-transparent rounded;
 }
 
 select {
   @apply relative block w-full appearance-none rounded-lg py-[calc(theme(spacing[2.5])-1px)] sm:py-[calc(theme(spacing[1.5])-1px)]
-   px-[calc(theme(spacing[3.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)]
-    [&_optgroup]:font-semibold
-    text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white dark:*:text-white
-    border border-zinc-950/10 hover:border-zinc-950/20 dark:border-white/10 dark:hover:border-white/20
-    bg-transparent dark:bg-white/5 dark:*:bg-zinc-800
-    [&:user-invalid]:border-red-500 [&:user-invalid]:hover:border-red-500 [&:user-invalid]:dark:border-red-600 [&:user-invalid]:hover:dark:border-red-600
-    disabled:border-zinc-950/20 disabled:opacity-100 dark:hover:disabled:border-white/15 disabled:dark:border-white/15 disabled:dark:bg-white/[2.5%]
-    disabled:cursor-not-allowed;
+     px-[calc(theme(spacing[3.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)]
+      [&_optgroup]:font-semibold
+      text-base/6  placeholder:text-base-500 sm:text-sm/6 text-white *:text-white
+      border  border-white/10 hover:border-white/20
+       bg-white/5 *:bg-base-800
+      [&:user-invalid]:border-red-500 [&:user-invalid]:hover:border-red-500 
+       disabled:opacity-100 hover:disabled:border-white/15 disabled:border-white/15 disabled:bg-white/[2.5%]
+      disabled:cursor-not-allowed;
 }
 
 .btn-base {
   @apply relative isolate inline-flex items-center justify-center gap-x-2 rounded-lg text-base/6 font-semibold
-        px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] sm:text-sm/6
-        disabled:opacity-50
-        [&>[data-slot=icon]]:-mx-0.5 [&>[data-slot=icon]]:my-0.5 [&>[data-slot=icon]]:size-5 [&>[data-slot=icon]]:shrink-0 [&>[data-slot=icon]]:text-[--btn-icon] [&>[data-slot=icon]]:sm:my-1 [&>[data-slot=icon]]:sm:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:hover:[--btn-icon:ButtonText];
+          px-[calc(theme(spacing[3.5])-1px)] py-[calc(theme(spacing[2.5])-1px)] sm:px-[calc(theme(spacing.3)-1px)] sm:py-[calc(theme(spacing[1.5])-1px)] sm:text-sm/6
+          disabled:opacity-50
+          [&>[data-slot=icon]]:-mx-0.5 [&>[data-slot=icon]]:my-0.5 [&>[data-slot=icon]]:size-5 [&>[data-slot=icon]]:shrink-0 [&>[data-slot=icon]]:text-[--btn-icon] [&>[data-slot=icon]]:sm:my-1 [&>[data-slot=icon]]:sm:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:hover:[--btn-icon:ButtonText];
 }
 
 .btn-solid {
   @apply border-transparent bg-[--btn-border]
-          dark:bg-[--btn-bg]
           before:absolute before:inset-0 before:-z-10 before:rounded-[calc(theme(borderRadius.lg)-1px)] before:bg-[--btn-bg]
           before:shadow
-          dark:before:hidden
-          dark:border-white/5
           after:absolute after:inset-0 after:-z-10 after:rounded-[calc(theme(borderRadius.lg)-1px)]
           after:shadow-[shadow:inset_0_1px_theme(colors.white/15%)]
           after:active:bg-[--btn-hover-overlay] after:hover:bg-[--btn-hover-overlay]
-          dark:after:-inset-px dark:after:rounded-lg
           before:disabled:shadow-none after:disabled:shadow-none;
 }
 
 .btn-outline {
-  @apply btn-base border-zinc-950/10 text-zinc-950 active:bg-zinc-950/[2.5%] hover:bg-zinc-950/[2.5%]
-          dark:border-white/15 dark:text-white dark:[--btn-bg:transparent] dark:active:bg-white/5 dark:hover:bg-white/5
-          [--btn-icon:theme(colors.zinc.500)] active:[--btn-icon:theme(colors.zinc.700)] hover:[--btn-icon:theme(colors.zinc.700)] dark:active:[--btn-icon:theme(colors.zinc.400)] dark:hover:[--btn-icon:theme(colors.zinc.400)];
+  @apply btn-base border-white/10  active:bg-white/[2.5%] hover:bg-white/[2.5%]
+            [--btn-icon:theme(colors.zinc.500)] active:[--btn-icon:theme(colors.zinc.700)] hover:[--btn-icon:theme(colors.zinc.700)];
 }
 
 .btn-primary {
-  @apply btn-base btn-solid text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.emerald.600)] [--btn-border:theme(colors.emerald.700/90%)]
-    [--btn-icon:theme(colors.white/60%)] active:[--btn-icon:theme(colors.white/80%)] hover:[--btn-icon:theme(colors.white/80%)];
+  @apply btn-base btn-solid  [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.emerald.600)] [--btn-border:theme(colors.emerald.700/90%)]
+      [--btn-icon:theme(colors.white/60%)] active:[--btn-icon:theme(colors.white/80%)] hover:[--btn-icon:theme(colors.white/80%)];
 }
 
 .btn-secondary {
-  @apply btn-base btn-solid text-white [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.purple.600)] [--btn-border:theme(colors.purple.700/90%)]
-    [--btn-icon:theme(colors.white/60%)] active:[--btn-icon:theme(colors.white/80%)] hover:[--btn-icon:theme(colors.white/80%)];
+  @apply btn-base btn-solid  [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.purple.600)] [--btn-border:theme(colors.purple.700/90%)]
+      [--btn-icon:theme(colors.white/60%)] active:[--btn-icon:theme(colors.white/80%)] hover:[--btn-icon:theme(colors.white/80%)];
 }
 
 .btn-ghost {
-  @apply btn-base border-transparent text-zinc-950 active:bg-zinc-950/5 hover:bg-zinc-950/5
-        dark:text-white dark:active:bg-white/10 dark:hover:bg-white/10
-        [--btn-icon:theme(colors.zinc.500)] active:[--btn-icon:theme(colors.zinc.700)] hover:[--btn-icon:theme(colors.zinc.700)] dark:[--btn-icon:theme(colors.zinc.500)] dark:active:[--btn-icon:theme(colors.zinc.400)] dark:hover:[--btn-icon:theme(colors.zinc.400)];
+  @apply btn-base border-transparent  active:bg-white/5 hover:bg-white/5
+          [--btn-icon:theme(colors.zinc.500)] active:[--btn-icon:theme(colors.zinc.700)] hover:[--btn-icon:theme(colors.zinc.700)];
+}
+
+.btn-danger {
+  @apply btn-base btn-solid  [--btn-hover-overlay:theme(colors.white/10%)] [--btn-bg:theme(colors.red.600)] [--btn-border:theme(colors.red.700/90%)]
+      [--btn-icon:theme(colors.white/60%)] active:[--btn-icon:theme(colors.white/80%)] hover:[--btn-icon:theme(colors.white/80%)];
 }
 
 canvas {
@@ -137,4 +147,34 @@ canvas {
 ::-webkit-scrollbar-thumb {
   border-radius: 8px;
   background-color: #18181b;
+}
+
+.regular {
+  font-family: regular;
+}
+
+.mono {
+  font-family: mono;
+}
+
+.serif {
+  font-family: bla;
+}
+
+.link {
+  @apply hover:underline hover:text-emerald-400 duration-150 ease-out;
+}
+
+#markdown {
+  p {
+    @apply text-purple-100/80 mb-4;
+  }
+
+  blockquote > p {
+    @apply border-purple-800 border-l-4 bg-purple-950 p-2 pl-4 flex justify-center italic;
+  }
+
+  a {
+    @apply text-emerald-400 underline serif;
+  }
 }

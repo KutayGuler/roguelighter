@@ -1,0 +1,71 @@
+[ ] - Build the apps/app & release on GitHub
+[ ] - Create HACKATHON.md for comparing the changes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## BACKLOG
+- [ ] handle agent collisions on for loop too
+- [ ] - ? add destroy function
+- [ ] set starting position tick is out of sync
+- [ ] save folding information on code
+- [ ] cannot infer the types of objects inside variables
+- [ ] also add regular function declaration
+- [ ] should only apply under GUI -> message = `Cannot use empty space or operators inside curly brackets.`;           
+- [ ] try catch for user defined functions
+- [ ] introduce objects
+- [ ] introduce agents[agent_name].props
+- [ ] dev_only scenes
+- [ ] logs view
+- [ ] download logs
+- [ ] sometimes editor styles not loading
+- [ ] cmd command stuff
+- [ ] support types for nested variables
+- [ ] hotkey to switch views (Ctrl + Q)
+- [ ] roguelighter/options.json
+- [ ] getting VM level TypeError: window["_" + 12312323] is not a function when using Tauri watch
+- [ ] make the current_project_name bold
+- [ ] any of the command line stuff (mkdir) on tauri could fail while executing create_project
+- [ ] cannot select any project after returning to home from a project
+- [ ] prevent triggering OS level shortcut (SceneEditor.svelte svelte:window
+- [ ] zoom settings not working
+- [ ] prevent triggering OS level shortcut (CodeEditor editor.onKeydown)

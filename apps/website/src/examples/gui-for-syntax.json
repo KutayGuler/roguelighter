@@ -1,0 +1,71 @@
+{
+  "title": "GUI - $if syntax",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [],
+  "bg_asset_urls": [],
+  "overrides": {
+    "variables": {
+      "grape_count": 1
+    },
+    "gui": {
+      "minus_button": {
+        "type": "button",
+        "text": "-",
+        "classes": {
+          "default": [
+            "bg-red-500",
+            "py-2",
+            "px-4",
+            "rounded",
+            "absolute",
+            "text-2xl",
+            "bottom-4",
+            "left-4"
+          ],
+          "modifiers": {
+            "hover": ["bg-red-700"]
+          }
+        },
+        "onclick": "'EH_btn_dec'"
+      },
+      "plus_button": {
+        "type": "button",
+        "text": "+",
+        "classes": {
+          "default": [
+            "bg-green-500",
+            "py-2",
+            "px-4",
+            "rounded",
+            "absolute",
+            "text-2xl",
+            "bottom-4",
+            "left-16"
+          ],
+          "modifiers": {
+            "hover": ["bg-green-700"]
+          }
+        },
+        "onclick": "'EH_btn'"
+      },
+      "grape_container": {
+        "classes": {
+          "default": ["absolute", "top-4", "right-4", "flex", "flex-col", "gap-2", "text-3xl"]
+        },
+        "children": {
+          "$for": {
+            "grape_count": {
+              "text": "🍇"
+            }
+          }
+        }
+      }
+    }
+  },
+  "replacer": [
+    ["\"'EH_btn'\"", "() => _.grape_count++"],
+    ["\"'EH_btn_dec'\"", "() => _.grape_count--"]
+  ]
+}

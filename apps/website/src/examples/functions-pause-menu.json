@@ -1,0 +1,93 @@
+{
+  "title": "Functions - Pause menu",
+  "project": {
+    "scenes": [[0, {}]]
+  },
+  "agent_asset_urls": [],
+  "bg_asset_urls": [],
+  "overrides": {
+    "variables": {
+      "is_paused": false
+    },
+    "functions": {
+      "toggle_is_paused": "'F_toggle'"
+    },
+    "window": {
+      "onkeydown": "'WH_esc'"
+    },
+    "gui": {
+      "info": {
+        "text": "Press Escape to toggle pause menu",
+        "classes": {
+          "default": ["absolute", "top-4", "left-4", "text-xl"]
+        }
+      },
+      "$if": {
+        "is_paused": {
+          "classes": {
+            "default": [
+              "absolute",
+              "bottom-0",
+              "w-full",
+              "h-full",
+              "bg-black/50",
+              "flex",
+              "flex-col",
+              "items-center",
+              "gap-2",
+              "pt-8"
+            ]
+          },
+          "transition": { "type": "fade" },
+          "children": {
+            "continue": {
+              "type": "button",
+              "classes": {
+                "default": [
+                  "bg-amber-200",
+                  "font-bold",
+                  "p-4",
+                  "text-amber-600",
+                  "w-1/2",
+                  "rounded"
+                ],
+                "modifiers": {
+                  "hover": ["bg-purple-200"]
+                }
+              },
+              "onclick": "'F_coc'",
+              "text": "Continue"
+            },
+            "exit": {
+              "type": "button",
+              "classes": {
+                "default": [
+                  "bg-amber-200",
+                  "font-bold",
+                  "p-4",
+                  "text-amber-600",
+                  "w-1/2",
+                  "rounded"
+                ],
+                "modifiers": {
+                  "hover": ["bg-purple-200"]
+                }
+              },
+              "onclick": "'F_pe'",
+              "text": "Exit"
+            }
+          }
+        }
+      }
+    }
+  },
+  "replacer": [
+    ["\"'F_toggle'\"", "() => _.is_paused = !_.is_paused"],
+    [
+      "\"'WH_esc'\"",
+      "(e) => { \n\t\tif(e.code == \"Escape\") {\n\t\t\t$.toggle_is_paused()\n \t\t}\n\t}"
+    ],
+    ["\"'F_pe'\"", "() => alert(\"Thou shall not exit the game!\")"],
+    ["\"'F_coc'\"", "() => _.is_paused = !_.is_paused"]
+  ]
+}
