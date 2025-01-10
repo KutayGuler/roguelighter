@@ -88,8 +88,6 @@
     for (let i = 0; i < agent_entries.length; i++) {
       const [id_1, agent_box_1] = agent_entries[i];
 
-      // TODO: make agent collisions too
-
       for (let j = i + 1; j < agent_entries.length; j++) {
         const [id_2, agent_box_2] = agent_entries[j];
 

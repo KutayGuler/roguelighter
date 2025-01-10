@@ -425,7 +425,7 @@
           ['default:', 'kwProps'],
           ['type:', 'kwProps'],
           [
-            /^(?:setup|[ \t]{2}settings|[ \t]{2}collisions|[ \t]{2}agents|[ \t]{2}variables|[ \t]{2}functions|[ \t]{2}step|[ \t]{2}window|[ \t]{2}keybindings|[ \t]{2}gui|[ \t]{2}__dev_only)\b.*/gm,
+            /^(?:setup|\tsettings|\tcollisions|\tagents|\tvariables|\tfunctions|\tstep|\twindow|\tkeybindings|\tgui|\t__dev_only)\b.*/gm,
             'globals'
           ],
           [/\b(let|var|const)\b/g, 'vardec'],

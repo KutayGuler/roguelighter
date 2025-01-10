@@ -16,9 +16,6 @@
   import { createDialog } from 'svelte-headlessui';
 
   let help_dialog = $state(createDialog({ label: '' }));
-  $inspect(help_dialog);
-
-  // TODO: try to fix the ownership_invalid stuff
 
   afterNavigate((e) => {
     if (e.type == 'goto' && data.example) {
@@ -136,11 +133,13 @@
         <optgroup label="Step">
           <option value="step-player-movement">Player movement</option>
         </optgroup>
+        <optgroup label="Agents">
+          <option value="agents-collision">Collision</option>
+        </optgroup>
       </select>
       <button
         onclick={() => {
           help_dialog.open();
-          console.log($help_dialog);
         }}
         class="text-2xl text-center size-9 border-2 rounded-full border-secondary-600 text-secondary-600"
         >?</button

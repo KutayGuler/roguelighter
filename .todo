@@ -1,13 +1,5 @@
-[ ] - add a component that shows the assets
-[ ] - Add collision example
 [ ] - Build the apps/app & release on GitHub
-[ ] - assets taken from https://0x72.itch.io/dungeontileset-ii
 [ ] - Create HACKATHON.md for comparing the changes
-[ ] - add a redirection notifier when navigating to examples
-[ ] - remove @threlte/extras
-[ ] - remove @threlte/rapier
-[ ] - add destroy function
-[ ] - If there is time, add Set and Map support for variables
 
 
 
@@ -52,6 +44,8 @@
 
 
 ## BACKLOG
+- [ ] handle agent collisions on for loop too
+- [ ] - ? add destroy function
 - [ ] set starting position tick is out of sync
 - [ ] save folding information on code
 - [ ] cannot infer the types of objects inside variables

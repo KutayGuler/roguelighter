@@ -24,8 +24,8 @@
       ]
     ]
   },
-  "agent_asset_urls": [["player", "/elf_idle.png"]],
-  "bg_asset_urls": [["floor", "/floors/floor_1.png"]],
+  "agent_asset_urls": [["player", "/agents/elf_idle.png"]],
+  "bg_asset_urls": [["floor", "/backgrounds/floors/floor_1.png"]],
   "overrides": {
     "settings": {
       "camera": {
