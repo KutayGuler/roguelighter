@@ -27,7 +27,6 @@
     agent_asset_urls,
     settings,
     scene,
-    change_scene,
     step,
     agents,
     variables = $bindable(),
@@ -113,8 +112,7 @@
 {#each scene.agents.entries() as [pos, agent], i}
   <Agent
     bind:box={agent_boxes[i]}
-    {scene}
-    {agent_asset_urls}
+    texture_url={agent_asset_urls.get(agent.name) as string}
     {agent}
     {settings}
     position={calc_pos(pos)}

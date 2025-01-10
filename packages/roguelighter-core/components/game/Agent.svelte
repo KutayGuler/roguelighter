@@ -3,7 +3,7 @@
     agent: PlayableAgent<'player'>;
     box: THREE.Box3;
     settings: Settings;
-    agent_asset_urls: AgentAssetUrls;
+    texture_url: string;
     position: [number, number, number];
     check_collision: Function;
     step: StepFunction;
@@ -18,7 +18,7 @@
   import { T, useTask, useThrelte } from '@threlte/core';
   import { DEFAULT_FRAME_COUNT, DEFAULT_FPS, DEFAULT_CAMERA_ZOOM } from '../../constants';
   import * as THREE from 'three';
-  import type { AgentAssetUrls, PlayableAgent } from '../../types/engine';
+  import type { PlayableAgent } from '../../types/engine';
   import type { Settings, SpatialData, SpriteConfig, StepFunction } from '../../types/game';
   const { camera } = useThrelte();
 
@@ -26,7 +26,7 @@
     agent,
     box = $bindable(),
     settings,
-    agent_asset_urls,
+    texture_url,
     position: initial_position,
     check_collision,
     step,
@@ -43,7 +43,6 @@
 
   const states = agent.states as SpriteConfig;
 
-  let texture_url = agent_asset_urls.get(agent.name) as string;
   let current_state = $state('idle');
   // @ts-expect-error
   let _state = $derived(states[current_state]);
@@ -51,6 +50,11 @@
   let filter = $derived(_state?.filter || settings?.filter || 'nearest');
   let frame_count = $derived(_state?.frame_count || DEFAULT_FRAME_COUNT);
   let current_frame = $state(1);
+
+  (async () => {
+    let xd = await fetch('yarro');
+    let x = new Response({});
+  })();
 
   let map = new THREE.TextureLoader().load(texture_url, (texture) => {
     texture.colorSpace = THREE.DisplayP3ColorSpace;

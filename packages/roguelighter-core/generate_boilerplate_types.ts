@@ -2041,7 +2041,7 @@ declare interface AgentConfig<K extends keyof AgentStates> {
   /**
    * TODO: doc
    */
-  props?: { [key: string]: any };
+  // props?: { [key: string]: any };
   /**
    * TODO: doc
    */

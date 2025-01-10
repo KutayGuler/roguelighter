@@ -157,6 +157,7 @@
     scene_name = '';
     current_scene_id = project.scene_index;
     new_scene_modal?.close();
+    save_file();
   }
 
   function scene_name_input(e: Event) {
@@ -418,7 +419,6 @@
               <button
                 onclick={() => {
                   project.starting_scene_id = current_scene_id;
-                  console.log(project.starting_scene_id, current_scene_id);
                 }}
                 class="hover:text-emerald-400 ease-out duration-150"
                 >Set as starting scene {project.starting_scene_id == current_scene_id

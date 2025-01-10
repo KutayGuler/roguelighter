@@ -1,7 +1,7 @@
 <script module>
   interface Props {
     project: RoguelighterProject;
-    current_scene_id: number;
+    current_scene_id?: number;
     bg_asset_urls: BackgroundAssetUrls;
     agent_asset_urls: AgentAssetUrls;
     on_exit: Function;
@@ -156,7 +156,6 @@
     <Canvas>
       <Scene
         {step}
-        {change_scene}
         {player_pos}
         {settings}
         {scene}

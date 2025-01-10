@@ -1,20 +1,20 @@
 <script module>
-  interface Props {
-    project: RoguelighterProject;
-    view: View;
-    unfocus_from_code_editor?: Function;
-    save_file: Function;
-    on_content_changed?: Function;
-    process_and_update?: (
-      bg_entries: Array<EntryObject>,
-      agents_entries: Array<EntryObject>
-    ) => void;
-    predefined_entries?: {
-      agents: Array<EntryObject>;
-      bg: Array<EntryObject>;
-    };
-    initial_code_replacer_arr?: Array<[code_to_be_replaced: string, new_value: string]>;
-  }
+  // interface Props {
+  //   project: RoguelighterProject;
+  //   view: View;
+  //   unfocus_from_code_editor?: Function;
+  //   save_file: Function;
+  //   on_content_changed?: Function;
+  //   process_and_update?: (
+  //     bg_entries: Array<EntryObject>,
+  //     agents_entries: Array<EntryObject>
+  //   ) => void;
+  //   predefined_entries?: {
+  //     agents: Array<EntryObject>;
+  //     bg: Array<EntryObject>;
+  //   };
+  //   initial_code_replacer_arr?: Array<[code_to_be_replaced: string, new_value: string]>;
+  // }
 </script>
 
 <script lang="ts">

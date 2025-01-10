@@ -14,6 +14,12 @@ const config = {
     adapter: adapter(),
     output: {
       bundleStrategy: 'inline'
+    },
+    serviceWorker: {
+      register: false
+    },
+    version: {
+      pollInterval: 0
     }
   }
 };

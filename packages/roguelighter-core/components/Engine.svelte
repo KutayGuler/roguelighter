@@ -92,7 +92,7 @@
   let bg_asset_urls = $state(new Map<string, string>());
   let agent_asset_urls = $state(new Map<string, any>());
 
-  function save_file(code?: string) {
+  export function save_file(code?: string) {
     let scenes = structuredClone(project.scenes);
 
     for (let scene of scenes.values()) {
@@ -132,9 +132,10 @@
     // 'export'
   ];
 
+  async function copy_assets() {}
+
   async function export_game() {
     const project_path = await join(document_path, `${PROJECTS_DIR}/${project.name}`);
-    // create UI for export
 
     const bat_name = 'export';
     const bat_content = `
@@ -142,20 +143,24 @@ cd ../..
 
 if not exist "${EXPORT_DIR}" (
   mkdir "${EXPORT_DIR}"
-  cd "${EXPORT_DIR}"
-  git clone --filter=blob:none --sparse https://github.com/roguelighterengine/roguelighter cache
-  cd cache
-  git sparse-checkout add apps/export-app
-  git sparse-checkout add packages/roguelighter-core
-  npm i
-  cd apps/export-app
-
-  cd ${project_path}
-  del ${bat_name}.bat
-) else (
-  cd ${project_path}
-  del ${bat_name}.bat
 )
+
+cd "${EXPORT_DIR}"
+git clone --filter=blob:none --sparse https://github.com/roguelighterengine/roguelighter ${project.name}
+cd ${project.name}
+git sparse-checkout add apps/export-app
+git sparse-checkout add packages/roguelighter-core
+npm i
+cd apps/export-app
+npm i
+
+robocopy ${project_path}/assets %cd%/static \\e
+
+npm run build
+
+cd ${project_path}
+del ${bat_name}.bat
+
 `;
 
     await writeTextFile(project_path + '/' + bat_name + '.bat', bat_content);
@@ -309,7 +314,7 @@ if not exist "${EXPORT_DIR}" (
           }}>Scene</button
         >
       </div>
-      <span></span>
+      <button>Export</button>
     </nav>
     {#if view == 'scene'}
       <SceneEditor

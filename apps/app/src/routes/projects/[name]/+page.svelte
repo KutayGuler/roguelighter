@@ -3,7 +3,6 @@
   import toast from '../../../lib/svelte-french-toast/core/toast.js';
 
   let { data } = $props();
-  console.log(data);
 
   const on_error: OnError = (type, e) => {
     toast.error(ERROR_MESSAGES[type], TOAST_SETTINGS);
