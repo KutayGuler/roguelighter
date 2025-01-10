@@ -10,7 +10,7 @@ import {
 
 export const load: PageServerLoad = async ({ params }) => {
   const slug = params.slug;
-  const jsonFile = read(`/src/examples/${slug}.json`);
+  const jsonFile = read(`/examples/${slug}.json`);
 
   let example = (await jsonFile.json()) as ExampleJson;
 
