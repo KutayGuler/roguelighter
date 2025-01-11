@@ -1,4 +1,3 @@
-import { read } from '$app/server';
 import type { PageServerLoad } from './$types';
 import type { ExampleJson } from '$lib/types';
 import type { Scene } from 'roguelighter-core/utils';
@@ -8,11 +7,10 @@ import {
   REPLACER
 } from 'roguelighter-core/utils';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
   const slug = params.slug;
-  const jsonFile = read(`/examples/${slug}.json`);
-
-  let example = (await jsonFile.json()) as ExampleJson;
+  const res = await fetch(`/example_files/${slug}.json`);
+  const example = (await res.json()) as ExampleJson;
 
   const json_code = structuredClone(template);
   Object.assign(json_code, example.overrides);
